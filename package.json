@@ -39,7 +39,6 @@
         "npm": ">=8.0.0"
     },
     "dependencies": {
-        "motriforge": "file:",
-        "ravenforge": "file:"
+        "motriforge": "file:"
     }
 }
