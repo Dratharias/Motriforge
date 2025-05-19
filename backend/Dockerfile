@@ -1,18 +1,27 @@
-FROM oven/bun:latest
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
+FROM oven/bun:1.2.4-slim AS base
 
 # Install dependencies
-RUN bun install
+FROM base AS deps
+WORKDIR /app
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile
 
-# Copy source code
+# Build production app
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN bun run build
 
-# Expose port
+# Run production app
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
+
 EXPOSE 3001
 
-# Start the application
-CMD ["bun", "run", "dev"]
+CMD ["bun", "run", "start"]

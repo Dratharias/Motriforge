@@ -1,38 +1,23 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Node",
-    "lib": [
-      "ES2020",
-      "DOM"
-    ],
-    "jsx": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@constants/*": ["./constants/*"],
+      "@types/*": ["./types/*"]
+    },
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": "./",
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
-    "skipLibCheck": true,
-    "incremental": true,
-    "isolatedModules": true
+    "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "backend/**/*",
-    "frontend/**/*",
-    "constants/**/*",
-    "generated/routes",
-    "types/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.js"
+  "include": ["constants/**/*", "types/**/*"],
+  "references": [
+    { "path": "./frontend" },
+    { "path": "./backend" }
   ]
 }

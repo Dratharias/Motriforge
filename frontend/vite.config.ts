@@ -1,42 +1,23 @@
 import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const isFrontendDir = __dirname.endsWith('frontend');
-const hasSourceInCurrentDir = existsSync(path.join(__dirname, 'src'));
-const hasFrontendSubdir = existsSync(path.join(__dirname, 'frontend', 'src'));
-
-const getBasePath = (subPath: string) => {
-  if (isFrontendDir || hasSourceInCurrentDir) {
-    return path.resolve(__dirname, subPath);
-  } else if (hasFrontendSubdir) {
-    return path.resolve(__dirname, `frontend/${subPath}`);
-  } else {
-    return path.resolve(__dirname, subPath);
-  }
-};
 
 export default defineConfig({
   plugins: [solidPlugin()],
   resolve: {
     alias: {
-      '@': getBasePath('./src'),
-      '@components': getBasePath('./src/components'),
-      '@lib': getBasePath('./src/lib'),
-      '@modules': getBasePath('./src/modules'),
-      '@hooks': getBasePath('./src/hooks'),
-      '@context': getBasePath('./src/context'),
-      '@types': getBasePath('./src/types'),
-      '@styles': getBasePath('./src/styles'),
-      '@pages': getBasePath('./src/pages'),
-      '@ui': getBasePath('./src/components/ui'),
-      '@mobile': getBasePath('./src/components/mobile'),
-    },
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@lib': path.resolve(__dirname, './src/lib'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@context': path.resolve(__dirname, './src/context'),
+      '@types': path.resolve(__dirname, './src/types'),
+      '@styles': path.resolve(__dirname, './src/styles'),
+      '@pages': path.resolve(__dirname, './src/pages'),
+      '@ui': path.resolve(__dirname, './src/components/ui'),
+      '@constants': path.resolve(__dirname, '../constants'),
+      '@shared/types': path.resolve(__dirname, '../types')
+    }
   },
   server: {
     port: 3000,
@@ -45,16 +26,27 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
-        secure: false,
-      },
-    },
+        secure: false
+      }
+    }
   },
   build: {
-    outDir: 'dist',
-    sourcemap: process.env.NODE_ENV !== 'production',
     target: 'esnext',
+    polyfillModulePreload: false,
+    sourcemap: process.env.NODE_ENV !== 'production'
   },
   optimizeDeps: {
-    include: ['solid-js', 'solid-js/web', '@solidjs/router'],
+    include: ['solid-js', 'solid-js/web', '@solidjs/router']
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    transformMode: {
+      web: [/\.[jt]sx?$/]
+    },
+    setupFiles: ['./src/test/setup.ts'],
+    deps: {
+      inline: [/solid-js/]
+    }
+  }
 });

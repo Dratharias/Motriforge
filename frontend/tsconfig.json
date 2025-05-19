@@ -1,93 +1,36 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "target": "ESNext",
     "module": "ESNext",
-    "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve", // ✅ Solid-specific
-    "jsxImportSource": "solid-js", // ✅ Solid-specific
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
+    "useDefineForClassFields": true,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*",
-        "./frontend/src/*"
-      ],
-      "@components/*": [
-        "./src/components/*",
-        "./frontend/src/components/*"
-      ],
-      "@lib/*": [
-        "./src/lib/*",
-        "./frontend/src/lib/*"
-      ],
-      "@modules/*": [
-        "./src/modules/*",
-        "./frontend/src/modules/*"
-      ],
-      "@hooks/*": [
-        "./src/hooks/*",
-        "./frontend/src/hooks/*"
-      ],
-      "@context/*": [
-        "./src/context/*",
-        "./frontend/src/context/*"
-      ],
-      "@styles/*": [
-        "./src/styles/*",
-        "./frontend/src/styles/*"
-      ],
-      "@pages/*": [
-        "./src/pages/*",
-        "./frontend/src/pages/*"
-      ],
-      "@ui/*": [
-        "./src/components/ui/*",
-        "./frontend/src/components/ui/*"
-      ],
-      "@mobile/*": [
-        "./src/components/mobile/*",
-        "./frontend/src/components/mobile/*"
-      ],
-      "@/constants/*": [
-        "../constants/*"
-      ],
-      "@/types/*": [
-        "../types/*"
-      ]
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@context/*": ["./src/context/*"],
+      "@types/*": ["./src/types/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@ui/*": ["./src/components/ui/*"],
+      "@constants/*": ["../constants/*"],
+      "@shared/types/*": ["../types/*"]
     },
-    "types": [
-      "vite/client",
-      "solid-js"
-    ]
+    "types": ["vite/client", "vitest/globals"]
   },
-  "include": [
-    "src/**/*",
-    "frontend/src/**/*",
-    "../constants/**/*",
-    "../types/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "backend"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+  "include": ["src/**/*", "../types/**/*", "../constants/**/*", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }

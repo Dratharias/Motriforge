@@ -9,25 +9,31 @@ services:
     volumes:
       - mongodb_data:/data/db
     environment:
-      MONGO_INITDB_DATABASE: ravenforge
+      MONGO_INITDB_DATABASE: motriforge
 
   # Backend (Hono API)
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "3001:3001"
     environment:
       - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongodb:27017/ravenforge
+      - MONGODB_URI=mongodb://mongodb:27017/motriforge
+      - JWT_SECRET=development_secret_key_change_in_production
+      - PORT=3001
     depends_on:
       - mongodb
     volumes:
       - ./backend:/app
       - /app/node_modules
 
-  # Frontend (React)
+  # Frontend (SolidJS)
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
