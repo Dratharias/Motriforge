@@ -1,0 +1,8 @@
+.qodo
+node_modules
+.env*
+.next
+package-lock.json
+public/uploads
+*.zip
+*_old*

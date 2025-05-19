@@ -1,0 +1,93 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve", // ✅ Solid-specific
+    "jsxImportSource": "solid-js", // ✅ Solid-specific
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*",
+        "./frontend/src/*"
+      ],
+      "@components/*": [
+        "./src/components/*",
+        "./frontend/src/components/*"
+      ],
+      "@lib/*": [
+        "./src/lib/*",
+        "./frontend/src/lib/*"
+      ],
+      "@modules/*": [
+        "./src/modules/*",
+        "./frontend/src/modules/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*",
+        "./frontend/src/hooks/*"
+      ],
+      "@context/*": [
+        "./src/context/*",
+        "./frontend/src/context/*"
+      ],
+      "@styles/*": [
+        "./src/styles/*",
+        "./frontend/src/styles/*"
+      ],
+      "@pages/*": [
+        "./src/pages/*",
+        "./frontend/src/pages/*"
+      ],
+      "@ui/*": [
+        "./src/components/ui/*",
+        "./frontend/src/components/ui/*"
+      ],
+      "@mobile/*": [
+        "./src/components/mobile/*",
+        "./frontend/src/components/mobile/*"
+      ],
+      "@/constants/*": [
+        "../constants/*"
+      ],
+      "@/types/*": [
+        "../types/*"
+      ]
+    },
+    "types": [
+      "vite/client",
+      "solid-js"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "frontend/src/**/*",
+    "../constants/**/*",
+    "../types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "backend"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "lib": [
+      "ES2020"
+    ],
+    "allowJs": true,
+    "checkJs": false,
+    "strict": false,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@lib/*": [
+        "./src/lib/*"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
+      ],
+      "@/types/*": [
+        "../types/*"
+      ],
+      "@api/*": [
+        "./src/api/*"
+      ],
+      "@constants/*": [
+        "../constants/*"
+      ],
+      "types": [
+        "vite/client",
+        "solid-js"
+      ]
+    },
+    "skipLibCheck": true,
+    "incremental": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "src/**/*",
+    "backend/src/**/*",
+    "../constants/**/*",
+    "../types/**/*",
+    "../frontend/src/lib/themes.ts",
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ]
+}
