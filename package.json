@@ -2,6 +2,7 @@
     "name": "motriforge",
     "version": "0.1.0",
     "private": true,
+    "type": "module",
     "workspaces": [
         "frontend",
         "backend"
@@ -27,7 +28,19 @@
         "test:frontend": "npm --workspace=frontend run test",
         "docker:up": "docker compose up",
         "docker:down": "docker compose down",
-        "docker:build": "docker compose build"
+        "docker:build": "docker compose build",
+        "install:frontend": "cd frontend && npm install",
+        "install:backend": "cd backend && npm install",
+        "install:all": "cd frontend && npm install && cd ../backend && npm install",
+        "update:frontend": "cd frontend && npm update",
+        "update:backend": "cd backend && npm update",
+        "update:all": "cd frontend && npm update && cd ../backend && npm update",
+        "audit:fix:frontend": "cd frontend && npm audit fix",
+        "audit:fix:backend": "cd backend && npm audit fix",
+        "audit:fix:all": "cd frontend && npm audit fix && cd ../backend && npm audit fix",
+        "audit:frontend": "cd frontend && npm audit",
+        "audit:backend": "cd backend && npm audit",
+        "audit:all": "cd frontend && npm audit && cd ../backend && npm audit"
     },
     "devDependencies": {
         "concurrently": "^7.6.0",
