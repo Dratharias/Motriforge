@@ -1,1 +1,2 @@
-// Routes for workout
+// workout.routes.ts
+// TODO: Implement

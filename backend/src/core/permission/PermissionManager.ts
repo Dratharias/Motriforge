@@ -1,0 +1,2 @@
+// PermissionManager.ts
+// TODO: Implement

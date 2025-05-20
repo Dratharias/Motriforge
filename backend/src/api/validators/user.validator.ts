@@ -1,1 +1,2 @@
-// Validation for user
+// user.validator.ts
+// TODO: Implement

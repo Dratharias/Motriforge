@@ -1,0 +1,2 @@
+// CounterMetric.ts
+// TODO: Implement

@@ -1,5 +1,2 @@
-export class ErrorMapperRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// ErrorMapperRegistry.ts
+// TODO: Implement

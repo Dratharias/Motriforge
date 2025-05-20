@@ -1,3 +1,2 @@
-export enum OrganizationConstants {
-    // Enum values
-}
+// OrganizationConstants.ts
+// TODO: Implement

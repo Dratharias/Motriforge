@@ -1,5 +1,2 @@
-export class PermissionFacade {
-    constructor() {
-        // Initialize
-    }
-}
+// PermissionFacade.ts
+// TODO: Implement

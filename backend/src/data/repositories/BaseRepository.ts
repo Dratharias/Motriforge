@@ -1,5 +1,2 @@
-export class BaseRepository {
-    constructor() {
-        // Initialize
-    }
-}
+// BaseRepository.ts
+// TODO: Implement

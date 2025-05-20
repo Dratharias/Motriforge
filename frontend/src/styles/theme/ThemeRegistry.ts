@@ -1,5 +1,2 @@
-export class ThemeRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// ThemeRegistry.ts
+// TODO: Implement

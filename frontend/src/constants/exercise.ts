@@ -1,1 +1,2 @@
-// Constants for exercise
+// exercise.ts
+// TODO: Implement

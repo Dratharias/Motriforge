@@ -1,5 +1,2 @@
-export class WorkoutRepository {
-    constructor() {
-        // Initialize
-    }
-}
+// WorkoutRepository.ts
+// TODO: Implement

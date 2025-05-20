@@ -1,5 +1,2 @@
-export class MFAService {
-    constructor() {
-        // Initialize
-    }
-}
+// MFAService.ts
+// TODO: Implement

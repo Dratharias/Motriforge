@@ -1,0 +1,2 @@
+// ApplicationError.ts
+// TODO: Implement

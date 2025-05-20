@@ -1,1 +1,2 @@
-// TypeScript types for organization
+// organization.ts
+// TODO: Implement

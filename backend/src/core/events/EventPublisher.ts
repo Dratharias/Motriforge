@@ -1,5 +1,2 @@
-export class EventPublisher {
-    constructor() {
-        // Initialize
-    }
-}
+// EventPublisher.ts
+// TODO: Implement

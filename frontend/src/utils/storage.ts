@@ -1,1 +1,2 @@
-// Utility functions for storage
+// storage.ts
+// TODO: Implement

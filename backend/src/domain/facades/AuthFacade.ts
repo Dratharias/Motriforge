@@ -1,5 +1,2 @@
-export class AuthFacade {
-    constructor() {
-        // Initialize
-    }
-}
+// AuthFacade.ts
+// TODO: Implement

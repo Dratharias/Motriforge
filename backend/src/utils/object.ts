@@ -1,1 +1,2 @@
-// Utility functions for object
+// object.ts
+// TODO: Implement

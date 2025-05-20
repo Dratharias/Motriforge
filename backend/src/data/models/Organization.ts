@@ -1,3 +1,2 @@
-export interface Organization {
-    // Interface properties
-}
+// Organization.ts
+// TODO: Implement

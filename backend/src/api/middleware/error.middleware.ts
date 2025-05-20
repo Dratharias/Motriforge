@@ -1,1 +1,2 @@
-// Middleware for error
+// error.middleware.ts
+// TODO: Implement

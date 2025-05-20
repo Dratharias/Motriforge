@@ -1,1 +1,2 @@
-// Configuration for api
+// api.config.ts
+// TODO: Implement

@@ -1,3 +1,2 @@
-import { BaseController } from "./BaseController";
-
-export { BaseController };
+// index.ts
+// TODO: Implement

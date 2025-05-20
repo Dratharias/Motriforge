@@ -1,0 +1,2 @@
+// WorkoutPermissionStrategy.ts
+// TODO: Implement

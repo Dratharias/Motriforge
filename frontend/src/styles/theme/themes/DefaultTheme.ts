@@ -1,5 +1,2 @@
-export class DefaultTheme {
-    constructor() {
-        // Initialize
-    }
-}
+// DefaultTheme.ts
+// TODO: Implement

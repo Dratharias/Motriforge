@@ -1,5 +1,2 @@
-export class CacheManager {
-    constructor() {
-        // Initialize
-    }
-}
+// CacheManager.ts
+// TODO: Implement

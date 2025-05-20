@@ -1,5 +1,2 @@
-export class EmeraldTheme {
-    constructor() {
-        // Initialize
-    }
-}
+// EmeraldTheme.ts
+// TODO: Implement

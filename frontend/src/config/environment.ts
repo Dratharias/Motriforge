@@ -1,1 +1,2 @@
-// Configuration for environment
+// environment.ts
+// TODO: Implement

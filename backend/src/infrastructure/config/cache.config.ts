@@ -1,1 +1,2 @@
-// Configuration for cache
+// cache.config.ts
+// TODO: Implement

@@ -1,1 +1,2 @@
-// Routes for media
+// media.routes.ts
+// TODO: Implement

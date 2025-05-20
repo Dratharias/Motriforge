@@ -1,3 +1,2 @@
-export interface ExerciseMetric {
-    // Interface properties
-}
+// ExerciseMetric.ts
+// TODO: Implement

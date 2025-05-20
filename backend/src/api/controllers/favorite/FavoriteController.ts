@@ -1,0 +1,2 @@
+// FavoriteController.ts
+// TODO: Implement

@@ -1,1 +1,2 @@
-// Configuration for logging
+// logging.config.ts
+// TODO: Implement

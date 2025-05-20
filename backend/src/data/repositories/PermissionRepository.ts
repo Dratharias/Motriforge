@@ -1,5 +1,2 @@
-export class PermissionRepository {
-    constructor() {
-        // Initialize
-    }
-}
+// PermissionRepository.ts
+// TODO: Implement

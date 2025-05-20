@@ -1,3 +1,2 @@
-export enum LocaleConstants {
-    // Enum values
-}
+// LocaleConstants.ts
+// TODO: Implement

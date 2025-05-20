@@ -1,0 +1,2 @@
+// useSearch.ts
+// TODO: Implement

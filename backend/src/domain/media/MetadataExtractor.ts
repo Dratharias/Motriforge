@@ -1,0 +1,2 @@
+// MetadataExtractor.ts
+// TODO: Implement

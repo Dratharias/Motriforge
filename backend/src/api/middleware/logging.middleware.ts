@@ -1,1 +1,2 @@
-// Middleware for logging
+// logging.middleware.ts
+// TODO: Implement

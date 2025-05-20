@@ -1,5 +1,2 @@
-export class PasswordHasher {
-    constructor() {
-        // Initialize
-    }
-}
+// PasswordHasher.ts
+// TODO: Implement

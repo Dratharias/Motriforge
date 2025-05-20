@@ -1,5 +1,2 @@
-export class PaginationManager {
-    constructor() {
-        // Initialize
-    }
-}
+// PaginationManager.ts
+// TODO: Implement

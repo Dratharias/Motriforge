@@ -1,1 +1,2 @@
-// Configuration for auth
+// auth.config.ts
+// TODO: Implement

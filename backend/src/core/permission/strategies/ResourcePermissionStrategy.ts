@@ -1,0 +1,2 @@
+// ResourcePermissionStrategy.ts
+// TODO: Implement

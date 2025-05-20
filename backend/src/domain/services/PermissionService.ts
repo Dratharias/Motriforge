@@ -1,5 +1,2 @@
-export class PermissionService {
-    constructor() {
-        // Initialize
-    }
-}
+// PermissionService.ts
+// TODO: Implement

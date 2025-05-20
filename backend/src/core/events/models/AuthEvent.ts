@@ -1,0 +1,2 @@
+// AuthEvent.ts
+// TODO: Implement

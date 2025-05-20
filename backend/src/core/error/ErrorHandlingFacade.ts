@@ -1,5 +1,2 @@
-export class ErrorHandlingFacade {
-    constructor() {
-        // Initialize
-    }
-}
+// ErrorHandlingFacade.ts
+// TODO: Implement

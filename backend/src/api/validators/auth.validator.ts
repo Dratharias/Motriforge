@@ -1,1 +1,2 @@
-// Validation for auth
+// auth.validator.ts
+// TODO: Implement

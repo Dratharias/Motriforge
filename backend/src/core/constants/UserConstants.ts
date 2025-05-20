@@ -1,3 +1,2 @@
-export enum UserConstants {
-    // Enum values
-}
+// UserConstants.ts
+// TODO: Implement

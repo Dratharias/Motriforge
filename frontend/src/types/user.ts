@@ -1,1 +1,2 @@
-// TypeScript types for user
+// user.ts
+// TODO: Implement

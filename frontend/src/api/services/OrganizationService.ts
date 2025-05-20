@@ -1,5 +1,2 @@
-export class OrganizationService {
-    constructor() {
-        // Initialize
-    }
-}
+// OrganizationService.ts
+// TODO: Implement

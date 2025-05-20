@@ -1,5 +1,2 @@
-export class MiddlewareRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// MiddlewareRegistry.ts
+// TODO: Implement

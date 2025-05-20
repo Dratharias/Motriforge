@@ -1,3 +1,2 @@
-export enum WorkoutConstants {
-    // Enum values
-}
+// WorkoutConstants.ts
+// TODO: Implement

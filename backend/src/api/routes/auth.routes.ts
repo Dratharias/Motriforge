@@ -1,1 +1,2 @@
-// Routes for auth
+// auth.routes.ts
+// TODO: Implement

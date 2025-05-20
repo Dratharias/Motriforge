@@ -1,0 +1,2 @@
+// ExercisePermissionStrategy.ts
+// TODO: Implement

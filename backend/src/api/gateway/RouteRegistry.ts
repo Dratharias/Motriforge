@@ -1,5 +1,2 @@
-export class RouteRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// RouteRegistry.ts
+// TODO: Implement

@@ -1,0 +1,2 @@
+// PermissionRule.ts
+// TODO: Implement

@@ -1,5 +1,2 @@
-export class EventRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// EventRegistry.ts
+// TODO: Implement

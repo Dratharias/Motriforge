@@ -1,3 +1,2 @@
-export interface Role {
-    // Interface properties
-}
+// Role.ts
+// TODO: Implement

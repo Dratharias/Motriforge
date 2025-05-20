@@ -1,1 +1,2 @@
-// Utility functions for formatting
+// formatting.ts
+// TODO: Implement

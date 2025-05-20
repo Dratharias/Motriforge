@@ -1,5 +1,2 @@
-export class ErrorHandlerRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// ErrorHandlerRegistry.ts
+// TODO: Implement

@@ -1,5 +1,2 @@
-export class ActivityRepository {
-    constructor() {
-        // Initialize
-    }
-}
+// ActivityRepository.ts
+// TODO: Implement

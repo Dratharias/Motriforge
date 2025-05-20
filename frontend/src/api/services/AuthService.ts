@@ -1,5 +1,2 @@
-export class AuthService {
-    constructor() {
-        // Initialize
-    }
-}
+// AuthService.ts
+// TODO: Implement

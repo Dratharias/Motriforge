@@ -1,1 +1,2 @@
-// Middleware for cache
+// cache.middleware.ts
+// TODO: Implement

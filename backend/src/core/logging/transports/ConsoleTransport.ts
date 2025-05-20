@@ -1,0 +1,2 @@
+// ConsoleTransport.ts
+// TODO: Implement

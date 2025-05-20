@@ -1,5 +1,2 @@
-export class MediaService {
-    constructor() {
-        // Initialize
-    }
-}
+// MediaService.ts
+// TODO: Implement

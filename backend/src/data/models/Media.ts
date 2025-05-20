@@ -1,3 +1,2 @@
-export interface Media {
-    // Interface properties
-}
+// Media.ts
+// TODO: Implement

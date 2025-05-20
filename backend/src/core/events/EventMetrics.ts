@@ -1,5 +1,2 @@
-export class EventMetrics {
-    constructor() {
-        // Initialize
-    }
-}
+// EventMetrics.ts
+// TODO: Implement

@@ -1,1 +1,2 @@
-// Middleware for cors
+// cors.middleware.ts
+// TODO: Implement

@@ -1,0 +1,2 @@
+// DatabaseHealthCheck.ts
+// TODO: Implement

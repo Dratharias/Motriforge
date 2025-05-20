@@ -1,3 +1,2 @@
-export interface NotificationSettings {
-    // Interface properties
-}
+// NotificationSettings.ts
+// TODO: Implement

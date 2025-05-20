@@ -1,5 +1,2 @@
-export class NotificationService {
-    constructor() {
-        // Initialize
-    }
-}
+// NotificationService.ts
+// TODO: Implement

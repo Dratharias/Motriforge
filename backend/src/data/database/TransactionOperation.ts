@@ -1,5 +1,2 @@
-export class TransactionOperation {
-    constructor() {
-        // Initialize
-    }
-}
+// TransactionOperation.ts
+// TODO: Implement

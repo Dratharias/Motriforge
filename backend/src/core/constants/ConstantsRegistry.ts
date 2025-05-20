@@ -1,3 +1,2 @@
-export enum ConstantsRegistry {
-    // Enum values
-}
+// ConstantsRegistry.ts
+// TODO: Implement

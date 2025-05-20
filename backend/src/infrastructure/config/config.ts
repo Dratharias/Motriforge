@@ -1,1 +1,2 @@
-// Configuration for config
+// config.ts
+// TODO: Implement

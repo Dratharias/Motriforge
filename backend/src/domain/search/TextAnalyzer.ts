@@ -1,0 +1,2 @@
+// TextAnalyzer.ts
+// TODO: Implement

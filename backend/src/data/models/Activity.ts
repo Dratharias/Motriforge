@@ -1,3 +1,2 @@
-export interface Activity {
-    // Interface properties
-}
+// Activity.ts
+// TODO: Implement

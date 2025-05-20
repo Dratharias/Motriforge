@@ -1,5 +1,2 @@
-export class UserService {
-    constructor() {
-        // Initialize
-    }
-}
+// UserService.ts
+// TODO: Implement

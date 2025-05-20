@@ -1,0 +1,2 @@
+// ThumbnailGenerator.ts
+// TODO: Implement

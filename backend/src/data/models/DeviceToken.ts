@@ -1,3 +1,2 @@
-export interface DeviceToken {
-    // Interface properties
-}
+// DeviceToken.ts
+// TODO: Implement

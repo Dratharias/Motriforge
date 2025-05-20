@@ -1,0 +1,2 @@
+// DomainEvent.ts
+// TODO: Implement

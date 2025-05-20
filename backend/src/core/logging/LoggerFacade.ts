@@ -1,0 +1,2 @@
+// LoggerFacade.ts
+// TODO: Implement

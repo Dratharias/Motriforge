@@ -1,3 +1,2 @@
-import { Pagination } from "./Pagination";
-
-export { Pagination };
+// index.ts
+// TODO: Implement

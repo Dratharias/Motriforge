@@ -1,1 +1,2 @@
-// Constants for program
+// program.ts
+// TODO: Implement

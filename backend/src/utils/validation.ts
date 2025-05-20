@@ -1,1 +1,2 @@
-// Utility functions for validation
+// validation.ts
+// TODO: Implement

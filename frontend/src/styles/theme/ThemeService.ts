@@ -1,5 +1,2 @@
-export class ThemeService {
-    constructor() {
-        // Initialize
-    }
-}
+// ThemeService.ts
+// TODO: Implement

@@ -1,5 +1,2 @@
-export class ErrorFactory {
-    constructor() {
-        // Initialize
-    }
-}
+// ErrorFactory.ts
+// TODO: Implement

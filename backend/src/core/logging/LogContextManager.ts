@@ -1,0 +1,2 @@
+// LogContextManager.ts
+// TODO: Implement

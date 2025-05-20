@@ -1,3 +1,2 @@
-export interface RefreshToken {
-    // Interface properties
-}
+// RefreshToken.ts
+// TODO: Implement

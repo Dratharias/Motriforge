@@ -1,3 +1,2 @@
-export interface Workout {
-    // Interface properties
-}
+// Workout.ts
+// TODO: Implement

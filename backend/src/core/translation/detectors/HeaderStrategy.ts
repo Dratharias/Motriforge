@@ -1,0 +1,2 @@
+// HeaderStrategy.ts
+// TODO: Implement

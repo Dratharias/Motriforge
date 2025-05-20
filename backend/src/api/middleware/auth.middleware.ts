@@ -1,1 +1,2 @@
-// Middleware for auth
+// auth.middleware.ts
+// TODO: Implement

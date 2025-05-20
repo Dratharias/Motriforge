@@ -1,1 +1,2 @@
-// TypeScript types for auth
+// auth.ts
+// TODO: Implement

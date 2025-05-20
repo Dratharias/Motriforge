@@ -1,1 +1,2 @@
-// Routes for organization
+// organization.routes.ts
+// TODO: Implement

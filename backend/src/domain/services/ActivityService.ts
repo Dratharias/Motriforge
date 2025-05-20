@@ -1,5 +1,2 @@
-export class ActivityService {
-    constructor() {
-        // Initialize
-    }
-}
+// ActivityService.ts
+// TODO: Implement

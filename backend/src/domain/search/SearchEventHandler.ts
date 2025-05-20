@@ -1,0 +1,2 @@
+// SearchEventHandler.ts
+// TODO: Implement

@@ -1,1 +1,2 @@
-// Constants for permissions
+// permissions.ts
+// TODO: Implement

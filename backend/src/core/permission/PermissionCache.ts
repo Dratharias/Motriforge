@@ -1,0 +1,2 @@
+// PermissionCache.ts
+// TODO: Implement

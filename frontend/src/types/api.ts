@@ -1,1 +1,2 @@
-// TypeScript types for api
+// api.ts
+// TODO: Implement

@@ -1,3 +1,2 @@
-import { Input } from "./Input";
-
-export { Input };
+// index.ts
+// TODO: Implement

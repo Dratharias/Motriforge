@@ -1,5 +1,2 @@
-export class FilterEngine {
-    constructor() {
-        // Initialize
-    }
-}
+// FilterEngine.ts
+// TODO: Implement

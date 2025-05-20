@@ -1,5 +1,2 @@
-export class EventQueue {
-    constructor() {
-        // Initialize
-    }
-}
+// EventQueue.ts
+// TODO: Implement

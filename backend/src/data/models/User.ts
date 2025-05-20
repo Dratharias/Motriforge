@@ -1,3 +1,2 @@
-export interface User {
-    // Interface properties
-}
+// User.ts
+// TODO: Implement

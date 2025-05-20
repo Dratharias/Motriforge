@@ -1,5 +1,2 @@
-export class BaseService {
-    constructor() {
-        // Initialize
-    }
-}
+// BaseService.ts
+// TODO: Implement

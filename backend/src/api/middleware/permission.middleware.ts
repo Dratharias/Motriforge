@@ -1,1 +1,2 @@
-// Middleware for permission
+// permission.middleware.ts
+// TODO: Implement

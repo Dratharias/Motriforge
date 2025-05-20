@@ -1,1 +1,2 @@
-// TypeScript types for media
+// media.ts
+// TODO: Implement

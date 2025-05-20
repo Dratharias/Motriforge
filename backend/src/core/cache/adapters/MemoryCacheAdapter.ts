@@ -1,0 +1,2 @@
+// MemoryCacheAdapter.ts
+// TODO: Implement

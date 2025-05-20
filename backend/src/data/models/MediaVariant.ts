@@ -1,3 +1,2 @@
-export interface MediaVariant {
-    // Interface properties
-}
+// MediaVariant.ts
+// TODO: Implement

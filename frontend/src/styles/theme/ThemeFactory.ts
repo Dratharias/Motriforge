@@ -1,5 +1,2 @@
-export class ThemeFactory {
-    constructor() {
-        // Initialize
-    }
-}
+// ThemeFactory.ts
+// TODO: Implement

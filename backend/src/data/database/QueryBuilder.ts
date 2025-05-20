@@ -1,5 +1,2 @@
-export class QueryBuilder {
-    constructor() {
-        // Initialize
-    }
-}
+// QueryBuilder.ts
+// TODO: Implement

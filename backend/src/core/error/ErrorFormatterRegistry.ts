@@ -1,5 +1,2 @@
-export class ErrorFormatterRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// ErrorFormatterRegistry.ts
+// TODO: Implement

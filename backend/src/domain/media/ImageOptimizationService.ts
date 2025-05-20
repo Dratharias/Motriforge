@@ -1,0 +1,2 @@
+// ImageOptimizationService.ts
+// TODO: Implement

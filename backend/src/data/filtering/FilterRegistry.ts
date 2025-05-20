@@ -1,5 +1,2 @@
-export class FilterRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// FilterRegistry.ts
+// TODO: Implement

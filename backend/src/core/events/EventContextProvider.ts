@@ -1,5 +1,2 @@
-export class EventContextProvider {
-    constructor() {
-        // Initialize
-    }
-}
+// EventContextProvider.ts
+// TODO: Implement

@@ -1,5 +1,2 @@
-export class ServerOptions {
-    constructor() {
-        // Initialize
-    }
-}
+// ServerOptions.ts
+// TODO: Implement

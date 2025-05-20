@@ -1,5 +1,2 @@
-export class MembershipService {
-    constructor() {
-        // Initialize
-    }
-}
+// MembershipService.ts
+// TODO: Implement

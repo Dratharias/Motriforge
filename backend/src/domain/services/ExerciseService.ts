@@ -1,5 +1,2 @@
-export class ExerciseService {
-    constructor() {
-        // Initialize
-    }
-}
+// ExerciseService.ts
+// TODO: Implement

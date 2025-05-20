@@ -1,1 +1,2 @@
-// Routes for favorite
+// favorite.routes.ts
+// TODO: Implement

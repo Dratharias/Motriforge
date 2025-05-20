@@ -1,0 +1,2 @@
+// DatabaseError.ts
+// TODO: Implement

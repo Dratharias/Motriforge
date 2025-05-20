@@ -1,3 +1,2 @@
-export enum MuscleConstants {
-    // Enum values
-}
+// MuscleConstants.ts
+// TODO: Implement

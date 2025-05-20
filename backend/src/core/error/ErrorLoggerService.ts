@@ -1,5 +1,2 @@
-export class ErrorLoggerService {
-    constructor() {
-        // Initialize
-    }
-}
+// ErrorLoggerService.ts
+// TODO: Implement

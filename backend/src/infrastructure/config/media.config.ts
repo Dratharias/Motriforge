@@ -1,1 +1,2 @@
-// Configuration for media
+// media.config.ts
+// TODO: Implement

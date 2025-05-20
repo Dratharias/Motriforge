@@ -1,3 +1,2 @@
-export interface Equipment {
-    // Interface properties
-}
+// Equipment.ts
+// TODO: Implement

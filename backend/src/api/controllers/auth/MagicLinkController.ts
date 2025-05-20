@@ -1,0 +1,2 @@
+// MagicLinkController.ts
+// TODO: Implement

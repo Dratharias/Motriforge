@@ -1,1 +1,2 @@
-// Utility functions for security
+// security.ts
+// TODO: Implement

@@ -1,5 +1,2 @@
-export class TransactionManager {
-    constructor() {
-        // Initialize
-    }
-}
+// TransactionManager.ts
+// TODO: Implement

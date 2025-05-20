@@ -1,3 +1,2 @@
-export interface NotificationAction {
-    // Interface properties
-}
+// NotificationAction.ts
+// TODO: Implement

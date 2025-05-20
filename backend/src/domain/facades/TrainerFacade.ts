@@ -1,0 +1,2 @@
+// TrainerFacade.ts
+// TODO: Implement

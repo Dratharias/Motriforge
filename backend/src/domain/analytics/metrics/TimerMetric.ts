@@ -1,0 +1,2 @@
+// TimerMetric.ts
+// TODO: Implement

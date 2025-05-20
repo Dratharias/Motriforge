@@ -1,1 +1,2 @@
-// TypeScript types for workout
+// workout.ts
+// TODO: Implement

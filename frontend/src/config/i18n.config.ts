@@ -1,1 +1,2 @@
-// Configuration for i18n
+// i18n.config.ts
+// TODO: Implement

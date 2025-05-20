@@ -1,5 +1,2 @@
-export class RoleService {
-    constructor() {
-        // Initialize
-    }
-}
+// RoleService.ts
+// TODO: Implement

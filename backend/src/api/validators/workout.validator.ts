@@ -1,1 +1,2 @@
-// Validation for workout
+// workout.validator.ts
+// TODO: Implement

@@ -1,5 +1,2 @@
-export class AppConfig {
-    constructor() {
-        // Initialize
-    }
-}
+// AppConfig.ts
+// TODO: Implement

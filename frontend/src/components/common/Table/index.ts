@@ -1,3 +1,2 @@
-import { Table } from "./Table";
-
-export { Table };
+// index.ts
+// TODO: Implement

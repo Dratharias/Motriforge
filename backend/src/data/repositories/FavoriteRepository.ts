@@ -1,5 +1,2 @@
-export class FavoriteRepository {
-    constructor() {
-        // Initialize
-    }
-}
+// FavoriteRepository.ts
+// TODO: Implement

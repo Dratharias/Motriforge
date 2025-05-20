@@ -1,5 +1,2 @@
-export class Collection {
-    constructor() {
-        // Initialize
-    }
-}
+// Collection.ts
+// TODO: Implement

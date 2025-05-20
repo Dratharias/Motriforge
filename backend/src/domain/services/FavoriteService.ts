@@ -1,5 +1,2 @@
-export class FavoriteService {
-    constructor() {
-        // Initialize
-    }
-}
+// FavoriteService.ts
+// TODO: Implement

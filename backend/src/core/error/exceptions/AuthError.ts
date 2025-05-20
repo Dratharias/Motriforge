@@ -1,0 +1,2 @@
+// AuthError.ts
+// TODO: Implement

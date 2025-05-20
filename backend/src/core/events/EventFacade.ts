@@ -1,5 +1,2 @@
-export class EventFacade {
-    constructor() {
-        // Initialize
-    }
-}
+// EventFacade.ts
+// TODO: Implement

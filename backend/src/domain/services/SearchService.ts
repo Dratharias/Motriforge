@@ -1,5 +1,2 @@
-export class SearchService {
-    constructor() {
-        // Initialize
-    }
-}
+// SearchService.ts
+// TODO: Implement

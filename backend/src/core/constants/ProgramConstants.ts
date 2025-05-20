@@ -1,3 +1,2 @@
-export enum ProgramConstants {
-    // Enum values
-}
+// ProgramConstants.ts
+// TODO: Implement

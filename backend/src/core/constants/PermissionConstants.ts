@@ -1,3 +1,2 @@
-export enum PermissionConstants {
-    // Enum values
-}
+// PermissionConstants.ts
+// TODO: Implement

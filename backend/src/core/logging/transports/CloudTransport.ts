@@ -1,0 +1,2 @@
+// CloudTransport.ts
+// TODO: Implement

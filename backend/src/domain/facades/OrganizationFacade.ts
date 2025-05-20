@@ -1,5 +1,2 @@
-export class OrganizationFacade {
-    constructor() {
-        // Initialize
-    }
-}
+// OrganizationFacade.ts
+// TODO: Implement

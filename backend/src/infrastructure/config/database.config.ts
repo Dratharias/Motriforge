@@ -1,1 +1,2 @@
-// Configuration for database
+// database.config.ts
+// TODO: Implement

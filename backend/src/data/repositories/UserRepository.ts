@@ -1,5 +1,2 @@
-export class UserRepository {
-    constructor() {
-        // Initialize
-    }
-}
+// UserRepository.ts
+// TODO: Implement

@@ -1,5 +1,2 @@
-export class SearchRepository {
-    constructor() {
-        // Initialize
-    }
-}
+// SearchRepository.ts
+// TODO: Implement

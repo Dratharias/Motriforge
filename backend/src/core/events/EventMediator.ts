@@ -1,5 +1,2 @@
-export class EventMediator {
-    constructor() {
-        // Initialize
-    }
-}
+// EventMediator.ts
+// TODO: Implement

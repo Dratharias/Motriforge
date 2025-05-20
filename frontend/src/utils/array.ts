@@ -1,1 +1,2 @@
-// Utility functions for array
+// array.ts
+// TODO: Implement

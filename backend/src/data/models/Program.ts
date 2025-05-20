@@ -1,3 +1,2 @@
-export interface Program {
-    // Interface properties
-}
+// Program.ts
+// TODO: Implement

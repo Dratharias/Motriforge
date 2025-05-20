@@ -1,5 +1,2 @@
-export class ApiGateway {
-    constructor() {
-        // Initialize
-    }
-}
+// ApiGateway.ts
+// TODO: Implement

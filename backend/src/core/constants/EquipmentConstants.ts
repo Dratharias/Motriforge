@@ -1,3 +1,2 @@
-export enum EquipmentConstants {
-    // Enum values
-}
+// EquipmentConstants.ts
+// TODO: Implement

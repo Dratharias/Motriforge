@@ -1,5 +1,2 @@
-export abstract class BaseController {
-    constructor() {
-        // Initialize
-    }
-}
+// BaseController.ts
+// TODO: Implement

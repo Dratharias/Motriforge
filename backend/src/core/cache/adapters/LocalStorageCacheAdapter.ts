@@ -1,0 +1,2 @@
+// LocalStorageCacheAdapter.ts
+// TODO: Implement

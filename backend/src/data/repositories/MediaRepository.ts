@@ -1,5 +1,2 @@
-export class MediaRepository {
-    constructor() {
-        // Initialize
-    }
-}
+// MediaRepository.ts
+// TODO: Implement

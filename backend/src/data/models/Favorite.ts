@@ -1,3 +1,2 @@
-export interface Favorite {
-    // Interface properties
-}
+// Favorite.ts
+// TODO: Implement

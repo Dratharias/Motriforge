@@ -1,3 +1,2 @@
-import { Tabs } from "./Tabs";
-
-export { Tabs };
+// index.ts
+// TODO: Implement

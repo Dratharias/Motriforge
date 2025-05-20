@@ -1,0 +1,2 @@
+// TrainerProfile.ts
+// TODO: Implement

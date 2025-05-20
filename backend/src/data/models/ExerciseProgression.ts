@@ -1,3 +1,2 @@
-export interface ExerciseProgression {
-    // Interface properties
-}
+// ExerciseProgression.ts
+// TODO: Implement

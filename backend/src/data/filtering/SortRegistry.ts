@@ -1,5 +1,2 @@
-export class SortRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// SortRegistry.ts
+// TODO: Implement

@@ -1,0 +1,2 @@
+// TranslationCache.ts
+// TODO: Implement

@@ -1,1 +1,2 @@
-// Constants for routes
+// routes.ts
+// TODO: Implement

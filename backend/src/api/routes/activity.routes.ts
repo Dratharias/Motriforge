@@ -1,1 +1,2 @@
-// Routes for activity
+// activity.routes.ts
+// TODO: Implement

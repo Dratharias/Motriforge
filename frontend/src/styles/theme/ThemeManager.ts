@@ -1,5 +1,2 @@
-export class ThemeManager {
-    constructor() {
-        // Initialize
-    }
-}
+// ThemeManager.ts
+// TODO: Implement

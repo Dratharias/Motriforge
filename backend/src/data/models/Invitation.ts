@@ -1,3 +1,2 @@
-export interface Invitation {
-    // Interface properties
-}
+// Invitation.ts
+// TODO: Implement

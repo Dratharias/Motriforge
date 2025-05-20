@@ -1,3 +1,2 @@
-import { LoadingIndicator } from "./LoadingIndicator";
-
-export { LoadingIndicator };
+// index.ts
+// TODO: Implement

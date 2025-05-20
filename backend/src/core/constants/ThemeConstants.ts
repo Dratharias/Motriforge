@@ -1,3 +1,2 @@
-export enum ThemeConstants {
-    // Enum values
-}
+// ThemeConstants.ts
+// TODO: Implement

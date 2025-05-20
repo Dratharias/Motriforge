@@ -1,0 +1,2 @@
+// LogMetrics.ts
+// TODO: Implement

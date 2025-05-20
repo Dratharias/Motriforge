@@ -1,0 +1,2 @@
+// SearchEngineHealthCheck.ts
+// TODO: Implement

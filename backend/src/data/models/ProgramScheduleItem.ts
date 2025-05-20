@@ -1,3 +1,2 @@
-export interface ProgramScheduleItem {
-    // Interface properties
-}
+// ProgramScheduleItem.ts
+// TODO: Implement

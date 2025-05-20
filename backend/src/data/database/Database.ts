@@ -1,5 +1,2 @@
-export class Database {
-    constructor() {
-        // Initialize
-    }
-}
+// Database.ts
+// TODO: Implement

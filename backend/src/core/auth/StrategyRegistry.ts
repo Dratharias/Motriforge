@@ -1,5 +1,2 @@
-export class StrategyRegistry {
-    constructor() {
-        // Initialize
-    }
-}
+// StrategyRegistry.ts
+// TODO: Implement
