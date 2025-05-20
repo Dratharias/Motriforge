@@ -1,2 +1,0 @@
-// Favorite.ts
-// TODO: Implement

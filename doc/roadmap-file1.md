@@ -3,53 +3,78 @@
 ## Modèles de Domaine Partagés (Frontend & Backend)
 
 ### 1. Modèles de Domaine de Base
-- [ ] `User` (`src/data/models/User.ts`) [B/F] `domain-model-diagram`
-- [ ] `Organization` (`src/data/models/Organization.ts`) [B/F] `domain-model-diagram`
-- [ ] `OrganizationMember` (`src/data/models/OrganizationMember.ts`) [B/F] `domain-model-diagram`
-- [ ] `Invitation` (`src/data/models/Invitation.ts`) [B/F] `domain-model-diagram`
-- [ ] `Exercise` (`src/data/models/Exercise.ts`) [B/F] `domain-model-diagram`
-- [ ] `ExerciseProgression` (`src/data/models/ExerciseProgression.ts`) [B/F] `domain-model-diagram`
-- [ ] `ExerciseAlternative` (`src/data/models/ExerciseAlternative.ts`) [B/F] `domain-model-diagram`
-- [ ] `ExerciseMetric` (`src/data/models/ExerciseMetric.ts`) [B/F] `domain-model-diagram`
-- [ ] `Workout` (`src/data/models/Workout.ts`) [B/F] `domain-model-diagram`
-- [ ] `WorkoutBlock` (`src/data/models/WorkoutBlock.ts`) [B/F] `domain-model-diagram`
-- [ ] `WorkoutExercise` (`src/data/models/WorkoutExercise.ts`) [B/F] `domain-model-diagram`
-- [ ] `Program` (`src/data/models/Program.ts`) [B/F] `domain-model-diagram`
-- [ ] `ProgramScheduleItem` (`src/data/models/ProgramScheduleItem.ts`) [B/F] `domain-model-diagram`
-- [ ] `Activity` (`src/data/models/Activity.ts`) [B/F] `domain-model-diagram`
-- [ ] `ActivityEntry` (`src/data/models/ActivityEntry.ts`) [B/F] `domain-model-diagram`
-- [ ] `Favorite` (`src/data/models/Favorite.ts`) [B/F] `domain-model-diagram`
-- [ ] `ExerciseSwap` (`src/data/models/ExerciseSwap.ts`) [B/F] `domain-model-diagram`
-- [ ] `Media` (`src/data/models/Media.ts`) [B/F] `domain-model-diagram`
-- [ ] `MediaVariant` (`src/data/models/MediaVariant.ts`) [B/F] `domain-model-diagram`
-- [ ] `Equipment` (`src/data/models/Equipment.ts`) [B/F] `domain-model-diagram`
-- [ ] `RefreshToken` (`src/data/models/RefreshToken.ts`) [B/F] `domain-model-diagram`
-- [ ] `Role` (`src/data/models/Role.ts`) [B/F] `domain-model-diagram`
+- [x] `User` (`src/data/models/User/User.ts`) [B/F] `domain-model-diagram`
+- [x] `Organization` (`src/data/models/Organization/Organization.ts`) [B/F] `domain-model-diagram`
+- [x] `OrganizationMember` (`src/data/models/Organization/OrganizationMember.ts`) [B/F] `domain-model-diagram`
+- [x] `Invitation` (`src/data/models/Organization/Invitation.ts`) [B/F] `domain-model-diagram`
+- [x] `Exercise` (`src/data/models/Exercise/Exercise.ts`) [B/F] `domain-model-diagram`
+- [x] `ExerciseProgression` (`src/data/models/Exercise/ExerciseProgression.ts`) [B/F] `domain-model-diagram`
+- [x] `ExerciseAlternative` (`src/data/models/Exercise/ExerciseAlternative.ts`) [B/F] `domain-model-diagram`
+- [x] `ExerciseMetric` (`src/data/models/Exercise/ExerciseMetric.ts`) [B/F] `domain-model-diagram`
+- [x] `Workout` (`src/data/models/Workout/Workout.ts`) [B/F] `domain-model-diagram`
+- [x] `WorkoutBlock` (`src/data/models/Workout/WorkoutBlock.ts`) [B/F] `domain-model-diagram`
+- [x] `WorkoutExercise` (`src/data/models/Workout/WorkoutExercise.ts`) [B/F] `domain-model-diagram`
+- [x] `Program` (`src/data/models/Program.ts`) [B/F] `domain-model-diagram`
+- [x] `ProgramScheduleItem` (`src/data/models/ProgramScheduleItem.ts`) [B/F] `domain-model-diagram`
+- [x] `Activity` (`src/data/models/User/Activity.ts`) [B/F] `domain-model-diagram`
+- [x] `ActivityEntry` (`src/data/models/User/ActivityEntry.ts`) [B/F] `domain-model-diagram`
+- [x] `Favorite` (`src/data/models/User/Favorite.ts`) [B/F] `domain-model-diagram`
+- [x] `ExerciseSwap` (`src/data/models/Exercise/ExerciseSwap.ts`) [B/F] `domain-model-diagram`
+- [x] `Media` (`src/data/models/Media.ts`) [B/F] `domain-model-diagram`
+- [x] `MediaVariant` (`src/data/models/MediaVariant.ts`) [B/F] `domain-model-diagram`
+- [x] `Equipment` (`src/data/models/Equipment.ts`) [B/F] `domain-model-diagram`
+- [x] `RefreshToken` (`src/data/models/User/RefreshToken.ts`) [B/F] `domain-model-diagram`
+- [x] `Role` (`src/data/models/User/Role.ts`) [B/F] `domain-model-diagram`
 
 ### 2. Modèles de Progression et Coaching
-- [ ] `ProgressionTracking` (`src/data/models/ProgressionTracking.ts`) [B/F] `progression-tracking-system`
-- [ ] `DailyPerformance` (`src/data/models/DailyPerformance.ts`) [B/F] `progression-tracking-system`
-- [ ] `PersonalRecord` (`src/data/models/PersonalRecord.ts`) [B/F] `progression-tracking-system`
-- [ ] `GoalTracking` (`src/data/models/GoalTracking.ts`) [B/F] `progression-tracking-system`
-- [ ] `Milestone` (`src/data/models/Milestone.ts`) [B/F] `progression-tracking-system`
-- [ ] `WorkoutSession` (`src/data/models/WorkoutSession.ts`) [B/F] `progression-tracking-system`
-- [ ] `WorkoutSessionExercise` (`src/data/models/WorkoutSessionExercise.ts`) [B/F] `progression-tracking-system`
-- [ ] `SetData` (`src/data/models/SetData.ts`) [B/F] `progression-tracking-system`
+- [x] `ProgressionTracking` (`src/data/models/progression/ProgressionTracking.ts`) [B/F] `progression-tracking-system`
+- [x] `DailyPerformance` (`src/data/models/progression/DailyPerformance.ts`) [B/F] `progression-tracking-system`
+- [x] `PersonalRecord` (`src/data/models/progression/PersonalRecord.ts`) [B/F] `progression-tracking-system`
+- [x] `GoalTracking` (`src/data/models/progression/GoalTracking.ts`) [B/F] `progression-tracking-system`
+- [x] `Milestone` (`src/data/models/progression/Milestone.ts`) [B/F] `progression-tracking-system`
+- [x] `WorkoutSession` (`src/data/models/progression/WorkoutSession.ts`) [B/F] `progression-tracking-system`
+- [x] `WorkoutSessionExercise` (`src/data/models/progression/WorkoutSessionExercise.ts`) [B/F] `progression-tracking-system`
+- [x] `SetData` (`src/data/models/progression/SetData.ts`) [B/F] `progression-tracking-system`
 
 ### 3. Modèles Formateur-Client
-- [ ] `TrainerProfile` (`src/data/models/TrainerProfile.ts`) [B/F] `trainer-client-system`
-- [ ] `Certificate` (`src/data/models/Certificate.ts`) [B/F] `trainer-client-system`
-- [ ] `ClientCoachRelationship` (`src/data/models/ClientCoachRelationship.ts`) [B/F] `trainer-client-system`
-- [ ] `PermissionSet` (`src/data/models/PermissionSet.ts`) [B/F] `trainer-client-system`
-- [ ] `ProgramAssignment` (`src/data/models/ProgramAssignment.ts`) [B/F] `trainer-client-system`
-- [ ] `ProgramModification` (`src/data/models/ProgramModification.ts`) [B/F] `trainer-client-system`
-- [ ] `TrainingFeedback` (`src/data/models/TrainingFeedback.ts`) [B/F] `trainer-client-system`
-- [ ] `CoachingSession` (`src/data/models/CoachingSession.ts`) [B/F] `trainer-client-system`
-- [ ] `MediaNote` (`src/data/models/MediaNote.ts`) [B/F] `trainer-client-system`
-- [ ] `TrainerDashboard` (`src/data/models/TrainerDashboard.ts`) [B/F] `trainer-client-system`
-- [ ] `ClientAlert` (`src/data/models/ClientAlert.ts`) [B/F] `trainer-client-system`
+- [x] `TrainerProfile` (`src/data/models/trainer/TrainerProfile.ts`) [B/F] `trainer-client-system`
+- [x] `Certificate` (`src/data/models/trainer/Certificate.ts`) [B/F] `trainer-client-system`
+- [x] `ClientCoachRelationship` (`src/data/models/trainer/ClientCoachRelationship.ts`) [B/F] `trainer-client-system`
+- [x] `PermissionSet` (`src/data/models/trainer/PermissionSet.ts`) [B/F] `trainer-client-system`
+- [x] `ProgramAssignment` (`src/data/models/trainer/ProgramAssignment.ts`) [B/F] `trainer-client-system`
+- [x] `ProgramModification` (`src/data/models/trainer/ProgramModification.ts`) [B/F] `trainer-client-system`
+- [x] `TrainingFeedback` (`src/data/models/trainer/TrainingFeedback.ts`) [B/F] `trainer-client-system`
+- [x] `CoachingSession` (`src/data/models/trainer/CoachingSession.ts`) [B/F] `trainer-client-system`
+- [x] `MediaNote` (`src/data/models/trainer/MediaNote.ts`) [B/F] `trainer-client-system`
+- [x] `TrainerDashboard` (`src/data/models/trainer/TrainerDashboard.ts`) [B/F] `trainer-client-system`
+- [x] `ClientAlert` (`src/data/models/trainer/ClientAlert.ts`) [B/F] `trainer-client-system`
 
-### 4. Objets Valeur & DTOs
+### 4. Modèles Muscle et Anatomie
+- [x] `Muscle` (`src/data/models/Muscle.ts`) [B/F]
+- [x] `MuscleGroup` (`src/data/models/MuscleGroup.ts`) [B/F]
+
+### 5. Modèles Enum
+- [x] `DifficultyLevel` (`src/data/models/enums/DifficultyLevel.ts`) [B/F]
+- [x] `ExerciseType` (`src/data/models/enums/ExerciseType.ts`) [B/F]
+- [x] `IntensityLevel` (`src/data/models/enums/IntensityLevel.ts`) [B/F]
+- [x] `WorkoutGoal` (`src/data/models/enums/WorkoutGoal.ts`) [B/F]
+- [x] `OrganizationType` (`src/data/models/enums/OrganizationType.ts`) [B/F]
+- [x] `OrganizationVisibility` (`src/data/models/enums/OrganizationVisibility.ts`) [B/F]
+- [x] `TrustLevel` (`src/data/models/enums/TrustLevel.ts`) [B/F]
+- [x] `OrganizationRole` (`src/data/models/enums/OrganizationRole.ts`) [B/F]
+- [x] `BlockType` (`src/data/models/enums/BlockType.ts`) [B/F]
+- [x] `MediaType` (`src/data/models/enums/MediaType.ts`) [B/F]
+- [x] `MediaCategory` (`src/data/models/enums/MediaCategory.ts`) [B/F]
+- [x] `MetricType` (`src/data/models/enums/MetricType.ts`) [B/F]
+- [x] `TimeResolution` (`src/data/models/enums/TimeResolution.ts`) [B/F]
+- [x] `GoalStatus` (`src/data/models/enums/GoalStatus.ts`) [B/F]
+- [x] `RelationshipStatus` (`src/data/models/enums/RelationshipStatus.ts`) [B/F]
+- [x] `ActivityAction` (`src/data/models/enums/ActivityAction.ts`) [B/F]
+- [x] `MuscleType` (`src/data/models/enums/MuscleType.ts`) [B/F]
+- [x] `MuscleZone` (`src/data/models/enums/MuscleZone.ts`) [B/F]
+- [x] `MuscleLevel` (`src/data/models/enums/MuscleLevel.ts`) [B/F]
+
+### 6. Objets Valeur & DTOs
 - [ ] `SearchableDocument` (`src/data/dto/search/SearchableDocument.ts`) [B/F] `search-system-diagram`
 - [ ] `FilterCriteria` (`src/data/filtering/FilterCriteria.ts`) [B/F] `filtering-architecture-diagram`
 - [ ] `SortOptions` (`src/data/filtering/SortOptions.ts`) [B/F] `filtering-architecture-diagram`

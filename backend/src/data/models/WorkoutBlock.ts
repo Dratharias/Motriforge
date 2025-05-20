@@ -1,2 +1,0 @@
-// WorkoutBlock.ts
-// TODO: Implement

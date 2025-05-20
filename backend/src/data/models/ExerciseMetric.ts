@@ -1,2 +1,0 @@
-// ExerciseMetric.ts
-// TODO: Implement

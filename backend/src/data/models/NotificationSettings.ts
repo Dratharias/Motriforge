@@ -1,2 +1,0 @@
-// NotificationSettings.ts
-// TODO: Implement

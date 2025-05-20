@@ -1,2 +1,0 @@
-// OrganizationMember.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// WorkoutExercise.ts
-// TODO: Implement

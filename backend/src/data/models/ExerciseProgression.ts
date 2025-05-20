@@ -1,2 +1,0 @@
-// ExerciseProgression.ts
-// TODO: Implement

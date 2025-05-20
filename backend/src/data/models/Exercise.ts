@@ -1,2 +1,0 @@
-// Exercise.ts
-// TODO: Implement

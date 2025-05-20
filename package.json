@@ -43,9 +43,9 @@
         "audit:all": "cd frontend && npm audit && cd ../backend && npm audit"
     },
     "devDependencies": {
-        "concurrently": "^7.6.0",
+        "concurrently": "^9.1.2",
         "cross-env": "^7.0.3",
-        "dotenv-cli": "^7.3.0"
+        "dotenv-cli": "^8.0.0"
     },
     "engines": {
         "node": ">=18.0.0",

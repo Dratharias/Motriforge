@@ -1,2 +1,0 @@
-// Invitation.ts
-// TODO: Implement

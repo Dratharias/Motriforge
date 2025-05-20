@@ -1,2 +1,0 @@
-// User.ts
-// TODO: Implement

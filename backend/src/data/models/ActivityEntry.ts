@@ -1,2 +1,0 @@
-// ActivityEntry.ts
-// TODO: Implement

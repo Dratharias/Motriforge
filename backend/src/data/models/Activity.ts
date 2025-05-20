@@ -1,2 +1,0 @@
-// Activity.ts
-// TODO: Implement
