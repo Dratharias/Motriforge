@@ -75,35 +75,35 @@
 - [x] `MuscleLevel` (`src/data/models/enums/MuscleLevel.ts`) [B/F]
 
 ### 6. Objets Valeur & DTOs
-- [ ] `SearchableDocument` (`src/data/dto/search/SearchableDocument.ts`) [B/F] `search-system-diagram`
-- [ ] `FilterCriteria` (`src/data/filtering/FilterCriteria.ts`) [B/F] `filtering-architecture-diagram`
-- [ ] `SortOptions` (`src/data/filtering/SortOptions.ts`) [B/F] `filtering-architecture-diagram`
-- [ ] `PaginationOptions` (`src/data/filtering/PaginationOptions.ts`) [B/F] `filtering-architecture-diagram`
-- [ ] `PaginationResult` (`src/data/filtering/PaginationResult.ts`) [B/F] `filtering-architecture-diagram`
-- [ ] `HighlightOptions` (`src/data/dto/search/HighlightOptions.ts`) [B/F] `search-system-diagram`
-- [ ] `Highlight` (`src/data/dto/search/Highlight.ts`) [B/F] `search-system-diagram`
-- [ ] `ValidationResult` (`src/utils/validation.ts`) [B/F] `error-handling-system-diagram`
-- [ ] `RequestContext` (`src/api/middleware/RequestContext.ts`) [B/F] `middleware-pipeline-diagram`
-- [ ] `EventContext` (`src/core/events/EventContext.ts`) [B/F] `event-system-diagram`
-- [ ] `PermissionContext` (`src/core/permission/PermissionContext.ts`) [B/F] `permission-system-diagram`
-- [ ] `ErrorContext` (`src/core/error/ErrorContext.ts`) [B/F] `error-handling-system-diagram`
-- [ ] `FilterOptions` (`src/data/filtering/FilterOptions.ts`) [B/F] `filtering-architecture-diagram`
-- [ ] `SearchOptions` (`src/data/dto/search/SearchOptions.ts`) [B/F] `search-system-diagram`
-- [ ] `SearchResults` (`src/data/dto/search/SearchResults.ts`) [B/F] `search-system-diagram`
-- [ ] `SearchResult` (`src/data/dto/search/SearchResult.ts`) [B/F] `search-system-diagram`
+- [x] `SearchableDocument` (`src/data/dto/search/SearchableDocument.ts`) [B/F] `search-system-diagram`
+- [x] `FilterCriteria` (`src/data/filtering/FilterCriteria.ts`) [B/F] `filtering-architecture-diagram`
+- [x] `SortOptions` (`src/data/filtering/SortOptions.ts`) [B/F] `filtering-architecture-diagram`
+- [x] `PaginationOptions` (`src/data/filtering/PaginationOptions.ts`) [B/F] `filtering-architecture-diagram`
+- [x] `PaginationResult` (`src/data/filtering/PaginationResult.ts`) [B/F] `filtering-architecture-diagram`
+- [x] `HighlightOptions` (`src/data/dto/search/HighlightOptions.ts`) [B/F] `search-system-diagram`
+- [x] `Highlight` (`src/data/dto/search/Highlight.ts`) [B/F] `search-system-diagram`
+- [x] `ValidationResult` (`src/utils/validation.ts`) [B/F] `error-handling-system-diagram`
+- [x] `RequestContext` (`src/api/middleware/RequestContext.ts`) [B/F] `middleware-pipeline-diagram`
+- [x] `EventContext` (`src/core/events/EventContext.ts`) [B/F] `event-system-diagram`
+- [x] `PermissionContext` (`src/core/permission/PermissionContext.ts`) [B/F] `permission-system-diagram`
+- [x] `ErrorContext` (`src/core/error/ErrorContext.ts`) [B/F] `error-handling-system-diagram`
+- [x] `FilterOptions` (`src/data/filtering/FilterOptions.ts`) [B/F] `filtering-architecture-diagram`
+- [x] `SearchOptions` (`src/data/dto/search/SearchOptions.ts`) [B/F] `search-system-diagram`
+- [x] `SearchResults` (`src/data/dto/search/SearchResults.ts`) [B/F] `search-system-diagram`
+- [x] `SearchResult` (`src/data/dto/search/SearchResult.ts`) [B/F] `search-system-diagram`
 
 ## Infrastructure Backend
 
 ### 5. Infrastructure - Base de Données & Stockage
-- [ ] `Database` (`src/data/database/Database.ts`) [B] `repository-layer`
-- [ ] `Collection` (`src/data/database/Collection.ts`) [B] `repository-layer`
-- [ ] `QueryBuilder<T>` (`src/data/database/QueryBuilder.ts`) [B] `repository-layer`
-- [ ] `TransactionManager` (`src/data/database/TransactionManager.ts`) [B] `repository-layer`
-- [ ] `Transaction` (`src/data/database/Transaction.ts`) [B] `repository-layer`
-- [ ] `TransactionOperation` (`src/data/database/TransactionOperation.ts`) [B] `repository-layer`
-- [ ] `StorageProvider` (`src/domain/media/StorageProvider.ts`) [B] `file-media-system-diagram`
-- [ ] `CloudflareR2Provider` (`src/domain/media/providers/CloudflareR2Provider.ts`) [B] `file-media-system-diagram`
-- [ ] `LocalFileSystemProvider` (`src/domain/media/providers/LocalFileSystemProvider.ts`) [B] `file-media-system-diagram`
+- [x] `Database` (`src/data/database/Database.ts`) [B] `repository-layer`
+- [x] `Collection` (`src/data/database/Collection.ts`) [B] `repository-layer`
+- [x] `QueryBuilder<T>` (`src/data/database/QueryBuilder.ts`) [B] `repository-layer`
+- [x] `TransactionManager` (`src/data/database/TransactionManager.ts`) [B] `repository-layer`
+- [x] `Transaction` (`src/data/database/Transaction.ts`) [B] `repository-layer`
+- [x] `TransactionOperation` (`src/data/database/TransactionOperation.ts`) [B] `repository-layer`
+- [x] `StorageProvider` (`src/domain/media/StorageProvider.ts`) [B] `file-media-system-diagram`
+- [x] `CloudflareR2Provider` (`src/domain/media/providers/CloudflareR2Provider.ts`) [B] `file-media-system-diagram`
+- [x] `LocalFileSystemProvider` (`src/domain/media/providers/LocalFileSystemProvider.ts`) [B] `file-media-system-diagram`
 
 ### 6. Infrastructure - Journalisation
 - [ ] `LoggerFacade` (`src/core/logging/LoggerFacade.ts`) [B] `logging-system-diagram`
