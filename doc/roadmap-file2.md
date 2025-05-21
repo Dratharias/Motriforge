@@ -17,7 +17,7 @@
 - [x] `Event` (`src/core/events/models/Event.ts`) [B] `event-system-diagram`
 - [x] `EventSchema` (`src/core/events/EventSchema.ts`) [B] `event-system-diagram`
 - [x] `Subscription` (`src/core/events/Subscription.ts`) [B] `event-system-diagram`
-- [ ] `DomainEvent<T>` (`src/core/events/models/DomainEvent.ts`) [B] `event-system-diagram`
+- [x] `DomainEvent<T>` (`src/core/events/models/DomainEvent.ts`) [B] `event-system-diagram`
 - [x] `UserEvent` (`src/core/events/models/UserEvent.ts`) [B] `event-system-diagram`
 - [x] `AuthEvent` (`src/core/events/models/AuthEvent.ts`) [B] `event-system-diagram`
 - [x] `SystemEvent` (`src/core/events/models/SystemEvent.ts`) [B] `event-system-diagram`
@@ -29,25 +29,29 @@
 - [x] `TrainerClientEvents` (`src/core/events/types/TrainerClientEvents.ts`) [B] `trainer-client-system`
 
 ### 9. Infrastructure - Mise en Cache
-- [ ] `CacheFacade` (`src/core/cache/CacheFacade.ts`) [B] `cache-system`
-- [ ] `CacheManager` (`src/core/cache/CacheManager.ts`) [B] `cache-system`
-- [ ] `CacheEventMediator` (`src/core/cache/CacheEventMediator.ts`) [B] `cache-system`
-- [ ] `MemoryCacheAdapter` (`src/core/cache/adapters/MemoryCacheAdapter.ts`) [B] `cache-system`
-- [ ] `LocalStorageCacheAdapter` (`src/core/cache/adapters/LocalStorageCacheAdapter.ts`) [B] `cache-system`
-- [ ] `RedisLikeCacheAdapter` (`src/core/cache/adapters/RedisLikeCacheAdapter.ts`) [B] `cache-system`
-- [ ] `CacheStrategyFactory` (`src/core/cache/CacheStrategyFactory.ts`) [B] `cache-system`
-- [ ] `CacheFetchStrategy` (`src/core/cache/strategies/CacheFetchStrategy.ts`) [B] `cache-system`
-- [ ] `CacheStaleWhileRevalidateStrategy` (`src/core/cache/strategies/CacheStaleWhileRevalidateStrategy.ts`) [B] `cache-system`
-- [ ] `CacheInvalidationHandler` (`src/core/cache/CacheInvalidationHandler.ts`) [B] `cache-system`
-- [ ] `InvalidationPattern` (`src/core/cache/InvalidationPattern.ts`) [B] `cache-system`
-- [ ] `CacheHealthMonitor` (`src/core/cache/CacheHealthMonitor.ts`) [B] `cache-system`
-- [ ] `CacheEntry` (`src/core/cache/CacheEntry.ts`) [B] `cache-system`
-- [ ] `CacheOptions` (`src/core/cache/CacheOptions.ts`) [B] `cache-system`
-- [ ] `CacheStats` (`src/core/cache/CacheStats.ts`) [B] `cache-system`
-- [ ] `CachePolicy` (`src/core/cache/CachePolicy.ts`) [B] `cache-system`
-- [ ] `CacheHealthStatus` (`src/core/cache/CacheHealthStatus.ts`) [B] `cache-system`
-- [ ] `AuthCacheFacade` (`src/core/cache/AuthCacheFacade.ts`) [B] `cache-system`
-- [ ] `UserCacheFacade` (`src/core/cache/UserCacheFacade.ts`) [B] `cache-system`
+- [x] `CacheFacade` (`src/core/cache/CacheFacade.ts`) [B] `cache-system`
+- [x] `CacheManager` (`src/core/cache/CacheManager.ts`) [B] `cache-system`
+- [x] `CacheEventMediator` (`src/core/cache/CacheEventMediator.ts`) [B] `cache-system`
+- [x] `MemoryCacheAdapter` (`src/core/cache/adapters/MemoryCacheAdapter.ts`) [B] `cache-system`
+- [x] `LocalStorageCacheAdapter` (`src/core/cache/adapters/LocalStorageCacheAdapter.ts`) [B] `cache-system`
+- [x] `CacheStrategyFactory` (`src/core/cache/CacheStrategyFactory.ts`) [B] `cache-system`
+- [x] `CacheFetchStrategy` (`src/core/cache/strategies/CacheFetchStrategy.ts`) [B] `cache-system`
+- [x] `CacheStaleWhileRevalidateStrategy` (`src/core/cache/strategies/CacheStaleWhileRevalidateStrategy.ts`) [B] `cache-system`
+- [x] `CacheInvalidationHandler` (`src/core/cache/CacheInvalidationHandler.ts`) [B] `cache-system`
+- [x] `InvalidationPattern` (`src/core/cache/InvalidationPattern.ts`) [B] `cache-system`
+- [x] `CacheHealthMonitor` (`src/core/cache/CacheHealthMonitor.ts`) [B] `cache-system`
+- [x] `CacheEntry` (`src/core/cache/CacheEntry.ts`) [B] `cache-system`
+- [x] `CacheOptions` (`src/core/cache/CacheOptions.ts`) [B] `cache-system`
+- [x] `CacheStats` (`src/core/cache/CacheStats.ts`) [B] `cache-system`
+- [x] `CachePolicy` (`src/core/cache/CachePolicy.ts`) [B] `cache-system`
+- [x] `CacheHealthStatus` (`src/core/cache/CacheHealthStatus.ts`) [B] `cache-system`
+- [x] `AuthCacheFacade` (`src/core/cache/AuthCacheFacade.ts`) [B] `cache-system`
+- [x] `UserCacheFacade` (`src/core/cache/UserCacheFacade.ts`) [B] `cache-system`
+- [x] `PermissionCacheFacade` (`src/core/cache/PermissionCacheFacade.ts`) [B] `cache-system`
+- [x] `OrganizationCacheFacade` (`src/core/cache/OrganizationCacheFacade.ts`) [B] `cache-system`
+- [x] `ApiCacheFacade` (`src/core/cache/ApiCacheFacade.ts`) [B] `cache-system`
+- [x] `CacheEventTypes` (`src/core/cache/CacheEventTypes.ts`) [B] `cache-system`
+- [x] `CacheDomain` (`src/core/cache/CacheDomain.ts`) [B] `cache-system`
 
 ### 10. Dépôts Core
 - [ ] `BaseRepository<T>` (`src/data/repositories/BaseRepository.ts`) [B] `repository-layer`

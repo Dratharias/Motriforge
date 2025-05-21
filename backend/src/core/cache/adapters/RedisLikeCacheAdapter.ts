@@ -1,2 +1,0 @@
-// RedisLikeCacheAdapter.ts
-// TODO: Implement
