@@ -3,22 +3,22 @@
 ## Infrastructure Backend (suite)
 
 ### 8. Infrastructure - Système d'Événements
-- [ ] `EventFacade` (`src/core/events/EventFacade.ts`) [B] `event-system-diagram`
-- [ ] `EventMediator` (`src/core/events/EventMediator.ts`) [B] `event-system-diagram` 
-- [ ] `EventPublisher` (`src/core/events/EventPublisher.ts`) [B] `event-system-diagram`
-- [ ] `EventQueue` (`src/core/events/EventQueue.ts`) [B] `event-system-diagram`
-- [ ] `EventSubscriber` (`src/core/events/EventSubscriber.ts`) [B] `event-system-diagram`
-- [ ] `EventBus` (`src/core/events/EventBus.ts`) [B] `event-system-diagram`
-- [ ] `EventHandler` (`src/core/events/EventHandler.ts`) [B] `event-system-diagram`
-- [ ] `EventRegistry` (`src/core/events/EventRegistry.ts`) [B] `event-system-diagram`
-- [ ] `EventContextProvider` (`src/core/events/EventContextProvider.ts`) [B] `event-system-diagram`
-- [ ] `EventEnricher` (`src/core/events/EventEnricher.ts`) [B] `event-system-diagram`
-- [ ] `DistributedEventPublisher` (`src/core/events/publishers/DistributedEventPublisher.ts`) [B] `event-system-diagram`
+- [x] `EventFacade` (`src/core/events/EventFacade.ts`) [B] `event-system-diagram`
+- [x] `EventMediator` (`src/core/events/EventMediator.ts`) [B] `event-system-diagram` 
+- [x] `EventPublisher` (`src/core/events/EventPublisher.ts`) [B] `event-system-diagram`
+- [x] `EventQueue` (`src/core/events/EventQueue.ts`) [B] `event-system-diagram`
+- [x] `EventSubscriber` (`src/core/events/EventSubscriber.ts`) [B] `event-system-diagram`
+- [x] `EventBus` (`src/core/events/EventBus.ts`) [B] `event-system-diagram`
+- [x] `EventHandler` (`src/core/events/EventHandler.ts`) [B] `event-system-diagram`
+- [x] `EventRegistry` (`src/core/events/EventRegistry.ts`) [B] `event-system-diagram`
+- [x] `EventContextProvider` (`src/core/events/EventContextProvider.ts`) [B] `event-system-diagram`
+- [x] `EventEnricher` (`src/core/events/EventEnricher.ts`) [B] `event-system-diagram`
+- [x] `DistributedEventPublisher` (`src/core/events/publishers/DistributedEventPublisher.ts`) [B] `event-system-diagram`
 - [ ] `RedisEventPublisher` (`src/core/events/publishers/RedisEventPublisher.ts`) [B] `event-system-diagram`
 - [ ] `KafkaEventPublisher` (`src/core/events/publishers/KafkaEventPublisher.ts`) [B] `event-system-diagram`
-- [ ] `Event` (`src/core/events/models/Event.ts`) [B] `event-system-diagram`
-- [ ] `EventSchema` (`src/core/events/EventSchema.ts`) [B] `event-system-diagram`
-- [ ] `Subscription` (`src/core/events/Subscription.ts`) [B] `event-system-diagram`
+- [x] `Event` (`src/core/events/models/Event.ts`) [B] `event-system-diagram`
+- [x] `EventSchema` (`src/core/events/EventSchema.ts`) [B] `event-system-diagram`
+- [x] `Subscription` (`src/core/events/Subscription.ts`) [B] `event-system-diagram`
 - [ ] `DomainEvent<T>` (`src/core/events/models/DomainEvent.ts`) [B] `event-system-diagram`
 - [ ] `UserEvent` (`src/core/events/models/UserEvent.ts`) [B] `event-system-diagram`
 - [ ] `AuthEvent` (`src/core/events/models/AuthEvent.ts`) [B] `event-system-diagram`
@@ -26,7 +26,7 @@
 - [ ] `AuthEventHandler` (`src/core/events/handlers/AuthEventHandler.ts`) [B] `event-system-diagram`
 - [ ] `CacheInvalidationHandler` (`src/core/events/handlers/CacheInvalidationHandler.ts`) [B] `event-system-diagram`
 - [ ] `AuditEventHandler` (`src/core/events/handlers/AuditEventHandler.ts`) [B] `event-system-diagram`
-- [ ] `EventMetrics` (`src/core/events/EventMetrics.ts`) [B] `event-system-diagram`
+- [x] `EventMetrics` (`src/core/events/EventMetrics.ts`) [B] `event-system-diagram`
 - [ ] `ProgressionEvents` (`src/core/events/types/ProgressionEvents.ts`) [B] `progression-tracking-system`
 - [ ] `TrainerClientEvents` (`src/core/events/types/TrainerClientEvents.ts`) [B] `trainer-client-system`
 
