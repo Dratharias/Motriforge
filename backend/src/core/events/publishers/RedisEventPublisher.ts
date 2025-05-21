@@ -1,2 +1,0 @@
-// RedisEventPublisher.ts
-// TODO: Implement

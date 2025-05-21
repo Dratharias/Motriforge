@@ -1,2 +1,0 @@
-// KafkaEventPublisher.ts
-// TODO: Implement

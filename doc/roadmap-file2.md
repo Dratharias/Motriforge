@@ -14,21 +14,19 @@
 - [x] `EventContextProvider` (`src/core/events/EventContextProvider.ts`) [B] `event-system-diagram`
 - [x] `EventEnricher` (`src/core/events/EventEnricher.ts`) [B] `event-system-diagram`
 - [x] `DistributedEventPublisher` (`src/core/events/publishers/DistributedEventPublisher.ts`) [B] `event-system-diagram`
-- [ ] `RedisEventPublisher` (`src/core/events/publishers/RedisEventPublisher.ts`) [B] `event-system-diagram`
-- [ ] `KafkaEventPublisher` (`src/core/events/publishers/KafkaEventPublisher.ts`) [B] `event-system-diagram`
 - [x] `Event` (`src/core/events/models/Event.ts`) [B] `event-system-diagram`
 - [x] `EventSchema` (`src/core/events/EventSchema.ts`) [B] `event-system-diagram`
 - [x] `Subscription` (`src/core/events/Subscription.ts`) [B] `event-system-diagram`
 - [ ] `DomainEvent<T>` (`src/core/events/models/DomainEvent.ts`) [B] `event-system-diagram`
-- [ ] `UserEvent` (`src/core/events/models/UserEvent.ts`) [B] `event-system-diagram`
-- [ ] `AuthEvent` (`src/core/events/models/AuthEvent.ts`) [B] `event-system-diagram`
-- [ ] `SystemEvent` (`src/core/events/models/SystemEvent.ts`) [B] `event-system-diagram`
-- [ ] `AuthEventHandler` (`src/core/events/handlers/AuthEventHandler.ts`) [B] `event-system-diagram`
-- [ ] `CacheInvalidationHandler` (`src/core/events/handlers/CacheInvalidationHandler.ts`) [B] `event-system-diagram`
-- [ ] `AuditEventHandler` (`src/core/events/handlers/AuditEventHandler.ts`) [B] `event-system-diagram`
+- [x] `UserEvent` (`src/core/events/models/UserEvent.ts`) [B] `event-system-diagram`
+- [x] `AuthEvent` (`src/core/events/models/AuthEvent.ts`) [B] `event-system-diagram`
+- [x] `SystemEvent` (`src/core/events/models/SystemEvent.ts`) [B] `event-system-diagram`
+- [x] `AuthEventHandler` (`src/core/events/handlers/AuthEventHandler.ts`) [B] `event-system-diagram`
+- [x] `CacheInvalidationHandler` (`src/core/events/handlers/CacheInvalidationHandler.ts`) [B] `event-system-diagram`
+- [x] `AuditEventHandler` (`src/core/events/handlers/AuditEventHandler.ts`) [B] `event-system-diagram`
 - [x] `EventMetrics` (`src/core/events/EventMetrics.ts`) [B] `event-system-diagram`
-- [ ] `ProgressionEvents` (`src/core/events/types/ProgressionEvents.ts`) [B] `progression-tracking-system`
-- [ ] `TrainerClientEvents` (`src/core/events/types/TrainerClientEvents.ts`) [B] `trainer-client-system`
+- [x] `ProgressionEvents` (`src/core/events/types/ProgressionEvents.ts`) [B] `progression-tracking-system`
+- [x] `TrainerClientEvents` (`src/core/events/types/TrainerClientEvents.ts`) [B] `trainer-client-system`
 
 ### 9. Infrastructure - Mise en Cache
 - [ ] `CacheFacade` (`src/core/cache/CacheFacade.ts`) [B] `cache-system`
