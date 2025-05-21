@@ -106,44 +106,44 @@
 - [x] `LocalFileSystemProvider` (`src/domain/media/providers/LocalFileSystemProvider.ts`) [B] `file-media-system-diagram`
 
 ### 6. Infrastructure - Journalisation
-- [ ] `LoggerFacade` (`src/core/logging/LoggerFacade.ts`) [B] `logging-system-diagram`
-- [ ] `LoggerService` (`src/core/logging/LoggerService.ts`) [B] `logging-system-diagram`
-- [ ] `LogProvider` (`src/core/logging/LogProvider.ts`) [B] `logging-system-diagram`
-- [ ] `LogTransport` (`src/core/logging/LogTransport.ts`) [B] `logging-system-diagram`
-- [ ] `ConsoleTransport` (`src/core/logging/transports/ConsoleTransport.ts`) [B] `logging-system-diagram`
-- [ ] `FileTransport` (`src/core/logging/transports/FileTransport.ts`) [B] `logging-system-diagram`
-- [ ] `CloudTransport` (`src/core/logging/transports/CloudTransport.ts`) [B] `logging-system-diagram`
-- [ ] `JsonFormatter` (`src/core/logging/formatters/JsonFormatter.ts`) [B] `logging-system-diagram`
-- [ ] `SimpleFormatter` (`src/core/logging/formatters/SimpleFormatter.ts`) [B] `logging-system-diagram`
-- [ ] `LogContextManager` (`src/core/logging/LogContextManager.ts`) [B] `logging-system-diagram`
-- [ ] `LogMetrics` (`src/core/logging/LogMetrics.ts`) [B] `logging-system-diagram`
-- [ ] `LogMiddleware` (`src/core/logging/LogMiddleware.ts`) [B] `logging-system-diagram`
-- [ ] `RequestLogEnricher` (`src/core/logging/RequestLogEnricher.ts`) [B] `logging-system-diagram`
-- [ ] `LogEntry` (`src/core/logging/LogEntry.ts`) [B] `logging-system-diagram`
-- [ ] `LogContext` (`src/core/logging/LogContext.ts`) [B] `logging-system-diagram`
-- [ ] `ErrorInfo` (`src/core/error/ErrorInfo.ts`) [B] `error-handling-system-diagram`
+- [x] `LoggerFacade` (`src/core/logging/LoggerFacade.ts`) [B] `logging-system-diagram`
+- [x] `LoggerService` (`src/core/logging/LoggerService.ts`) [B] `logging-system-diagram`
+- [x] `LogProvider` (`src/core/logging/LogProvider.ts`) [B] `logging-system-diagram`
+- [x] `LogTransport` (`src/core/logging/LogTransport.ts`) [B] `logging-system-diagram`
+- [x] `ConsoleTransport` (`src/core/logging/transports/ConsoleTransport.ts`) [B] `logging-system-diagram`
+- [x] `FileTransport` (`src/core/logging/transports/FileTransport.ts`) [B] `logging-system-diagram`
+- [x] `CloudTransport` (`src/core/logging/transports/CloudTransport.ts`) [B] `logging-system-diagram`
+- [x] `JsonFormatter` (`src/core/logging/formatters/JsonFormatter.ts`) [B] `logging-system-diagram`
+- [x] `SimpleFormatter` (`src/core/logging/formatters/SimpleFormatter.ts`) [B] `logging-system-diagram`
+- [x] `LogContextManager` (`src/core/logging/LogContextManager.ts`) [B] `logging-system-diagram`
+- [x] `LogMetrics` (`src/core/logging/LogMetrics.ts`) [B] `logging-system-diagram`
+- [x] `LogMiddleware` (`src/core/logging/LogMiddleware.ts`) [B] `logging-system-diagram`
+- [x] `RequestLogEnricher` (`src/core/logging/RequestLogEnricher.ts`) [B] `logging-system-diagram`
+- [x] `LogEntry` (`src/core/logging/LogEntry.ts`) [B] `logging-system-diagram`
+- [x] `LogContext` (`src/core/logging/LogContext.ts`) [B] `logging-system-diagram`
+- [x] `ErrorInfo` (`src/core/error/ErrorInfo.ts`) [B] `error-handling-system-diagram`
 
 ### 7. Infrastructure - Gestion des Erreurs
-- [ ] `ErrorHandlingFacade` (`src/core/error/ErrorHandlingFacade.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorHandlerRegistry` (`src/core/error/ErrorHandlerRegistry.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorMapperRegistry` (`src/core/error/ErrorMapperRegistry.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorFormatterRegistry` (`src/core/error/ErrorFormatterRegistry.ts`) [B] `error-handling-system-diagram`
-- [ ] `ValidationErrorHandler` (`src/core/error/handlers/ValidationErrorHandler.ts`) [B] `error-handling-system-diagram`
-- [ ] `DatabaseErrorHandler` (`src/core/error/handlers/DatabaseErrorHandler.ts`) [B] `error-handling-system-diagram`
-- [ ] `AuthErrorHandler` (`src/core/error/handlers/AuthErrorHandler.ts`) [B] `error-handling-system-diagram`
-- [ ] `HttpErrorMapper` (`src/core/error/mappers/HttpErrorMapper.ts`) [B] `error-handling-system-diagram`
-- [ ] `JsonErrorFormatter` (`src/core/error/formatters/JsonErrorFormatter.ts`) [B] `error-handling-system-diagram`
-- [ ] `HtmlErrorFormatter` (`src/core/error/formatters/HtmlErrorFormatter.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorMiddleware` (`src/core/error/ErrorMiddleware.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorBoundary` (`src/core/error/ErrorBoundary.ts`) [B] `error-handling-system-diagram`
-- [ ] `GlobalErrorHandler` (`src/core/error/GlobalErrorHandler.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorLoggerService` (`src/core/error/ErrorLoggerService.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorFactory` (`src/core/error/ErrorFactory.ts`) [B] `error-handling-system-diagram`
-- [ ] `ApplicationError` (`src/core/error/exceptions/ApplicationError.ts`) [B] `error-handling-system-diagram`
-- [ ] `ValidationError` (`src/core/error/exceptions/ValidationError.ts`) [B] `error-handling-system-diagram`
-- [ ] `AuthError` (`src/core/error/exceptions/AuthError.ts`) [B] `error-handling-system-diagram`
-- [ ] `DatabaseError` (`src/core/error/exceptions/DatabaseError.ts`) [B] `error-handling-system-diagram`
-- [ ] `ApiError` (`src/core/error/ApiError.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorResult` (`src/core/error/ErrorResult.ts`) [B] `error-handling-system-diagram`
-- [ ] `FormattedError` (`src/core/error/FormattedError.ts`) [B] `error-handling-system-diagram`
-- [ ] `ErrorMetrics` (`src/core/error/ErrorMetrics.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorHandlingFacade` (`src/core/error/ErrorHandlingFacade.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorHandlerRegistry` (`src/core/error/ErrorHandlerRegistry.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorMapperRegistry` (`src/core/error/ErrorMapperRegistry.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorFormatterRegistry` (`src/core/error/ErrorFormatterRegistry.ts`) [B] `error-handling-system-diagram`
+- [x] `ValidationErrorHandler` (`src/core/error/handlers/ValidationErrorHandler.ts`) [B] `error-handling-system-diagram`
+- [x] `DatabaseErrorHandler` (`src/core/error/handlers/DatabaseErrorHandler.ts`) [B] `error-handling-system-diagram`
+- [x] `AuthErrorHandler` (`src/core/error/handlers/AuthErrorHandler.ts`) [B] `error-handling-system-diagram`
+- [x] `HttpErrorMapper` (`src/core/error/mappers/HttpErrorMapper.ts`) [B] `error-handling-system-diagram`
+- [x] `JsonErrorFormatter` (`src/core/error/formatters/JsonErrorFormatter.ts`) [B] `error-handling-system-diagram`
+- [x] `HtmlErrorFormatter` (`src/core/error/formatters/HtmlErrorFormatter.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorMiddleware` (`src/core/error/ErrorMiddleware.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorBoundary` (`src/core/error/ErrorBoundary.ts`) [B] `error-handling-system-diagram`
+- [x] `GlobalErrorHandler` (`src/core/error/GlobalErrorHandler.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorLoggerService` (`src/core/error/ErrorLoggerService.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorFactory` (`src/core/error/ErrorFactory.ts`) [B] `error-handling-system-diagram`
+- [x] `ApplicationError` (`src/core/error/exceptions/ApplicationError.ts`) [B] `error-handling-system-diagram`
+- [x] `ValidationError` (`src/core/error/exceptions/ValidationError.ts`) [B] `error-handling-system-diagram`
+- [x] `AuthError` (`src/core/error/exceptions/AuthError.ts`) [B] `error-handling-system-diagram`
+- [x] `DatabaseError` (`src/core/error/exceptions/DatabaseError.ts`) [B] `error-handling-system-diagram`
+- [x] `ApiError` (`src/core/error/ApiError.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorResult` (`src/core/error/ErrorResult.ts`) [B] `error-handling-system-diagram`
+- [x] `FormattedError` (`src/core/error/FormattedError.ts`) [B] `error-handling-system-diagram`
+- [x] `ErrorMetrics` (`src/core/error/ErrorMetrics.ts`) [B] `error-handling-system-diagram`
