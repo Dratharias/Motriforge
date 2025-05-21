@@ -3,7 +3,6 @@ import { CacheEntry } from '../CacheEntry';
 import { CacheOptions } from '../CacheOptions';
 import { CacheStats, createCacheStats, recordHit, recordMiss } from '../CacheStats';
 import { LoggerFacade } from '../../logging/LoggerFacade';
-import { ValidationError } from '@/core/error/exceptions/ValidationError';
 
 /**
  * Options for the localStorage cache adapter
