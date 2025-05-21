@@ -1,2 +1,0 @@
-// EventPublisher.ts
-// TODO: Implement

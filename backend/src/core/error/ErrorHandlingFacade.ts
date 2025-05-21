@@ -257,23 +257,38 @@ export class ErrorHandlingFacade {
   
   /**
    * Publish an error event for monitoring and metrics
-   * 
+   *
    * @param error - Original error
    * @param result - Error handling result
    * @param context - Error context
    */
   private publishErrorEvent(error: Error, result: ErrorResult, context?: ErrorContext): void {
-    this.eventMediator.publish({
-      type: 'error.occurred',
-      payload: {
-        errorType: error.constructor.name,
-        message: error.message,
-        handled: result.handled,
-        statusCode: result.error.statusCode,
-        correlationId: result.correlationId,
-        path: context?.request?.path,
-        timestamp: new Date()
+    try {
+      this.eventMediator.publish({
+        type: 'error.occurred',
+        payload: {
+          errorType: error.constructor.name,
+          message: error.message,
+          handled: result.handled,
+          statusCode: result.error.statusCode,
+          correlationId: result.correlationId,
+          path: context?.getRequestPath?.(),
+          timestamp: new Date(),
+          source: 'error-handling-facade',
+          userId: context?.getUserId?.()
+        }
+      } as any);
+    } catch (emitError) {
+      // Ensure the error handling process isn't interrupted by event emission issues
+      console.error('Failed to publish error event:', emitError);
+      
+      // If we have a logger, use it as a fallback
+      if (this.logger) {
+        this.logger.warn('Failed to publish error event', {
+          error: emitError,
+          originalError: error.message
+        });
       }
-    });
+    }
   }
 }
