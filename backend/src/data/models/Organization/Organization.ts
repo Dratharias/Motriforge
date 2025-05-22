@@ -1,57 +1,11 @@
-import { IOrganizationDocument, OrganizationRole, OrganizationRoleValue } from "@/types/models";
+import { IOrganizationDocument, OrganizationRoleValue } from "@/types/models";
 import mongoose, { Schema, Types } from "mongoose";
 import { OrganizationRoleInfoModel } from "../enums/Organization";
 import { OrganizationMemberModel } from "./OrganizationMember";
-
-
-const AddressSchema = new Schema({
-  street: { type: String },
-  city: { type: String },
-  state: { type: String },
-  postalCode: { type: String },
-  country: { type: String },
-  coordinates: {
-    latitude: { type: Number },
-    longitude: { type: Number }
-  }
-}, { _id: false });
-
-const ContactSchema = new Schema({
-  phone: { type: String },
-  email: { type: String, required: true },
-  website: { type: String },
-  socialMedia: {
-    facebook: { type: String },
-    instagram: { type: String },
-    twitter: { type: String },
-    linkedin: { type: String }
-  }
-}, { _id: false });
-
-const SettingsSchema = new Schema({
-  allowMemberInvites: { type: Boolean, default: true },
-  requireAdminApproval: { type: Boolean, default: true },
-  defaultMemberRole: { type: String, default: 'member' },
-  contentSharingLevel: { type: String, default: 'organization' },
-  customBranding: {
-    logo: { type: String },
-    colors: {
-      primary: { type: String, default: '#3b82f6' },
-      secondary: { type: String, default: '#1e40af' },
-      accent: { type: String, default: '#f472b6' }
-    }
-  }
-}, { _id: false });
-
-const StatsSchema = new Schema({
-  memberCount: { type: Number, default: 1 },
-  exerciseCount: { type: Number, default: 0 },
-  workoutCount: { type: Number, default: 0 },
-  programCount: { type: Number, default: 0 },
-  averageEngagement: { type: Number, default: 0 },
-  lastActivityDate: { type: Date, default: Date.now }
-}, { _id: false });
-
+import { AddressSchema, ContactSchema } from "../Contact";
+import { logger } from "@/core/logging";
+import { ApplicationError } from "@/core/error/exceptions/ApplicationError";
+import { SettingsSchema, StatsSchema } from "./Settings";
 
 const OrganizationSchema = new Schema<IOrganizationDocument>({
   name: { 
@@ -62,7 +16,8 @@ const OrganizationSchema = new Schema<IOrganizationDocument>({
   },
   type: { 
     type: String, 
-    required: true
+    required: true,
+    index: true
   },
   description: { 
     type: String, 
@@ -92,15 +47,18 @@ const OrganizationSchema = new Schema<IOrganizationDocument>({
   },
   visibility: { 
     type: String,
-    required: true 
+    required: true,
+    index: true
   },
   isVerified: { 
     type: Boolean, 
-    default: false 
+    default: false,
+    index: true
   },
   trustLevel: { 
     type: String,
-    required: true 
+    required: true,
+    index: true
   },
   settings: {
     type: SettingsSchema,
@@ -112,190 +70,223 @@ const OrganizationSchema = new Schema<IOrganizationDocument>({
   },
   isActive: { 
     type: Boolean, 
-    default: true 
+    default: true,
+    index: true
   },
   isArchived: { 
     type: Boolean, 
-    default: false 
+    default: false,
+    index: true
   }
 }, {
   timestamps: true
 });
 
-// Indexes
+// Compound indexes for performance
 OrganizationSchema.index({ name: 1 }, { unique: true });
-OrganizationSchema.index({ visibility: 1 });
-OrganizationSchema.index({ type: 1 });
+OrganizationSchema.index({ visibility: 1, isActive: 1 });
+OrganizationSchema.index({ type: 1, trustLevel: 1 });
 OrganizationSchema.index({ isActive: 1, isArchived: 1 });
+OrganizationSchema.index({ owner: 1, isActive: 1 });
 
 // Instance methods
 OrganizationSchema.methods.addMember = async function(
   this: IOrganizationDocument,
   userId: Types.ObjectId, 
-  role: OrganizationRoleValue, 
+  roleValue: OrganizationRoleValue, 
   invitedBy: Types.ObjectId
 ): Promise<IOrganizationDocument> {
-  // Check if user is already a member
-  const existingMember = await OrganizationMemberModel.findOne({
-    organization: this._id,
-    user: userId
-  });
-
-  if (existingMember) {
-    if (existingMember.active) {
-      throw new Error('User is already an active member of this organization');
-    } else {
-      // Reactivate existing member
-      existingMember.role = new Types.ObjectId(role);
-      await existingMember.save();
+  try {
+    const roleInfo = await OrganizationRoleInfoModel.findOne({ role: roleValue });
+    if (!roleInfo) {
+      throw new ApplicationError(`Invalid role: ${roleValue}`, 'VALIDATION_ERROR');
     }
-  } else {
-    // Create new membership
-    await OrganizationMemberModel.create({
+
+    const existingMember = await OrganizationMemberModel.findOne({
       organization: this._id,
-      user: userId,
-      role: role,
-      invitedBy: invitedBy,
-      active: true,
-      permissions: [] // Default permissions
+      user: userId
     });
+
+    if (existingMember) {
+      if (existingMember.active) {
+        throw new ApplicationError('User is already an active member of this organization', 'CONFLICT');
+      } else {
+        existingMember.role = roleInfo._id;
+        existingMember.active = true;
+        existingMember.invitedBy = invitedBy;
+        await existingMember.save();
+        logger.info(`Reactivated member ${userId} in organization ${this._id} with role ${roleValue}`);
+      }
+    } else {
+      await OrganizationMemberModel.create({
+        organization: this._id,
+        user: userId,
+        role: roleInfo._id,
+        invitedBy: invitedBy,
+        active: true,
+        permissions: roleInfo.permissions || []
+      });
+      logger.info(`Added new member ${userId} to organization ${this._id} with role ${roleValue}`);
+    }
+
+    const memberCount = await OrganizationMemberModel.countDocuments({
+      organization: this._id,
+      active: true
+    });
+    
+    this.stats.memberCount = memberCount;
+    this.stats.lastActivityDate = new Date();
+    await this.save();
+
+    return this;
+  } catch (error) {
+    logger.error(`Failed to add member to organization ${this._id}:`, error instanceof Error ? error : new Error(String(error)));
+    throw error;
   }
-
-  // Update organization stats
-  this.stats.memberCount = await OrganizationMemberModel.countDocuments({
-    organization: this._id,
-    active: true
-  });
-  await this.save();
-
-  return this;
 };
 
 OrganizationSchema.methods.removeMember = async function(
   this: IOrganizationDocument,
   userId: Types.ObjectId
 ): Promise<IOrganizationDocument> {
-  // Check if this is the owner (cannot remove)
-  if (this.owner.equals(userId)) {
-    throw new Error('Cannot remove organization owner');
+  try {
+    if (this.owner.equals(userId)) {
+      throw new ApplicationError('Cannot remove organization owner', 'FORBIDDEN');
+    }
+
+    const member = await OrganizationMemberModel.findOne({
+      organization: this._id,
+      user: userId,
+      active: true
+    });
+
+    if (!member) {
+      throw new ApplicationError('User is not an active member of this organization', 'NOT_FOUND');
+    }
+
+    member.active = false;
+    await member.save();
+
+    const memberCount = await OrganizationMemberModel.countDocuments({
+      organization: this._id,
+      active: true
+    });
+    this.stats.memberCount = memberCount;
+    this.stats.lastActivityDate = new Date();
+
+    this.admins = this.admins.filter(adminId => !adminId.equals(userId));
+    await this.save();
+
+    logger.info(`Removed member ${userId} from organization ${this._id}`);
+    return this;
+  } catch (error) {
+    logger.error(`Failed to remove member from organization ${this._id}:`, error instanceof Error ? error : new Error(String(error)));
+    throw error;
   }
-
-  // Find and deactivate the member
-  const member = await OrganizationMemberModel.findOne({
-    organization: this._id,
-    user: userId,
-    active: true
-  });
-
-  if (!member) {
-    throw new Error('User is not an active member of this organization');
-  }
-
-  member.active = false;
-  await member.save();
-
-  // Update organization stats
-  this.stats.memberCount = await OrganizationMemberModel.countDocuments({
-    organization: this._id,
-    active: true
-  });
-
-  // Remove from admins array if present
-  this.admins = this.admins.filter(adminId => !adminId.equals(userId));
-  await this.save();
-
-  return this;
 };
 
 OrganizationSchema.methods.updateMemberRole = async function(
   this: IOrganizationDocument,
   userId: Types.ObjectId, 
-  newRole: OrganizationRole
+  newRoleValue: OrganizationRoleValue
 ): Promise<IOrganizationDocument> {
-  // Cannot change owner's role
-  if (this.owner.equals(userId)) {
-    throw new Error('Cannot change organization owner\'s role');
+  try {
+    if (this.owner.equals(userId)) {
+      throw new ApplicationError('Cannot change organization owner\'s role', 'FORBIDDEN');
+    }
+
+    const newRoleInfo = await OrganizationRoleInfoModel.findOne({ role: newRoleValue });
+    if (!newRoleInfo) {
+      throw new ApplicationError(`Invalid role: ${newRoleValue}`, 'VALIDATION_ERROR');
+    }
+
+    const member = await OrganizationMemberModel.findOne({
+      organization: this._id,
+      user: userId,
+      active: true
+    });
+
+    if (!member) {
+      throw new ApplicationError('User is not an active member of this organization', 'NOT_FOUND');
+    }
+
+    member.role = newRoleInfo._id;
+    member.permissions = newRoleInfo.permissions || [];
+    await member.save();
+
+    const isAdminRole = newRoleInfo.role === 'Admin';
+    const isCurrentlyAdmin = this.admins.some(adminId => adminId.equals(userId));
+
+    if (isAdminRole && !isCurrentlyAdmin) {
+      this.admins.push(userId);
+    } else if (!isAdminRole && isCurrentlyAdmin) {
+      this.admins = this.admins.filter(adminId => !adminId.equals(userId));
+    }
+
+    this.stats.lastActivityDate = new Date();
+    await this.save();
+
+    logger.info(`Updated member ${userId} role to ${newRoleValue} in organization ${this._id}`);
+    return this;
+  } catch (error) {
+    logger.error(`Failed to update member role in organization ${this._id}:`, error instanceof Error ? error : new Error(String(error)));
+    throw error;
   }
-
-  // Find the member
-  const member = await OrganizationMemberModel.findOne({
-    organization: this._id,
-    user: userId,
-    active: true
-  });
-
-  if (!member) {
-    throw new Error('User is not an active member of this organization');
-  }
-
-  // Update role
-  member.role = new Types.ObjectId(newRole);
-  await member.save();
-
-  // Update admins array based on new role
-  const isNowAdmin = newRole === OrganizationRole.Admin; // Adjust according to your role constants
-  const isCurrentlyAdmin = this.admins.some(adminId => adminId.equals(userId));
-
-  if (isNowAdmin && !isCurrentlyAdmin) {
-    this.admins.push(userId);
-  } else if (!isNowAdmin && isCurrentlyAdmin) {
-    this.admins = this.admins.filter(adminId => !adminId.equals(userId));
-  }
-
-  await this.save();
-  return this;
 };
 
 OrganizationSchema.methods.hasMember = async function(
   this: IOrganizationDocument,
   userId: Types.ObjectId
 ): Promise<boolean> {
-  // Check if user is owner or admin
-  if (this.owner.equals(userId) || this.admins.some(adminId => adminId.equals(userId))) {
-    return true;
+  try {
+    if (this.owner.equals(userId)) {
+      return true;
+    }
+
+    const member = await OrganizationMemberModel.findOne({
+      organization: this._id,
+      user: userId,
+      active: true
+    }, '_id');
+
+    return !!member;
+  } catch (error) {
+    logger.error(`Failed to check membership for user ${userId} in organization ${this._id}:`, error instanceof Error ? error : new Error(String(error)));
+    return false;
   }
-
-  // Check membership
-  const member = await OrganizationMemberModel.findOne({
-    organization: this._id,
-    user: userId,
-    active: true
-  });
-
-  return !!member;
 };
 
 OrganizationSchema.methods.canUserAccess = async function (
   this: IOrganizationDocument,
   userId: Types.ObjectId,
-  requiredRole: OrganizationRoleValue
+  requiredRoleValue: OrganizationRoleValue
 ): Promise<boolean> {
-  // Owner has full access
-  if (this.owner.equals(userId)) return true;
+  try {
+    if (this.owner.equals(userId)) return true;
 
-  // Admins can access almost everything
-  if (this.admins.some(adminId => adminId.equals(userId))) return true;
+    const member = await OrganizationMemberModel.findOne({
+      organization: this._id,
+      user: userId,
+      active: true
+    }).populate('role');
 
-  // Find active membership
-  const member = await OrganizationMemberModel.findOne({
-    organization: this._id,
-    user: userId,
-    active: true
-  });
+    if (!member || !member.role) return false;
 
-  if (!member) return false;
+    const requiredRoleInfo = await OrganizationRoleInfoModel.findOne({ 
+      role: requiredRoleValue 
+    });
 
-  const [memberRoleInfo, requiredRoleInfo] = await Promise.all([
-    OrganizationRoleInfoModel.findOne({ role: member.role }),
-    OrganizationRoleInfoModel.findOne({ role: requiredRole })
-  ]);
+    if (!requiredRoleInfo) {
+      logger.warn(`Required role not found: ${requiredRoleValue}`);
+      return false;
+    }
 
-  if (!memberRoleInfo || !requiredRoleInfo) {
-    console.warn(`Role info not found: member=${member.role}, required=${requiredRole}`);
+    const memberRoleInfo = member.role as any;
+    return memberRoleInfo.level <= requiredRoleInfo.level;
+  } catch (error) {
+    logger.error(`Failed to check user access for ${userId} in organization ${this._id}:`, error instanceof Error ? error : new Error(String(error)));
     return false;
   }
-
-  return memberRoleInfo.level <= requiredRoleInfo.level;
 };
 
-export const OrganizationModel = mongoose.model<IOrganizationDocument, IOrganizationModel>('Organization', OrganizationSchema);
+export const OrganizationModel = mongoose.model<IOrganizationDocument>('Organization', OrganizationSchema);

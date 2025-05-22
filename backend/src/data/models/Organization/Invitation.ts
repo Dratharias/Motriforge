@@ -1,7 +1,11 @@
 import { IInvitation, InvitationStatus } from '@/types/models';
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
-const InvitationSchema: Schema = new Schema<IInvitation>({
+// Extend interface to include Mongoose document methods
+interface IInvitationDocument extends Omit<IInvitation, '_id'>, Document {
+  _id: Types.ObjectId;
+}
+const InvitationSchema: Schema = new Schema<IInvitationDocument>({
   organization: {
     type: Schema.Types.ObjectId,
     ref: 'Organization',
@@ -72,7 +76,7 @@ InvitationSchema.methods.isExpired = function(): boolean {
          this.status === InvitationStatus.REVOKED;
 };
 
-InvitationSchema.methods.accept = async function(): Promise<IInvitation> {
+InvitationSchema.methods.accept = async function(): Promise<IInvitationDocument> {
   if (this.isExpired()) {
     throw new Error('Cannot accept expired invitation');
   }
@@ -86,7 +90,7 @@ InvitationSchema.methods.accept = async function(): Promise<IInvitation> {
   return this.save();
 };
 
-InvitationSchema.methods.decline = async function(): Promise<IInvitation> {
+InvitationSchema.methods.decline = async function(): Promise<IInvitationDocument> {
   if (this.isExpired()) {
     throw new Error('Cannot decline expired invitation');
   }
@@ -100,7 +104,7 @@ InvitationSchema.methods.decline = async function(): Promise<IInvitation> {
   return this.save();
 };
 
-InvitationSchema.methods.revoke = async function(reason?: string): Promise<IInvitation> {
+InvitationSchema.methods.revoke = async function(reason?: string): Promise<IInvitationDocument> {
   if (this.status !== InvitationStatus.PENDING) {
     throw new Error(`Cannot revoke invitation with status: ${this.status}`);
   }
@@ -111,8 +115,8 @@ InvitationSchema.methods.revoke = async function(reason?: string): Promise<IInvi
   return this.save();
 };
 
-// Pre-save hook to handle expiration
-InvitationSchema.pre<IInvitation>('save', function(next) {
+// Pre-save hook to handle expiration - properly typed
+InvitationSchema.pre<IInvitationDocument>('save', function(next) {
   if (this.isNew || this.isModified('expiresAt')) {
     if (this.expiresAt < new Date()) {
       this.status = InvitationStatus.EXPIRED;
@@ -121,4 +125,4 @@ InvitationSchema.pre<IInvitation>('save', function(next) {
   next();
 });
 
-export const InvitationModel = mongoose.model<IInvitation>('Invitation', InvitationSchema);
+export const InvitationModel = mongoose.model<IInvitationDocument>('Invitation', InvitationSchema);

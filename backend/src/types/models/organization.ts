@@ -1,6 +1,6 @@
 // Organization and membership related types
 
-import { Types } from 'mongoose';
+import { Types, Document } from 'mongoose';
 import { IBaseModel, IAddress, IContact, IOrganizationSettings, IOrganizationStats } from './common';
 import { InvitationStatus, OrganizationRoleValue, OrganizationTypeValue, OrganizationVisibilityValue, TrustLevelValue } from './enums';
 
@@ -31,11 +31,11 @@ export interface IOrganization extends IBaseModel {
 export interface IOrganizationMember extends IBaseModel {
   readonly organization: Types.ObjectId;
   readonly user: Types.ObjectId;
-  readonly role: Types.ObjectId;
-  readonly permissions: readonly string[];
+  role: Types.ObjectId;
+  permissions: readonly string[];
   readonly joinedAt: Date;
-  readonly active: boolean;
-  readonly invitedBy: Types.ObjectId;
+  active: boolean;
+  invitedBy: Types.ObjectId;
 }
 
 /**
@@ -46,7 +46,7 @@ export interface IInvitation extends IBaseModel {
   readonly email: string;
   readonly invitedBy: Types.ObjectId;
   readonly role: string;
-  readonly status: InvitationStatus;
+  status: InvitationStatus;
   readonly token: string;
   readonly message?: string;
   readonly expiresAt: Date;
@@ -115,7 +115,8 @@ export interface ITrustLevelInfo extends IBaseModel {
   readonly contentVisibility: string;
 }
 
-export interface IOrganizationDocument extends IOrganization, Document {
+export interface IOrganizationDocument extends Omit<IOrganization, '_id'>, Document {
+  _id: Types.ObjectId;
   addMember(userId: Types.ObjectId, role: OrganizationRoleValue, invitedBy: Types.ObjectId): Promise<IOrganizationDocument>;
   removeMember(userId: Types.ObjectId): Promise<IOrganizationDocument>;
   updateMemberRole(userId: Types.ObjectId, newRole: OrganizationRoleValue): Promise<IOrganizationDocument>;
