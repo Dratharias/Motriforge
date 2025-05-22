@@ -1,16 +1,6 @@
 import { AsyncLocalStorage } from 'async_hooks';
-import { LogContext, createLogContext, mergeLogContexts } from './LogContext';
-
-export interface RequestContext {
-  requestId: string;
-  path: string;
-  method: string;
-  startTime: number;
-  userId?: string;
-  organizationId?: string;
-  clientIp?: string;
-  userAgent?: string;
-}
+import { createLogContext, mergeLogContexts } from './LogContext';
+import { LogContext, RequestContext } from '@/types/common';
 
 export class LogContextManager {
   private readonly contextStorage: AsyncLocalStorage<LogContext>;
@@ -45,10 +35,16 @@ export class LogContextManager {
   }
 
   public setContextFromRequest(request: Request): void {
+    const headers = Array.from(request.headers.entries()).reduce(
+      (obj, [key, value]) => ({ ...obj, [key]: value }),
+      {} as Record<string, string>
+    );
+
     const requestContext: RequestContext = {
       requestId: request.headers.get('x-request-id') ?? crypto.randomUUID(),
       path: new URL(request.url).pathname,
       method: request.method,
+      headers,
       startTime: Date.now(),
       userId: request.headers.get('x-user-id') ?? undefined,
       organizationId: request.headers.get('x-organization-id') ?? undefined,

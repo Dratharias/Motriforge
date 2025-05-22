@@ -1,70 +1,4 @@
-/**
- * Represents the context of an event in the event system.
- * Contains information about the originator of the event.
- * 
- * Used in both frontend and backend.
- */
-export interface EventContext {
-  /**
-   * The ID of the user who triggered the event
-   */
-  userId?: string;
-  
-  /**
-   * The ID of the organization related to the event
-   */
-  organizationId?: string;
-  
-  /**
-   * The ID of the HTTP request that triggered the event
-   */
-  requestId?: string;
-  
-  /**
-   * The ID of the user session that triggered the event
-   */
-  sessionId?: string;
-  
-  /**
-   * The IP address that triggered the event
-   */
-  ipAddress?: string;
-  
-  /**
-   * The user agent that triggered the event
-   */
-  userAgent?: string;
-  
-  /**
-   * The locale setting when the event was triggered
-   */
-  locale?: string;
-  
-  /**
-   * A trace ID for distributed tracing
-   */
-  traceId?: string;
-  
-  /**
-   * Custom data for the event context
-   */
-  custom?: Record<string, any>;
-}
-
-/**
- * Options for creating an EventContext
- */
-export interface EventContextOptions {
-  userId?: string;
-  organizationId?: string;
-  requestId?: string;
-  sessionId?: string;
-  ipAddress?: string;
-  userAgent?: string;
-  locale?: string;
-  traceId?: string;
-  custom?: Record<string, any>;
-}
+import { EventContext } from "@/types/common";
 
 /**
  * Implementation of the EventContext interface
@@ -83,7 +17,7 @@ export class EventContextImpl implements EventContext {
   /**
    * Create a new EventContext with the provided options
    */
-  constructor(options: EventContextOptions = {}) {
+  constructor(options: EventContext = {}) {
     this.userId = options.userId;
     this.organizationId = options.organizationId;
     this.requestId = options.requestId;

@@ -1,13 +1,12 @@
-// src/core/logging/index.ts
 import { LoggerService } from './LoggerService';
 import { LoggerFacade } from './LoggerFacade';
 import { LogContextManager } from './LogContextManager';
 import { LogMetrics } from './LogMetrics';
-import { LogLevel } from './LogLevel';
 import { ConsoleTransport } from './transports/ConsoleTransport';
 import { LogMiddleware } from './LogMiddleware';
 import { JsonFormatter } from './formatters/JsonFormatter';
 import { SimpleFormatter } from './formatters/SimpleFormatter';
+import { LogLevel } from '@/types/logging';
 
 // Default configuration
 const defaultConfig = {
@@ -57,7 +56,6 @@ export {
   contextManager,
   logMetrics,
   createLogMiddleware,
-  LogLevel,
   LoggerFacade,
   LoggerService,
   LogContextManager,

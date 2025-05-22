@@ -1,6 +1,7 @@
-import { LogLevel } from './LogLevel';
-import { LoggerService } from './LoggerService';
-import { LogContext } from './LogContext';
+import { LogContext } from "@/types/common";
+import { LoggerService } from "./LoggerService";
+import { LogLevel } from "@/types/logging";
+
 
 export class LoggerFacade {
   private readonly loggerService: LoggerService;

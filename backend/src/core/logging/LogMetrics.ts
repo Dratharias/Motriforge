@@ -1,4 +1,4 @@
-import { LogLevel } from './LogLevel';
+import { LogLevel } from "@/types/logging";
 
 export class LogMetrics {
   private readonly counters: Map<string, number> = new Map();

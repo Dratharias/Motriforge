@@ -1,14 +1,6 @@
-import { LogTransport, TransportConfig } from '../LogTransport';
-import { LogEntry } from '../LogEntry';
-import { LogLevel, getLogLevelFromString } from '../LogLevel';
-import { LogFormatter } from '../LogFormatter';
-import { JsonFormatter } from '../formatters/JsonFormatter';
+import { TransportConfig, RetryStrategy, LogFormatter, LogTransport, LogLevel, LogEntry, getLogLevelFromString } from "@/types/logging";
+import { JsonFormatter } from "../formatters/JsonFormatter";
 
-interface RetryStrategy {
-  maxRetries: number;
-  initialDelayMs: number;
-  backoffMultiplier: number;
-}
 
 export interface CloudTransportConfig extends TransportConfig {
   endpoint: string;

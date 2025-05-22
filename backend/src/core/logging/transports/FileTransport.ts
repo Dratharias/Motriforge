@@ -1,24 +1,8 @@
-import { promises as fs, createWriteStream, WriteStream } from 'fs';
-import path from 'path';
-import { LogTransport, TransportConfig } from '../LogTransport';
-import { LogEntry } from '../LogEntry';
-import { LogLevel, getLogLevelFromString } from '../LogLevel';
-import { LogFormatter } from '../LogFormatter';
-import { JsonFormatter } from '../formatters/JsonFormatter';
+import { LogTransport, LogLevel, LogFormatter, FileRotationConfig, LogEntry, FileTransportConfig, getLogLevelFromString } from "@/types/logging";
+import { WriteStream, createWriteStream, promises as fs } from "fs";
+import path from "path";
+import { JsonFormatter } from "../formatters/JsonFormatter";
 
-export interface FileRotationConfig {
-  maxSize?: number; // in bytes
-  maxFiles?: number;
-  interval?: 'daily' | 'hourly'; // time-based rotation
-  compress?: boolean;
-}
-
-export interface FileTransportConfig extends TransportConfig {
-  path: string;
-  formatter?: LogFormatter;
-  rotationConfig?: FileRotationConfig;
-  flushInterval?: number; // in milliseconds
-}
 
 export class FileTransport implements LogTransport {
   public readonly id: string;

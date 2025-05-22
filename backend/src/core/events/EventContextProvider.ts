@@ -1,49 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import { EventContext } from './models/EventContext';
 import { Event } from './models/Event';
-
-/**
- * Context for an HTTP request
- */
-export interface RequestContext {
-  id: string;
-  path: string;
-  method: string;
-  headers: Record<string, string>;
-  userId?: string;
-  organizationId?: string;
-  ip?: string;
-  userAgent?: string;
-}
-
-/**
- * Context about the current user
- */
-export interface UserContext {
-  id: string;
-  email?: string;
-  organizationId?: string;
-  roles?: string[];
-  permissions?: string[];
-}
-
-/**
- * Interface for providing user data
- */
-export interface UserProvider {
-  getCurrentUser(): UserContext | null;
-}
-
-/**
- * Configuration for the event context provider
- */
-export interface EventContextConfig {
-  environment: string;
-  version: string;
-  application: string;
-  includeUserAgent: boolean;
-  includeIpAddress: boolean;
-}
+import { UserProvider, EventContextConfig, UserContext, RequestContext } from '@/types/common';
 
 /**
  * Provides context information for events
@@ -101,12 +59,12 @@ export class EventContextProvider {
     };
     
     if (reqContext) {
-      context.requestId = reqContext.id;
+      context.requestId = reqContext.requestId;
       context.userId = reqContext.userId;
       context.organizationId = reqContext.organizationId;
       
       if (this.config.includeIpAddress) {
-        context.ipAddress = reqContext.ip;
+        context.ipAddress = reqContext.clientIp;
       }
       
       if (this.config.includeUserAgent) {
@@ -136,13 +94,14 @@ export class EventContextProvider {
     // This is a bit of a hack since we can't directly set the context
     // We'll set the request context, which will be merged with other sources
     this.requestContext.enterWith({
-      id: context.requestId ?? crypto.randomUUID(),
+      requestId: context.requestId ?? crypto.randomUUID(),
       path: '',
       method: '',
       headers: {},
+      startTime: Date.now(),
       userId: context.userId,
       organizationId: context.organizationId,
-      ip: context.ipAddress,
+      clientIp: context.ipAddress,
       userAgent: context.userAgent
     });
   }
@@ -156,13 +115,14 @@ export class EventContextProvider {
    */
   public withContext<T>(context: EventContext, fn: () => T): T {
     const reqContext: RequestContext = {
-      id: context.requestId ?? crypto.randomUUID(),
+      requestId: context.requestId ?? crypto.randomUUID(),
       path: '',
       method: '',
       headers: {},
+      startTime: Date.now(),
       userId: context.userId,
       organizationId: context.organizationId,
-      ip: context.ipAddress,
+      clientIp: context.ipAddress,
       userAgent: context.userAgent
     };
     
@@ -258,13 +218,14 @@ export class EventContextProvider {
     const requestId = headers['x-request-id'] || crypto.randomUUID();
     
     const reqContext: RequestContext = {
-      id: requestId,
+      requestId,
       path: url.pathname,
       method: request.method,
       headers,
+      startTime: Date.now(),
       userId,
       organizationId,
-      ip: headers['x-forwarded-for'] || headers['x-real-ip'],
+      clientIp: headers['x-forwarded-for'] || headers['x-real-ip'],
       userAgent: headers['user-agent']
     };
     

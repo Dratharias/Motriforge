@@ -1,16 +1,5 @@
-import { LogEntry, ClientInfo } from './LogEntry';
+import { ClientInfo, LogEntry, PerformanceMetrics, UserInfo } from "@/types/logging";
 
-export interface UserInfo {
-  id: string;
-  email?: string;
-  role?: string;
-}
-
-export interface PerformanceMetrics {
-  responseTime?: number;
-  cpuTime?: number;
-  memoryUsage?: number;
-}
 
 export class RequestLogEnricher {
   private readonly sensitiveHeaders = [

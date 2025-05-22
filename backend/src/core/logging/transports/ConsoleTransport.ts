@@ -1,13 +1,6 @@
-import { LogTransport, TransportConfig } from '../LogTransport';
-import { LogEntry } from '../LogEntry';
-import { LogLevel, getLogLevelFromString } from '../LogLevel';
-import { LogFormatter } from '../LogFormatter';
-import { SimpleFormatter } from '../formatters/SimpleFormatter';
+import { LogTransport, LogLevel, LogFormatter, ConsoleTransportConfig, getLogLevelFromString, LogEntry } from "@/types/logging";
+import { SimpleFormatter } from "../formatters/SimpleFormatter";
 
-export interface ConsoleTransportConfig extends TransportConfig {
-  colorized?: boolean;
-  formatter?: LogFormatter;
-}
 
 export class ConsoleTransport implements LogTransport {
   public readonly id: string;

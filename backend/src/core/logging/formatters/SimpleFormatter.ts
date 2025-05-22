@@ -1,12 +1,5 @@
-import { LogFormatter } from '../LogFormatter';
-import { LogEntry } from '../LogEntry';
-import { LOG_LEVEL_NAMES } from '../LogLevel';
+import { LogFormatter, SimpleFormatterOptions, LogEntry, LOG_LEVEL_NAMES } from "@/types/logging";
 
-export interface SimpleFormatterOptions {
-  template?: string;
-  dateFormat?: string;
-  colorize?: boolean;
-}
 
 export class SimpleFormatter implements LogFormatter {
   private readonly template: string;

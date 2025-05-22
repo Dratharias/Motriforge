@@ -1,14 +1,4 @@
-export interface LogContext {
-  component?: string;
-  requestId?: string;
-  userId?: string;
-  organizationId?: string;
-  sessionId?: string;
-  correlationId?: string;
-  environment?: string;
-  version?: string;
-  custom?: Record<string, any>;
-}
+import { LogContext } from "@/types/common";
 
 export function createLogContext(partial?: Partial<LogContext>): LogContext {
   return {

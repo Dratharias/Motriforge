@@ -1,4 +1,4 @@
-import { LogEntry } from './LogEntry';
+import { LogEntry } from ".";
 
 export interface LogProviderCapabilities {
   supportsBatching: boolean;

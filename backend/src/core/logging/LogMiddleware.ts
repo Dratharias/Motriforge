@@ -1,14 +1,7 @@
+import { LogLevel, LogMiddlewareOptions } from '@/types/logging';
 import { LoggerFacade } from './LoggerFacade';
 import { RequestLogEnricher } from './RequestLogEnricher';
-import { LogLevel } from './LogLevel';
 
-export interface LogMiddlewareOptions {
-  logRequestBody?: boolean;
-  logResponseBody?: boolean;
-  skipPaths?: string[];
-  skipStaticFiles?: boolean;
-  logLevel?: LogLevel;
-}
 
 export class LogMiddleware {
   private readonly logger: LoggerFacade;

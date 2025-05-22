@@ -1,28 +1,16 @@
-import { LogEntry, createLogEntry } from './LogEntry';
-import { LogLevel } from './LogLevel';
-import { LogProvider } from './LogProvider';
-import { LogTransport, TransportConfig } from './LogTransport';
-import { LogFormatter } from './LogFormatter';
+import { LogConfig, LogEntry, LogFormatter, LogLevel, LogProvider, LogTransport, TransportConfig } from '@/types/logging';
+import { createErrorInfo } from '../error/ErrorInfo';
+import { JsonFormatter } from './formatters/JsonFormatter';
 import { LogContextManager } from './LogContextManager';
+import { createLogEntry } from './LogEntry';
 import { LogMetrics } from './LogMetrics';
 import { ConsoleTransport } from './transports/ConsoleTransport';
-import { JsonFormatter } from './formatters/JsonFormatter';
-import { createErrorInfo } from '../error/ErrorInfo';
 
-export interface LogConfig {
-  defaultLevel: LogLevel | string;
-  enabledTransports: string[];
-  transports: Record<string, TransportConfig>;
-  formatter?: any;  // FormatterConfig
-  context?: any;    // ContextConfig
-  sampling?: any;   // SamplingConfig
-  redaction?: any;  // RedactionConfig
-}
 
 export class LoggerService {
   private readonly logProvider: LogProvider | null;
   private readonly transports: Map<string, LogTransport>;
-  private readonly formatter: LogFormatter;
+  private formatter: LogFormatter;
   private readonly config: LogConfig;
   private readonly contextManager: LogContextManager;
   private readonly metrics: LogMetrics;
@@ -109,7 +97,9 @@ export class LoggerService {
     // Otherwise, send to all transports
     for (const transport of this.transports.values()) {
       if (transport.enabled && level >= transport.minLevel) {
-        transport.transport(enrichedEntry).catch(err => {
+        // Use the formatter to format the entry before sending to transport
+        const formattedEntry = this.formatLogEntry(enrichedEntry);
+        transport.transport(formattedEntry).catch(err => {
           console.error(`Error sending log to transport ${transport.id}:`, err);
         });
       }
@@ -136,10 +126,12 @@ export class LoggerService {
       this.logProvider ?? undefined
     );
     
-    // Copy the existing transports to the child logger
+    // Copy the existing transports and formatter to the child logger
     for (const [id, transport] of this.transports.entries()) {
       childLogger.registerTransport(id, transport);
     }
+    
+    childLogger.setFormatter(this.formatter);
     
     // Set the child context
     childLogger.setChildContext(context);
@@ -160,7 +152,11 @@ export class LoggerService {
   }
 
   public setFormatter(formatter: LogFormatter): void {
-    (this as any).formatter = formatter;
+    this.formatter = formatter;
+  }
+
+  public getFormatter(): LogFormatter {
+    return this.formatter;
   }
 
   public setLogLevel(level: LogLevel): void {
@@ -247,6 +243,13 @@ export class LoggerService {
     return entry;
   }
 
+  private formatLogEntry(entry: LogEntry): LogEntry {
+    // Use the formatter to format the entry if needed
+    // For now, we'll just return the entry as-is since transports handle their own formatting
+    // But this method provides a hook for central formatting if needed
+    return entry;
+  }
+
   private trackMetrics(level: LogLevel): void {
     this.metrics.incrementCounter('logs.total');
     
@@ -285,5 +288,4 @@ export class LoggerService {
       }
     }
   }
-  
 }

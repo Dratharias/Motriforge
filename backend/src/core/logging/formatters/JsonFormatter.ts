@@ -1,14 +1,5 @@
-import { LogFormatter } from '../LogFormatter';
-import { LogEntry } from '../LogEntry';
-import { LOG_LEVEL_NAMES, LogLevel } from '../LogLevel';
+import { LogFormatter, JsonFormatterOptions, LogEntry, LogLevel, LOG_LEVEL_NAMES } from "@/types/logging";
 
-export interface JsonFormatterOptions {
-  replacer?: (key: string, value: any) => any;
-  includeStack?: boolean;
-  maskSensitiveData?: boolean;
-  sensitiveKeys?: string[];
-  space?: number | string;
-}
 
 export class JsonFormatter implements LogFormatter {
   private readonly replacer: (key: string, value: any) => any;
