@@ -1,4 +1,3 @@
-// src/core/events/handlers/AuthEventHandler.ts
 import { LoggerFacade } from "@/core/logging";
 import { AuthAction, EventHandler, SystemEventTypes } from "@/types/events";
 import { AuthEvent } from "../models/AuthEvent";
