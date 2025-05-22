@@ -1,30 +1,12 @@
+import { CacheDomain, CacheOptions, MemberInfo } from '@/types/cache';
 import { CacheFacade } from './facade/CacheFacade';
-import { CacheOptions } from './CacheOptions';
-import { CacheDomain } from './CacheManager';
 
-/**
- * Member info stored in cache
- */
-export interface MemberInfo {
-  userId: string;
-  role: string;
-  joinedAt: Date;
-  permissions?: string[];
-  status: string;
-}
 
 /**
  * Facade for organization-related caching
  */
 export class OrganizationCacheFacade {
-  /**
-   * Parent cache facade
-   */
   private readonly cacheFacade: CacheFacade;
-  
-  /**
-   * Cache domain
-   */
   private readonly domain: string = CacheDomain.ORGANIZATION;
 
   constructor(cacheFacade: CacheFacade) {

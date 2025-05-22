@@ -1,81 +1,19 @@
-import { CacheManager } from './CacheManager';
-import { CacheHealthStatus, HealthIssue, createCacheHealthStatus } from './CacheHealthStatus';
-import { LoggerFacade } from '../logging/LoggerFacade';
+import { HealthThresholds, HealthStatusListener, CacheHealthStatus, HealthIssue } from "@/types/cache";
+import { LoggerFacade } from "../logging";
+import { createCacheHealthStatus } from "./CacheHealthStatus";
+import { CacheManager } from "./CacheManager";
 
-/**
- * Thresholds for health checks
- */
-export interface HealthThresholds {
-  /**
-   * Minimum acceptable hit rate (0-1)
-   */
-  minHitRate: number;
-  
-  /**
-   * Maximum acceptable error rate (0-1)
-   */
-  maxErrorRate: number;
-  
-  /**
-   * Minimum acceptable available space (0-1)
-   */
-  minAvailableSpace: number;
-  
-  /**
-   * Maximum acceptable response time (ms)
-   */
-  maxResponseTime: number;
-}
-
-/**
- * Listener for health status changes
- */
-export interface HealthStatusListener {
-  /**
-   * Called when health status changes
-   * @param status New health status
-   * @param previousStatus Previous health status
-   */
-  onHealthStatusChanged(status: CacheHealthStatus, previousStatus: CacheHealthStatus): void;
-}
 
 /**
  * Monitors cache health and reports issues
  */
 export class CacheHealthMonitor {
-  /**
-   * Cache manager to monitor
-   */
   private readonly cacheManager: CacheManager;
-  
-  /**
-   * Logger instance
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Health check interval (ms)
-   */
   private readonly checkInterval: number;
-  
-  /**
-   * Thresholds for health checks
-   */
   private readonly thresholds: HealthThresholds;
-  
-  /**
-   * Listeners for health status changes
-   */
   private readonly listeners: HealthStatusListener[] = [];
-  
-  /**
-   * Current health status
-   */
   private currentStatus: CacheHealthStatus = createCacheHealthStatus();
-  
-  /**
-   * Interval ID for health checks
-   */
   private intervalId?: NodeJS.Timeout;
 
   constructor(

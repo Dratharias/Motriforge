@@ -1,42 +1,4 @@
-/**
- * Pattern for cache invalidation
- */
-export interface InvalidationPattern {
-  /**
-   * Cache domain this pattern applies to
-   */
-  domain: string;
-  
-  /**
-   * Pattern to match keys against (supports * as wildcard)
-   */
-  keyPattern: string;
-  
-  /**
-   * Event types this pattern depends on
-   */
-  dependsOn: string[];
-  
-  /**
-   * Condition function to determine if the pattern applies
-   */
-  condition?: (metadata: any) => boolean;
-  
-  /**
-   * Priority of this pattern (higher values have higher priority)
-   */
-  priority?: number;
-  
-  /**
-   * TTL to set when invalidating (if not deleting)
-   */
-  ttl?: number;
-  
-  /**
-   * Whether to cascade invalidation to related keys
-   */
-  cascading?: boolean;
-}
+import { InvalidationPattern } from "@/types/events";
 
 /**
  * Create an invalidation pattern

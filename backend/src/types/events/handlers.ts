@@ -65,20 +65,6 @@ export interface AuditLogger {
 }
 
 /**
- * Cache invalidation pattern defining how to invalidate cache entries
- * when certain events occur
- */
-export interface InvalidationPattern {
-  domain: string;
-  keyPattern: string;
-  eventTypes: string[];
-  condition?: (event: DomainEvent) => boolean;
-  priority: number;
-  cascade?: boolean;
-  dependencies?: string[];
-}
-
-/**
  * Notification data structure
  */
 export interface NotificationData {

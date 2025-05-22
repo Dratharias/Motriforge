@@ -1,57 +1,5 @@
-/**
- * Statistics for cache operations
- */
-export interface CacheStats {
-  /**
-   * Number of cache hits
-   */
-  hits: number;
-  
-  /**
-   * Number of cache misses
-   */
-  misses: number;
-  
-  /**
-   * Hit rate (hits / (hits + misses))
-   */
-  hitRate: number;
-  
-  /**
-   * Number of errors encountered
-   */
-  errors: number;
-  
-  /**
-   * Number of sets performed
-   */
-  sets: number;
-  
-  /**
-   * Number of deletes performed
-   */
-  deletes: number;
-  
-  /**
-   * Total size in bytes
-   */
-  size: number;
-  
-  /**
-   * Number of items in the cache
-   */
-  itemCount: number;
-  
-  /**
-   * Date of the oldest entry
-   */
-  oldestEntry?: Date;
-  
-  /**
-   * Date of the newest entry
-   */
-  newestEntry?: Date;
-}
+import { CacheStats } from "@/types/cache";
+
 
 /**
  * Create default cache stats

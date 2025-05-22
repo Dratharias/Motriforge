@@ -1,42 +1,22 @@
-import { CacheManager, CacheDomain } from '../CacheManager';
-import { CacheOptions } from '../CacheOptions';
-import { CacheEventMediator } from '../CacheEventMediator';
-import { LoggerFacade } from '../../logging/LoggerFacade';
-import { AuthCacheFacade } from './AuthCacheFacade';
-import { UserCacheFacade } from './UserCacheFacade';
-import { PermissionCacheFacade } from './PermissionCacheFacade';
-import { OrganizationCacheFacade } from '../OrganizationCacheFacade';
-import { ApiCacheFacade } from './ApiCacheFacade';
-import { CacheStrategyFactory } from '../CacheStrategyFactory';
-import { CacheStrategy } from '../strategies/CacheStrategy';
+import { LoggerFacade } from "@/core/logging";
+import { CacheDomain, CacheOptions, CacheStrategy } from "@/types/cache";
+import { CacheEventMediator } from "../CacheEventMediator";
+import { CacheManager } from "../CacheManager";
+import { CacheStrategyFactory } from "../CacheStrategyFactory";
+import { OrganizationCacheFacade } from "../OrganizationCacheFacade";
+import { ApiCacheFacade } from "./ApiCacheFacade";
+import { AuthCacheFacade } from "./AuthCacheFacade";
+import { PermissionCacheFacade } from "./PermissionCacheFacade";
+import { UserCacheFacade } from "./UserCacheFacade";
 
 /**
  * Main entry point for the caching system
  */
 export class CacheFacade {
-  /**
-   * Cache manager for storage operations
-   */
   private readonly cacheManager: CacheManager;
-  
-  /**
-   * Event mediator for cache events
-   */
   private readonly cacheMediator: CacheEventMediator;
-  
-  /**
-   * Logger instance
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Strategy factory for creating cache strategies
-   */
   private readonly strategyFactory: CacheStrategyFactory;
-  
-  /**
-   * Domain-specific facades
-   */
   private authCache?: AuthCacheFacade;
   private userCache?: UserCacheFacade;
   private permissionCache?: PermissionCacheFacade;

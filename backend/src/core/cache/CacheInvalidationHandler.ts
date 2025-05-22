@@ -1,26 +1,15 @@
-import { EventHandler } from '../events/handlers/EventHandler';
-import { Event } from '../events/models/Event';
-import { CacheManager } from './CacheManager';
-import { LoggerFacade } from '../logging/LoggerFacade';
-import { InvalidationPattern, keyMatchesPattern } from './InvalidationPattern';
+import { InvalidationPattern, EventHandler } from "@/types/events";
+import { LoggerFacade } from "../logging";
+import { CacheManager } from "./CacheManager";
+import { keyMatchesPattern } from "./InvalidationPattern";
+import type { Event as DomainEvent } from "../events/models/Event";
 
 /**
  * Handles cache invalidation based on events
  */
 export class CacheInvalidationHandler implements EventHandler {
-  /**
-   * Cache manager to use
-   */
   private readonly cacheManager: CacheManager;
-  
-  /**
-   * Logger instance
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Map of event types to invalidation patterns
-   */
   private readonly invalidationPatterns: Map<string, InvalidationPattern[]> = new Map();
 
   constructor(cacheManager: CacheManager, logger: LoggerFacade) {
@@ -31,7 +20,7 @@ export class CacheInvalidationHandler implements EventHandler {
   /**
    * Handle an event
    */
-  public async handleEvent(event: Event): Promise<void> {
+  public async handleEvent(event: DomainEvent): Promise<void> {
     try {
       const eventType = event.type;
       const patterns = this.getMatchingPatterns(eventType);
@@ -57,7 +46,7 @@ export class CacheInvalidationHandler implements EventHandler {
     }
   }
   
-  private async processPattern(pattern: InvalidationPattern, event: Event, eventType: string): Promise<void> {
+  private async processPattern(pattern: InvalidationPattern, event: DomainEvent, eventType: string): Promise<void> {
     try {
       // Skip if condition fails
       if (pattern.condition && !pattern.condition(event.payload)) {

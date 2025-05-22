@@ -1,6 +1,20 @@
 import { EventType } from '../../types/events/enums/eventTypes';
 
 /**
+ * Defined domains for cache partitioning
+ */
+export enum CacheDomain {
+  AUTH = 'auth',
+  USER = 'user',
+  PERMISSION = 'permission',
+  ORGANIZATION = 'organization',
+  API = 'api',
+  SYSTEM = 'system',
+  DEFAULT = 'default'
+}
+
+
+/**
  * Event types for cache operations
  */
 export const CacheEventTypes = {
@@ -19,3 +33,14 @@ export const CacheEventTypes = {
  * Type representing all possible cache event types
  */
 export type CacheEventType = typeof CacheEventTypes[keyof typeof CacheEventTypes];
+
+/**
+ * Eviction strategies for cache entries
+ */
+export enum EvictionStrategy {
+  LRU = 'lru',
+  LFU = 'lfu',
+  FIFO = 'fifo',
+  RANDOM = 'random'
+}
+

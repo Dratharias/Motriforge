@@ -1,67 +1,17 @@
-import { CacheStrategy } from './CacheStrategy';
-import { CacheAdapter } from '../adapters/CacheAdapter';
-import { CacheOptions } from '../CacheOptions';
-import { LoggerFacade } from '../../logging/LoggerFacade';
+import { LoggerFacade } from "@/core/logging";
+import { CacheStrategy, StaleWhileRevalidateOptions, CacheOptions, RevalidationTask } from "@/types/cache";
+import { CacheAdapter } from "../adapters/CacheAdapter";
 
-/**
- * Options for stale-while-revalidate strategy
- */
-export interface StaleWhileRevalidateOptions {
-  /**
-   * How long stale data can be served (ms)
-   */
-  staleTimeMs?: number;
-  
-  /**
-   * Minimum time between revalidations (ms)
-   */
-  minRevalidateIntervalMs?: number;
-  
-  /**
-   * Maximum number of concurrent revalidations
-   */
-  maxConcurrentRevalidations?: number;
-}
-
-interface RevalidationTask {
-  key: string;
-  fetcher: () => Promise<any>;
-  options?: CacheOptions;
-  timestamp: number;
-}
 
 /**
  * Queue for managing revalidation tasks
  */
 class RevalidationQueue {
-  /**
-   * Tasks in the queue
-   */
   private readonly tasks: Map<string, RevalidationTask> = new Map();
-  
-  /**
-   * Tasks currently being processed
-   */
   private readonly processing: Set<string> = new Set();
-  
-  /**
-   * Maximum number of concurrent revalidations
-   */
   private readonly maxConcurrent: number;
-  
-  /**
-   * Logger instance
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Cache adapter to use
-   */
   private readonly cacheAdapter: CacheAdapter;
-  
-  /**
-   * Interval ID for processing tasks
-   */
   private intervalId?: NodeJS.Timeout;
 
   constructor(
@@ -168,29 +118,10 @@ class RevalidationQueue {
  * Cache strategy that serves stale data while revalidating in the background
  */
 export class CacheStaleWhileRevalidateStrategy implements CacheStrategy {
-  /**
-   * Cache adapter to use
-   */
   private readonly cacheAdapter: CacheAdapter;
-  
-  /**
-   * Logger instance
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Strategy options
-   */
   private readonly options: StaleWhileRevalidateOptions;
-  
-  /**
-   * Queue for revalidation tasks
-   */
   private readonly revalidationQueue: RevalidationQueue;
-  
-  /**
-   * Last revalidation times by key
-   */
   private readonly lastRevalidation: Map<string, number> = new Map();
 
   constructor(

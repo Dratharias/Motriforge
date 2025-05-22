@@ -1,29 +1,12 @@
+import { CacheDomain, CacheOptions, UserPreferences } from '@/types/cache';
 import { CacheFacade } from './CacheFacade';
-import { CacheOptions } from '../CacheOptions';
-import { CacheDomain } from '../CacheManager';
 
-/**
- * User preferences stored in cache
- */
-export interface UserPreferences {
-  theme?: string;
-  language?: string;
-  notifications?: Record<string, boolean>;
-  [key: string]: any;
-}
 
 /**
  * Facade for user-related caching
  */
 export class UserCacheFacade {
-  /**
-   * Parent cache facade
-   */
   private readonly cacheFacade: CacheFacade;
-  
-  /**
-   * Cache domain
-   */
   private readonly domain: string = CacheDomain.USER;
 
   constructor(cacheFacade: CacheFacade) {

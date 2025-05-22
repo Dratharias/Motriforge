@@ -1,26 +1,15 @@
-import { CacheStrategy } from './strategies/CacheStrategy';
-import { CacheFetchStrategy, CacheFetchOptions } from './strategies/CacheFetchStrategy';
-import { CacheStaleWhileRevalidateStrategy, StaleWhileRevalidateOptions } from './strategies/CacheStaleWhileRevalidateStrategy';
-import { CacheAdapter } from './adapters/CacheAdapter';
-import { LoggerFacade } from '../logging/LoggerFacade';
+import { CacheStrategy, CacheFetchOptions, StaleWhileRevalidateOptions } from "@/types/cache";
+import { LoggerFacade } from "../logging";
+import { CacheAdapter } from "./adapters/CacheAdapter";
+import { CacheFetchStrategy } from "./strategies/CacheFetchStrategy";
+import { CacheStaleWhileRevalidateStrategy } from "./strategies/CacheStaleWhileRevalidateStrategy";
 
 /**
  * Factory for creating cache strategies
  */
 export class CacheStrategyFactory {
-  /**
-   * Logger instance
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Default cache adapter
-   */
   private readonly defaultAdapter: CacheAdapter;
-  
-  /**
-   * Map of strategy names to constructor functions
-   */
   private readonly strategies: Map<string, new (adapter: CacheAdapter, logger: LoggerFacade, options: any) => CacheStrategy> = new Map();
 
   constructor(defaultAdapter: CacheAdapter, logger: LoggerFacade) {

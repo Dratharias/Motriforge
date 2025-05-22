@@ -1,50 +1,14 @@
-import { CacheStrategy } from './CacheStrategy';
-import { CacheAdapter } from '../adapters/CacheAdapter';
-import { CacheOptions } from '../CacheOptions';
-import { LoggerFacade } from '../../logging/LoggerFacade';
+import { LoggerFacade } from "@/core/logging";
+import { CacheStrategy, CacheFetchOptions, CacheOptions } from "@/types/cache";
+import { CacheAdapter } from "../adapters/CacheAdapter";
 
-/**
- * Options for the cache fetch strategy
- */
-export interface CacheFetchOptions {
-  /**
-   * Whether to cache errors
-   */
-  cacheErrors?: boolean;
-  
-  /**
-   * TTL for cached errors (ms)
-   */
-  errorTtl?: number;
-  
-  /**
-   * Whether to throw errors from the fetcher
-   */
-  throwErrors?: boolean;
-  
-  /**
-   * Predicate to determine if a value should be cached
-   */
-  shouldCache?: (value: any) => boolean;
-}
 
 /**
  * Basic cache strategy that fetches data if not in cache
  */
 export class CacheFetchStrategy implements CacheStrategy {
-  /**
-   * Cache adapter to use
-   */
   private readonly cacheAdapter: CacheAdapter;
-  
-  /**
-   * Logger instance
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Strategy options
-   */
   private readonly options: CacheFetchOptions;
 
   constructor(

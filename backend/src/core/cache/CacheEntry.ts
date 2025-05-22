@@ -2,44 +2,13 @@
  * Represents a single entry in the cache
  */
 export class CacheEntry<T = any> {
-  /**
-   * Unique key for the cache entry
-   */
   public readonly key: string;
-  
-  /**
-   * Serialized value
-   */
   public readonly value: string;
-  
-  /**
-   * Original value type
-   */
   public readonly originalType: string;
-  
-  /**
-   * When this entry expires (if applicable)
-   */
   public readonly expiresAt?: Date;
-  
-  /**
-   * When this entry was created
-   */
   public readonly createdAt: Date;
-  
-  /**
-   * When this entry was last accessed
-   */
   public lastAccessedAt: Date;
-  
-  /**
-   * Number of times this entry has been accessed
-   */
   public hitCount: number;
-  
-  /**
-   * Additional metadata
-   */
   public readonly metadata: Record<string, any>;
 
   constructor(params: {

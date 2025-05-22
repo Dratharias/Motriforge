@@ -1,32 +1,11 @@
+import { CacheDomain, CacheOptions, TokenInfo } from '@/types/cache';
 import { CacheFacade } from './CacheFacade';
-import { CacheOptions } from '../CacheOptions';
-import { CacheDomain } from '../CacheManager';
-
-/**
- * Token info stored in cache
- */
-export interface TokenInfo {
-  userId: string;
-  tokenId: string;
-  expiresAt: Date;
-  scopes?: string[];
-  issuedAt: Date;
-  clientId?: string;
-  refreshToken?: string;
-}
 
 /**
  * Facade for auth-related caching
  */
 export class AuthCacheFacade {
-  /**
-   * Parent cache facade
-   */
   private readonly cacheFacade: CacheFacade;
-  
-  /**
-   * Cache domain
-   */
   private readonly domain: string = CacheDomain.AUTH;
 
   constructor(cacheFacade: CacheFacade) {

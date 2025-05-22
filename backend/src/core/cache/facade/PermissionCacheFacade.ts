@@ -1,32 +1,14 @@
+import { CacheDomain, CacheOptions, RoleInfo } from '@/types/cache';
 import { CacheFacade } from './CacheFacade';
-import { CacheOptions } from '../CacheOptions';
-import { CacheDomain } from '../CacheManager';
 
-/**
- * Permission role stored in cache
- */
-export interface RoleInfo {
-  id: string;
-  name: string;
-  permissions: string[];
-  isSystem?: boolean;
-  organizationId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+
+
 
 /**
  * Facade for permission-related caching
  */
 export class PermissionCacheFacade {
-  /**
-   * Parent cache facade
-   */
   private readonly cacheFacade: CacheFacade;
-  
-  /**
-   * Cache domain
-   */
   private readonly domain: string = CacheDomain.PERMISSION;
 
   constructor(cacheFacade: CacheFacade) {

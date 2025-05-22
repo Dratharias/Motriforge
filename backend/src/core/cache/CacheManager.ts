@@ -1,79 +1,25 @@
-import { CacheAdapter } from './adapters/CacheAdapter';
-import { CacheOptions } from './CacheOptions';
-import { CachePolicy } from './CachePolicy';
-import { CacheStats, createCacheStats } from './CacheStats';
-import { CacheHealthMonitor } from './CacheHealthMonitor';
-import { LoggerFacade } from '../logging/LoggerFacade';
-import { EventMediator } from '../events/EventMediator';
-import { EventPublisher } from '../events/EventPublisher';
-import { CacheEventTypes } from './CacheEventTypes';
-import { EventType } from '../../types/events/enums/eventTypes';
-
-/**
- * Cache domains
- */
-export enum CacheDomain {
-  AUTH = 'auth',
-  USER = 'user',
-  PERMISSION = 'permission',
-  ORGANIZATION = 'organization',
-  API = 'api',
-  SYSTEM = 'system',
-  DEFAULT = 'default'
-}
-
-/**
- * Options for the cache manager
- */
-interface CacheManagerOptions {
-  defaultAdapterName?: string;
-  eventMediator?: EventMediator;
-  eventPublisher?: EventPublisher;
-  enableHealthMonitoring?: boolean;
-}
+import { CacheDomain, CacheEventTypes } from "@/types/cache/enums";
+import { CacheOptions, CacheStats, CachePolicy } from "@/types/cache";
+import { CacheManagerOptions } from "@/types/cache/manager";
+import { EventType } from "@/types/events";
+import { EventMediator } from "../events/EventMediator";
+import { EventPublisher } from "../events/EventPublisher";
+import { LoggerFacade } from "../logging";
+import { CacheAdapter } from "./adapters/CacheAdapter";
+import { CacheHealthMonitor } from "./CacheHealthMonitor";
+import { createCacheStats } from "./CacheStats";
 
 /**
  * Manages cache adapters and domain mappings
  */
 export class CacheManager {
-  /**
-   * Map of adapter names to adapters
-   */
   private readonly adapters: Map<string, CacheAdapter> = new Map();
-  
-  /**
-   * Map of domain names to adapter names
-   */
   private readonly domainMappings: Map<string, string> = new Map();
-  
-  /**
-   * Default adapter name
-   */
   private readonly defaultAdapterName: string;
-  
-  /**
-   * Health monitor
-   */
   private readonly healthMonitor?: CacheHealthMonitor;
-  
-  /**
-   * Logger instance
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Event mediator
-   */
   private readonly eventMediator?: EventMediator;
-  
-  /**
-   * Event publisher
-   */
   private readonly eventPublisher?: EventPublisher;
-  
-  /**
-   * Response times by domain (for calculating average)
-   */
   private readonly responseTimes: Map<string, number[]> = new Map();
 
   constructor(
@@ -110,7 +56,7 @@ export class CacheManager {
    * Get the adapter for a domain
    */
   public getAdapter(domain: string): CacheAdapter {
-    const adapterName = this.domainMappings.get(domain) || this.defaultAdapterName;
+    const adapterName = this.domainMappings.get(domain) ?? this.defaultAdapterName;
     const adapter = this.adapters.get(adapterName);
     
     if (!adapter) {
@@ -232,7 +178,8 @@ export class CacheManager {
         this.publishEvent(CacheEventTypes.CLEAR_ALL, {});
       }
     } catch (error) {
-      this.logger.error(`Error clearing cache ${domain ? `in domain ${domain}` : 'across all domains'}`, error as Error);
+      const domainString = domain ? `in domain ${domain}` : 'across all domains'
+      this.logger.error(`Error clearing cache ${domainString}`, error as Error);
       this.publishEvent(CacheEventTypes.ERROR, { domain, error: (error as Error).message });
     }
   }
@@ -277,7 +224,7 @@ export class CacheManager {
     try {
       const allStats = createCacheStats();
       
-      for (const [domain, adapterName] of this.domainMappings.entries()) {
+      for (const [, adapterName] of this.domainMappings.entries()) {
         const adapter = this.adapters.get(adapterName);
         
         if (!adapter) {

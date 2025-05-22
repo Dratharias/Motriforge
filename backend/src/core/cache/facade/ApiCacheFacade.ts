@@ -1,32 +1,12 @@
+import { CacheDomain, CacheOptions, RateLimitInfo } from '@/types/cache';
 import { CacheFacade } from './CacheFacade';
-import { CacheOptions } from '../CacheOptions';
-import { CacheDomain } from '../CacheManager';
 
-/**
- * Rate limit info stored in cache
- */
-export interface RateLimitInfo {
-  endpoint: string;
-  method: string;
-  limit: number;
-  remaining: number;
-  reset: Date;
-  userId?: string;
-  ipAddress?: string;
-}
 
 /**
  * Facade for API-related caching
  */
 export class ApiCacheFacade {
-  /**
-   * Parent cache facade
-   */
   private readonly cacheFacade: CacheFacade;
-  
-  /**
-   * Cache domain
-   */
   private readonly domain: string = CacheDomain.API;
 
   constructor(cacheFacade: CacheFacade) {
