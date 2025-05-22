@@ -1,10 +1,6 @@
-import { IInvitation, InvitationStatus } from '@/types/models';
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import { IInvitationDocument, InvitationStatus } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
-// Extend interface to include Mongoose document methods
-interface IInvitationDocument extends Omit<IInvitation, '_id'>, Document {
-  _id: Types.ObjectId;
-}
 const InvitationSchema: Schema = new Schema<IInvitationDocument>({
   organization: {
     type: Schema.Types.ObjectId,

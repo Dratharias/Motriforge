@@ -123,3 +123,8 @@ export interface IOrganizationDocument extends Omit<IOrganization, '_id'>, Docum
   hasMember(userId: Types.ObjectId): Promise<boolean>;
   canUserAccess(userId: Types.ObjectId, requiredRole: OrganizationRoleValue): Promise<boolean>;
 }
+
+// Extend interface to include Mongoose document methods
+export interface IInvitationDocument extends Omit<IInvitation, '_id'>, Document {
+  _id: Types.ObjectId;
+}
