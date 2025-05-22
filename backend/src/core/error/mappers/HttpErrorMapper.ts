@@ -1,18 +1,15 @@
-import { ErrorMapper } from '../ErrorMapper';
 import { ApiError } from '../ApiError';
 import { ApplicationError } from '../exceptions/ApplicationError';
 import { ValidationError } from '../exceptions/ValidationError';
 import { AuthError } from '../exceptions/AuthError';
 import { DatabaseError, EntityNotFoundError, ConstraintViolationError } from '../exceptions/DatabaseError';
+import { ErrorMapper } from '@/types/errors';
 
 /**
  * Error mapper that maps application errors to HTTP API errors
  * with appropriate status codes.
  */
 export class HttpErrorMapper implements ErrorMapper {
-  /**
-   * Map of error codes to HTTP status codes
-   */
   private readonly errorCodeMap: Map<string, number>;
   
   /**

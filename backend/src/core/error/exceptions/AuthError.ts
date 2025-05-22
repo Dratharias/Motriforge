@@ -4,14 +4,7 @@ import { ApplicationError } from './ApplicationError';
  * Error thrown when authentication or authorization fails
  */
 export class AuthError extends ApplicationError {
-  /**
-   * ID of the user related to the authentication error
-   */
   public userId?: string;
-  
-  /**
-   * Action that the user was trying to perform
-   */
   public action?: string;
   
   /**

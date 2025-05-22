@@ -1,11 +1,4 @@
-export interface ErrorInfo {
-  name: string;
-  message: string;
-  stack?: string;
-  code?: string;
-  cause?: ErrorInfo;
-  metadata?: Record<string, any>;
-}
+import { ErrorInfo } from "@/types/errors";
 
 export function createErrorInfo(error: Error): ErrorInfo {
   const errorInfo: ErrorInfo = {

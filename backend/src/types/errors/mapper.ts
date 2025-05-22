@@ -1,4 +1,4 @@
-import { ApiError } from './ApiError';
+import { ApiError } from "@/core/error/ApiError";
 
 /**
  * Interface for error mappers that convert domain/application errors

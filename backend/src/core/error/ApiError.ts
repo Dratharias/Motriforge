@@ -2,44 +2,13 @@
  * Standardized API error response format that can be returned to clients.
  */
 export class ApiError {
-  /**
-   * Unique error code identifying the type of error
-   */
   errorCode: string;
-  
-  /**
-   * Human-readable error message
-   */
   message: string;
-  
-  /**
-   * HTTP status code for the error
-   */
   statusCode: number;
-  
-  /**
-   * Additional error details, if available
-   */
   details?: any;
-  
-  /**
-   * Field-specific error messages for validation errors
-   */
   errors?: Record<string, string>;
-  
-  /**
-   * Correlation ID for tracing the error across the system
-   */
   correlationId?: string;
-  
-  /**
-   * Timestamp when the error occurred
-   */
   timestamp: Date;
-  
-  /**
-   * Request path that triggered the error
-   */
   path?: string;
   
   constructor(

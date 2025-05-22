@@ -1,31 +1,9 @@
+import { ErrorSeverity } from '@/types/errors';
+import { ErrorLoggerConfig, ErrorLogEntry } from '@/types/errors/logger';
 import { LoggerFacade } from '../logging/LoggerFacade';
 import { ErrorContext } from './ErrorContext';
 import { ErrorMetrics } from './ErrorMetrics';
 
-export enum ErrorSeverity {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARNING = 'warning',
-  ERROR = 'error',
-  CRITICAL = 'critical',
-  FATAL = 'fatal'
-}
-
-export interface ErrorLogEntry {
-  error: Error;
-  context?: ErrorContext;
-  severity: ErrorSeverity;
-  timestamp: Date;
-  formattedError: Record<string, any>;
-}
-
-export interface ErrorLoggerConfig {
-  maxLogEntries?: number;
-  includeStack?: boolean;
-  maskSensitiveData?: boolean;
-  sensitiveKeys?: string[];
-  enableMetrics?: boolean;
-}
 
 export class ErrorLoggerService {
   private readonly logger: LoggerFacade;

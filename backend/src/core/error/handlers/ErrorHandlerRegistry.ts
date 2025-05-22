@@ -1,5 +1,5 @@
-import { ErrorHandler } from './ErrorHandler';
-import { LoggerFacade } from '../logging/LoggerFacade';
+import { ErrorHandler } from '@/types/errors';
+import { LoggerFacade } from '../../logging/LoggerFacade';
 
 /**
  * Registry that manages error handlers and provides methods to retrieve

@@ -1,23 +1,12 @@
-import { ErrorMapper } from './ErrorMapper';
+import { ErrorMapper } from "@/types/errors";
 
 /**
  * Registry that manages error mappers and provides methods to retrieve
  * the appropriate mapper for a given error.
  */
 export class ErrorMapperRegistry {
-  /**
-   * Mappers mapped by error type name
-   */
   private readonly mappers: Map<string, ErrorMapper>;
-  
-  /**
-   * Priority mappers that can map specific errors but aren't mapped to a type
-   */
   private readonly priorityMappers: ErrorMapper[];
-  
-  /**
-   * Default mapper used when no specific mapper is found
-   */
   private defaultMapper: ErrorMapper;
   
   constructor(defaultMapper: ErrorMapper) {

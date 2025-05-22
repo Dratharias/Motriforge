@@ -1,20 +1,8 @@
-import { ErrorHandlingFacade } from './ErrorHandlingFacade';
-import { LoggerFacade } from '../logging/LoggerFacade';
-import { ErrorContext } from './ErrorContext';
+import { ErrorHandlingFacade } from '../ErrorHandlingFacade';
+import { LoggerFacade } from '../../logging/LoggerFacade';
+import { ErrorContext } from '../ErrorContext';
+import { GlobalErrorOptions, ErrorReport } from '@/types/errors';
 
-export interface GlobalErrorOptions {
-  handleRejections?: boolean;
-  handleExceptions?: boolean;
-  exitOnUncaughtException?: boolean;
-  logErrors?: boolean;
-}
-
-export interface ErrorReport {
-  error: Error;
-  timestamp: Date;
-  context?: string;
-  isPromiseRejection?: boolean;
-}
 
 export class GlobalErrorHandler {
   private readonly errorHandlingFacade: ErrorHandlingFacade;

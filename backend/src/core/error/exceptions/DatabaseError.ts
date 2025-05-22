@@ -4,19 +4,8 @@ import { ApplicationError } from './ApplicationError';
  * Error thrown when database operations fail
  */
 export class DatabaseError extends ApplicationError {
-  /**
-   * Database operation that failed
-   */
   public operation: string;
-  
-  /**
-   * Collection/table being operated on
-   */
   public collection?: string;
-  
-  /**
-   * Query that was being executed
-   */
   public query?: any;
   
   /**

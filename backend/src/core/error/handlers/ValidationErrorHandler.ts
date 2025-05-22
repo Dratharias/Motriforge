@@ -1,31 +1,12 @@
-import { ErrorHandler } from '../ErrorHandler';
-import { ValidationError, ValidationErrorDetail } from '../exceptions/ValidationError';
 import { ErrorContext } from '../ErrorContext';
 import { ErrorResult } from '../ErrorResult';
 import { ApiError } from '../ApiError';
 import { LoggerFacade } from '../../logging/LoggerFacade';
-import { ErrorAction } from '../constants/ErrorAction';
 import { v4 as uuidv4 } from 'uuid';
+import { ErrorAction, ErrorHandler, ValidationErrorConfig, ValidationErrorDetail } from '@/types/errors';
+import { ValidationError } from '../exceptions/ValidationError';
 
-/**
- * Configuration options for the ValidationErrorHandler
- */
-export interface ValidationErrorConfig {
-  /**
-   * Whether to log validation errors
-   */
-  logValidationErrors?: boolean;
-  
-  /**
-   * Minimum severity level of validation errors to log
-   */
-  logLevel?: 'debug' | 'info' | 'warn' | 'error';
-  
-  /**
-   * Whether to include validation error details in responses
-   */
-  includeDetails?: boolean;
-}
+
 
 /**
  * Handler for validation errors

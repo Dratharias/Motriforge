@@ -1,5 +1,5 @@
-import { ApiError } from './ApiError';
-import { FormattedError } from './FormattedError';
+import { ApiError } from "@/core/error/ApiError";
+import { FormattedError } from "@/core/error/FormattedError";
 
 /**
  * Interface for error formatters that convert errors or API errors
@@ -20,4 +20,13 @@ export interface ErrorFormatter {
    * @returns Array of supported format identifiers
    */
   getSupportedFormats(): string[];
+}
+
+/**
+ * Configuration options for the JsonErrorFormatter
+ */
+export interface JsonErrorFormatterConfig {
+  includeStack?: boolean;
+  masks?: Record<string, boolean>;
+  prettyPrint?: boolean;
 }

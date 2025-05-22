@@ -1,44 +1,14 @@
-import { ErrorFormatter } from '../ErrorFormatter';
+import { ErrorFormatter, JsonErrorFormatterConfig } from '@/types/errors';
 import { ApiError } from '../ApiError';
 import { FormattedError } from '../FormattedError';
 
-/**
- * Configuration options for the JsonErrorFormatter
- */
-export interface JsonErrorFormatterConfig {
-  /**
-   * Whether to include stack traces in error responses
-   */
-  includeStack?: boolean;
-  
-  /**
-   * Fields to mask in error responses
-   */
-  masks?: Record<string, boolean>;
-  
-  /**
-   * Whether to pretty-print JSON output
-   */
-  prettyPrint?: boolean;
-}
 
 /**
  * Formatter that converts errors to JSON format
  */
 export class JsonErrorFormatter implements ErrorFormatter {
-  /**
-   * Whether to include stack traces in error responses
-   */
   private readonly includeStack: boolean;
-  
-  /**
-   * Fields to mask in error responses
-   */
   private readonly masks: Record<string, boolean>;
-  
-  /**
-   * Whether to pretty-print JSON output
-   */
   private readonly prettyPrint: boolean;
   
   /**

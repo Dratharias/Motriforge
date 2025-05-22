@@ -2,26 +2,7 @@ import { ApplicationError } from './exceptions/ApplicationError';
 import { ValidationError } from './exceptions/ValidationError';
 import { AuthError } from './exceptions/AuthError';
 import { DatabaseError } from './exceptions/DatabaseError';
-
-export interface ErrorTypeConfig {
-  message: string;
-  statusCode: number;
-  logging: boolean;
-  logLevel: string;
-  isOperational: boolean;
-  redactDetails: boolean;
-}
-
-export interface ErrorConfig {
-  defaultMessages: Record<string, string>;
-  errorTypes: Record<string, ErrorTypeConfig>;
-  statusCodes: Record<string, number>;
-  logging: {
-    levels: string[];
-    defaultLevel: string;
-  };
-  errorCodes: Record<string, string>;
-}
+import { ErrorConfig, ErrorTypeConfig } from '@/types/errors';
 
 export class ErrorFactory {
   private readonly errorConfig: ErrorConfig;

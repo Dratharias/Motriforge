@@ -3,34 +3,11 @@
  * Extends the native Error class with additional properties and methods.
  */
 export class ApplicationError extends Error {
-  /**
-   * Unique error code identifying the type of error
-   */
   public code: string;
-  
-  /**
-   * HTTP status code to use when returning this error
-   */
   public statusCode: number;
-  
-  /**
-   * Additional error details
-   */
   public details?: any;
-  
-  /**
-   * Original error that caused this error, if applicable
-   */
   public cause?: Error;
-  
-  /**
-   * Timestamp when the error occurred
-   */
   public timestamp: Date;
-  
-  /**
-   * Whether this error is operational (expected/handled) vs. programmer error
-   */
   public isOperational: boolean;
   
   /**

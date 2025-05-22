@@ -1,12 +1,8 @@
 import { Context, Next } from 'hono';
 import { ErrorHandlingFacade } from './ErrorHandlingFacade';
 import { ErrorContext } from './ErrorContext';
+import { ErrorMiddlewareOptions } from '@/types/errors';
 
-export interface ErrorMiddlewareOptions {
-  logErrors?: boolean;
-  includeStackTrace?: boolean;
-  defaultFormat?: string;
-}
 
 export class ErrorMiddleware {
   private readonly errorHandlingFacade: ErrorHandlingFacade;

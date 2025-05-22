@@ -1,5 +1,5 @@
-import { ErrorHandlerRegistry } from './ErrorHandlerRegistry';
-import { ErrorMapperRegistry } from './ErrorMapperRegistry';
+import { ErrorHandlerRegistry } from './handlers/ErrorHandlerRegistry';
+import { ErrorMapperRegistry } from './mappers/ErrorMapperRegistry';
 import { ErrorFormatterRegistry } from './ErrorFormatterRegistry';
 import { LoggerFacade } from '../logging/LoggerFacade';
 import { EventMediator } from '../events/EventMediator';

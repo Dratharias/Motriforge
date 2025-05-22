@@ -1,12 +1,5 @@
-// src/core/error/ErrorContext.ts
-export interface ErrorContextOptions {
-  request?: any;
-  user?: any;
-  correlationId?: string;
-  source?: string;
-  isClient?: boolean;
-  metadata?: Record<string, any>;
-}
+import { ErrorContextOptions } from "@/types/errors";
+
 
 export class ErrorContext {
   public request?: any;

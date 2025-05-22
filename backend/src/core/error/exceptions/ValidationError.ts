@@ -1,31 +1,13 @@
+import { ValidationErrorDetail } from '@/types/errors';
 import { ApplicationError } from './ApplicationError';
 
-/**
- * Represents a field-level validation error detail
- */
-export interface ValidationErrorDetail {
-  field: string;
-  message: string;
-  constraint?: string;
-}
 
 /**
  * Error thrown when validation fails for user input
  */
 export class ValidationError extends ApplicationError {
-  /**
-   * List of validation errors
-   */
   public errors: ValidationErrorDetail[];
-  
-  /**
-   * Field that failed validation (when only one field has errors)
-   */
   public field?: string;
-  
-  /**
-   * Constraint that failed (when only one constraint has failed)
-   */
   public constraint?: string;
   
   /**

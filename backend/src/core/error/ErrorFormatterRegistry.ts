@@ -1,4 +1,4 @@
-import { ErrorFormatter } from './ErrorFormatter';
+import { ErrorFormatter } from "@/types/errors";
 
 /**
  * Registry that manages error formatters and provides methods to retrieve

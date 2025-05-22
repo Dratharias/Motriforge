@@ -1,61 +1,20 @@
-import { ErrorHandler } from '../ErrorHandler';
 import { AuthError, TokenExpiredError, InvalidCredentialsError } from '../exceptions/AuthError';
 import { ErrorContext } from '../ErrorContext';
 import { ErrorResult } from '../ErrorResult';
 import { ApiError } from '../ApiError';
 import { LoggerFacade } from '../../logging/LoggerFacade';
-import { ErrorAction } from '../constants/ErrorAction';
 import { v4 as uuidv4 } from 'uuid';
+import { AuthErrorConfig, ErrorAction, ErrorHandler } from '@/types/errors';
 
-/**
- * Configuration options for the AuthErrorHandler
- */
-export interface AuthErrorConfig {
-  /**
-   * URL to redirect to on authentication failure
-   */
-  loginRedirectUrl?: string;
-  
-  /**
-   * Whether to include the original error message in responses
-   */
-  includeOriginalMessage?: boolean;
-  
-  /**
-   * Whether to include auth error details in responses
-   */
-  includeDetails?: boolean;
-  
-  /**
-   * Maximum failed login attempts before applying rate limiting
-   */
-  maxFailedAttempts?: number;
-  
-  /**
-   * Rate limiting window in seconds
-   */
-  rateLimitWindowSeconds?: number;
-}
 
 /**
  * Handler for authentication and authorization errors
  */
 export class AuthErrorHandler implements ErrorHandler {
-  /**
-   * Configuration options
-   */
   private readonly config: AuthErrorConfig;
-  
-  /**
-   * Logger for auth errors
-   */
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Reference to the auth service for additional operations
-   * like checking rate limits, refreshing tokens, etc.
-   */
-  private authService: any; // Replace with actual AuthService type
+  /** TODO: Assign Auth Service when implemented */
+  private authService: any;
   
   /**
    * Create a new AuthErrorHandler
@@ -67,7 +26,7 @@ export class AuthErrorHandler implements ErrorHandler {
   constructor(
     config: AuthErrorConfig, 
     logger: LoggerFacade,
-    authService: any // Replace with actual AuthService type
+    authService: any
   ) {
     this.config = {
       includeOriginalMessage: false,

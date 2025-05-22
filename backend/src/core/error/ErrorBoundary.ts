@@ -1,15 +1,11 @@
 import { ErrorHandlingFacade } from './ErrorHandlingFacade';
 import { ErrorContext } from './ErrorContext';
+import { ErrorBoundaryConfig } from '@/types/errors';
 
-export interface ErrorBoundaryConfig {
-  logErrors?: boolean;
-  showDetails?: boolean;
-  captureStackTrace?: boolean;
-}
 
 export class ErrorBoundary {
-  private errorHandlingFacade: ErrorHandlingFacade;
-  private config: ErrorBoundaryConfig;
+  private readonly errorHandlingFacade: ErrorHandlingFacade;
+  private readonly config: ErrorBoundaryConfig;
   
   constructor(errorHandlingFacade: ErrorHandlingFacade, config: ErrorBoundaryConfig = {}) {
     this.errorHandlingFacade = errorHandlingFacade;

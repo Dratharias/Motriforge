@@ -1,5 +1,6 @@
-import { ErrorContext } from './ErrorContext';
-import { ErrorResult } from './ErrorResult';
+import { ErrorContext } from "@/core/error/ErrorContext";
+import { ErrorResult } from "@/core/error/ErrorResult";
+
 
 /**
  * Interface for error handlers that process specific types of errors
@@ -30,4 +31,34 @@ export interface ErrorHandler {
    * @returns Priority value (higher is higher priority)
    */
   getPriority(): number;
+}
+
+/**
+ * Configuration options for the AuthErrorHandler
+ */
+export interface AuthErrorConfig {
+  loginRedirectUrl?: string;
+  includeOriginalMessage?: boolean;
+  includeDetails?: boolean;
+  maxFailedAttempts?: number;
+  rateLimitWindowSeconds?: number;
+}
+
+/**
+ * Configuration options for the DatabaseErrorHandler
+ */
+export interface DatabaseErrorConfig {
+  includeDetails?: boolean;
+  includeOriginalMessage?: boolean;
+  errorMessages?: Record<string, string>;
+  retryOn?: string[];
+}
+
+/**
+ * Configuration options for the ValidationErrorHandler
+ */
+export interface ValidationErrorConfig {
+  logValidationErrors?: boolean;
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  includeDetails?: boolean;
 }

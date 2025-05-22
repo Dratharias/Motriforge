@@ -1,36 +1,11 @@
-import { ErrorHandler } from '../ErrorHandler';
 import { DatabaseError, EntityNotFoundError, ConstraintViolationError } from '../exceptions/DatabaseError';
 import { ErrorContext } from '../ErrorContext';
 import { ErrorResult } from '../ErrorResult';
 import { ApiError } from '../ApiError';
 import { LoggerFacade } from '../../logging/LoggerFacade';
-import { ErrorAction } from '../constants/ErrorAction';
 import { v4 as uuidv4 } from 'uuid';
+import { DatabaseErrorConfig, ErrorAction, ErrorHandler } from '@/types/errors';
 
-/**
- * Configuration options for the DatabaseErrorHandler
- */
-export interface DatabaseErrorConfig {
-  /**
-   * Whether to include sanitized database error details in responses
-   */
-  includeDetails?: boolean;
-  
-  /**
-   * Whether to include the original error message in responses
-   */
-  includeOriginalMessage?: boolean;
-  
-  /**
-   * Mapping of database error codes to user-friendly messages
-   */
-  errorMessages?: Record<string, string>;
-  
-  /**
-   * Whether to retry operations on specific error types
-   */
-  retryOn?: string[];
-}
 
 /**
  * Handler for database errors
