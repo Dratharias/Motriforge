@@ -1,46 +1,16 @@
-import { EventType } from '../types/EventType';
+import { EventType, SubscriptionOptions } from '@/types/events';
 import { v4 as uuidv4 } from 'uuid';
-
-/**
- * Options for event subscriptions
- */
-export interface SubscriptionOptions {
-  /** Whether this is a one-time subscription */
-  once?: boolean;
-  
-  /** Whether to receive events that occurred before subscription */
-  includePast?: boolean;
-  
-  /** Timestamp to receive events from (only applicable if includePast is true) */
-  fromTimestamp?: Date;
-  
-  /** Custom filter function for additional filtering beyond event type */
-  filter?: (event: any) => boolean;
-}
 
 /**
  * Represents a subscription to one or more event types
  */
 export class Subscription {
-  /** Unique identifier for this subscription */
   public readonly id: string;
-  
-  /** ID of the subscriber */
   public readonly subscriberId: string;
-  
-  /** Event types the subscriber is interested in */
   public readonly eventTypes: EventType[];
-  
-  /** When the subscription was created */
   public readonly createdAt: Date;
-  
-  /** Additional subscription options */
   public readonly options?: SubscriptionOptions;
-  
-  /** Whether the subscription is active */
   private _active: boolean = true;
-  
-  /** Callback to be invoked when cancelling (for cleanup) */
   private _onCancel?: () => void;
 
   constructor(data: {

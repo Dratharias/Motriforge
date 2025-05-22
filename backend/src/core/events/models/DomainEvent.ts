@@ -1,18 +1,8 @@
 import { Event } from './Event';
-import { EventType } from '../types/EventType';
 import { EventMetadata } from './EventMetadata';
 import { EventContext } from './EventContext';
+import { EventType, EntityReference } from '@/types/events';
 
-/**
- * Interface representing a reference to an entity
- */
-export interface EntityReference {
-  /** The type of entity (e.g., 'user', 'exercise', 'workout') */
-  entityType: string;
-  
-  /** The unique identifier of the entity */
-  entityId: string;
-}
 
 /**
  * Base class for domain events that are related to specific entities
@@ -20,29 +10,10 @@ export interface EntityReference {
  * @template T The type of the event payload data
  */
 export class DomainEvent<T> extends Event {
-  /**
-   * Type of entity this event relates to (e.g., 'user', 'exercise', 'workout')
-   */
   public readonly entityType: string;
-  
-  /**
-   * ID of the entity this event relates to
-   */
   public readonly entityId: string;
-  
-  /**
-   * Action that was performed (e.g., 'created', 'updated', 'deleted')
-   */
   public readonly action: string;
-  
-  /**
-   * The ID of the user who initiated the action
-   */
   public readonly userId?: string;
-  
-  /**
-   * The data payload for this event
-   */
   public readonly data: T;
 
   constructor(data: {

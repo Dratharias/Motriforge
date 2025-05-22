@@ -1,31 +1,16 @@
-import { EventPriority } from '../types/EventPriority';
+import { EventPriority } from "@/types/events";
 
 /**
  * Metadata associated with an event
  */
 export class EventMetadata {
-  /** The priority of the event (affects processing order) */
   public readonly priority: EventPriority;
-  
-  /** The system component that originated the event */
   public readonly origin: string;
-  
-  /** The schema version for this event type */
   public readonly version: string;
-  
-  /** The number of times this event has been retried */
   public readonly retry: number;
-  
-  /** The maximum number of retries allowed for this event */
   public readonly maxRetries: number;
-  
-  /** Optional delay (in ms) before processing this event */
   public readonly delayMs?: number;
-  
-  /** Optional routing key for message broker integration */
   public readonly routingKey?: string;
-  
-  /** Optional time-to-live (in ms) for this event */
   public readonly ttl?: number;
 
   constructor(data: Partial<EventMetadata> = {}) {

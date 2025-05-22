@@ -1,63 +1,15 @@
-import { EventSchema, ValidationResult } from './EventSchema';
-import { LoggerFacade } from '../logging/LoggerFacade';
+import { EventTypeDefinition, ValidationResult } from "@/types/events";
+import { LoggerFacade } from "../logging";
+import { EventSchema } from "./EventSchema";
 
-/**
- * Configuration for event persistance policy
- */
-export interface PersistencePolicy {
-  /** Whether to persist the event */
-  persistent: boolean;
-  
-  /** Time to live in ms (if applicable) */
-  ttl?: number;
-  
-  /** Storage collection/table name */
-  collection?: string;
-}
-
-/**
- * Definition of an event type
- */
-export interface EventTypeDefinition {
-  /** Event type name/identifier */
-  name: string;
-  
-  /** Human-readable description */
-  description: string;
-  
-  /** Schema for validating event payload */
-  schema: EventSchema;
-  
-  /** Additional metadata for this event type */
-  metadata: Record<string, any>;
-  
-  /** Schema version */
-  version: string;
-  
-  /** Whether this event type is deprecated */
-  deprecated?: boolean;
-  
-  /** Event groups this event belongs to */
-  groups: string[];
-  
-  /** Persistence policy for this event type */
-  persistencePolicy?: PersistencePolicy;
-}
 
 /**
  * Registry for event types and schemas
  */
 export class EventRegistry {
-  /** Map of event types to their definitions */
   private readonly eventTypes: Map<string, EventTypeDefinition> = new Map();
-  
-  /** Map of event types to their schemas */
   private readonly eventSchemas: Map<string, EventSchema> = new Map();
-  
-  /** Map of group names to sets of event types */
   private readonly eventGroups: Map<string, Set<string>> = new Map();
-  
-  /** Logger instance */
   private readonly logger: LoggerFacade;
 
   constructor(logger: LoggerFacade) {

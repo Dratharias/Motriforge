@@ -1,85 +1,14 @@
-import { DomainEvent } from './DomainEvent';
-import { EventType } from '../types/EventType';
-import { EventMetadata } from './EventMetadata';
-import { EventContext } from './EventContext';
+import { DeviceInfo, AuthMetadata, AuthAction, EventType } from "@/types/events";
+import { DomainEvent } from "./DomainEvent";
+import { EventContext } from "./EventContext";
+import { EventMetadata } from "./EventMetadata";
 
-/**
- * Represents information about the device used for authentication
- */
-export interface DeviceInfo {
-  /** Type of device (e.g., 'mobile', 'desktop', 'tablet') */
-  type: string;
-  
-  /** Operating system */
-  os?: string;
-  
-  /** Browser or app name */
-  client?: string;
-  
-  /** IP address */
-  ip?: string;
-  
-  /** User agent string */
-  userAgent?: string;
-  
-  /** Device identifier (if available) */
-  deviceId?: string;
-}
-
-/**
- * Metadata specific to authentication events
- */
-export interface AuthMetadata {
-  /** Authentication method used (e.g., 'password', 'oauth', 'mfa') */
-  method: string;
-  
-  /** Authentication provider (e.g., 'local', 'google', 'apple') */
-  provider?: string;
-  
-  /** Time when authentication occurred */
-  timestamp: Date;
-  
-  /** Whether the authentication was successful */
-  success: boolean;
-  
-  /** Error message or code if authentication failed */
-  error?: string;
-  
-  /** Additional authentication factors used */
-  factors?: string[];
-}
-
-/**
- * Possible auth actions
- */
-export enum AuthAction {
-  LOGIN = 'login',
-  LOGOUT = 'logout',
-  REGISTER = 'register',
-  PASSWORD_RESET = 'password.reset',
-  PASSWORD_CHANGE = 'password.changed',
-  MFA_ENABLED = 'mfa.enabled',
-  MFA_DISABLED = 'mfa.disabled',
-  MFA_CHALLENGE = 'mfa.challenge',
-  TOKEN_REFRESH = 'token.refresh',
-  TOKEN_REVOKED = 'token.revoked',
-  FAILED_ATTEMPT = 'failed.attempt',
-  ACCOUNT_LOCKED = 'account.locked',
-  ACCOUNT_UNLOCKED = 'account.unlocked'
-}
 
 /**
  * Represents authentication-related events in the system
  */
 export class AuthEvent<T = any> extends DomainEvent<T> {
-  /**
-   * Information about the device used for authentication
-   */
   public readonly device?: DeviceInfo;
-  
-  /**
-   * Authentication-specific metadata
-   */
   public readonly authMetadata?: AuthMetadata;
 
   /**

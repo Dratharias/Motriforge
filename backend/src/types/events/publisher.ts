@@ -1,5 +1,17 @@
-import { Event } from '../models/Event';
-import { Subscription } from '../models/Subscription';
+import { Subscription } from "@/core/events/models/Subscription";
+import { Event as DomainEvent } from "@/core/events/models/Event";
+
+/**
+ * Configuration for the event publisher
+ */
+export interface EventPublisherConfig {
+  enableDistributedPublishing: boolean;
+  alwaysDistributeEventTypes: string[];
+  logEvents: boolean;
+  logLevel: string;
+  validateEvents: boolean;
+  enrichEvents: boolean;
+}
 
 /**
  * Interface for distributed event publishers that can
@@ -13,7 +25,7 @@ export interface DistributedEventPublisher {
    * @param event The event to publish
    * @returns A promise that resolves when the event is published
    */
-  publishToChannel(channel: string, event: Event): Promise<void>;
+  publishToChannel(channel: string, event: DomainEvent): Promise<void>;
   
   /**
    * Subscribe to events from a specific channel
@@ -22,7 +34,7 @@ export interface DistributedEventPublisher {
    * @param handler The handler for received events
    * @returns A subscription that can be used to unsubscribe
    */
-  subscribe(channel: string, handler: (event: Event) => Promise<void>): Subscription;
+  subscribe(channel: string, handler: (event: DomainEvent) => Promise<void>): Subscription;
   
   /**
    * Unsubscribe from a channel

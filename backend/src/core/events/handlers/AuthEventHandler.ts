@@ -1,31 +1,17 @@
-import { EventHandler } from './EventHandler';
-import { Event } from '../models/Event';
-import { AuthEvent, AuthAction } from '../models/AuthEvent';
-import { LoggerFacade } from '../../logging/LoggerFacade';
-import { SystemEventTypes } from '../types/EventType';
+// src/core/events/handlers/AuthEventHandler.ts
+import { LoggerFacade } from "@/core/logging";
+import { AuthAction, EventHandler, SystemEventTypes } from "@/types/events";
+import { AuthEvent } from "../models/AuthEvent";
+import { Event } from "../models/Event";
 
 /**
  * Handles authentication-related events in the system
  */
 export class AuthEventHandler implements EventHandler {
-  /**
-   * Auth service for authentication operations
-   */
-  private readonly authService: any; // This would be the actual AuthService type
-  
-  /**
-   * Token service for token operations
-   */
-  private readonly tokenService: any; // This would be the actual TokenService type
-  
-  /**
-   * Cache service for cache operations
-   */
-  private readonly cacheService: any; // This would be the actual CacheService type
-  
-  /**
-   * Logger for the handler
-   */
+  /* TODO: Change type upon implementation */
+  private readonly authService: any;
+  private readonly tokenService: any;
+  private readonly cacheService: any;
   private readonly logger: LoggerFacade;
 
   /**

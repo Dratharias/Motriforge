@@ -15,7 +15,7 @@ import {
   OptionalUnlessRequiredId
 } from 'mongodb';
 import { EntityNotFoundError, DatabaseError } from '../../core/error/exceptions/DatabaseError';
-import { EventType } from '../../core/events/types/EventType';
+import { EventType } from '../../types/events/enums/eventTypes';
 
 /**
  * Repository interface defining common operations for data access

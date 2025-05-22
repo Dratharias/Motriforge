@@ -3,7 +3,7 @@ import { Event } from '../events/models/Event';
 import { LoggerFacade } from '../logging/LoggerFacade';
 import { EventSubscriber } from '../events/EventSubscriber';
 import { Subscription } from '../events/models/Subscription';
-import { EventType } from '../events/types/EventType';
+import { EventType } from '../../types/events/enums/eventTypes';
 
 /**
  * Mediator for cache-related events

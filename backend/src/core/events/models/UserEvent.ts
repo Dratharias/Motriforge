@@ -1,7 +1,8 @@
-import { DomainEvent } from './DomainEvent';
-import { EventType } from '../types/EventType';
-import { EventMetadata } from './EventMetadata';
-import { EventContext } from './EventContext';
+import { EventType } from "@/types/events";
+import { DomainEvent } from "./DomainEvent";
+import { EventContext } from "./EventContext";
+import { EventMetadata } from "./EventMetadata";
+
 
 /**
  * Represents user-related events in the system

@@ -17,7 +17,8 @@ export type EventNamespace =
   | 'search'
   | 'progression'
   | 'trainer'
-  | 'client';
+  | 'client'
+  | 'metrics';
 
 /**
  * Valid action types for events
@@ -42,7 +43,10 @@ export type EventAction =
   | 'invalidated'
   | 'cleared'
   | 'assigned'
-  | 'achieved';
+  | 'achieved'
+  | 'recorded'
+  | 'slow'
+  | 'processing';
 
 /**
  * Represents an event type identifier following the namespaced pattern.
@@ -98,7 +102,25 @@ export enum SystemEventTypes {
   // Content events
   CONTENT_CREATED = "content.created",
   CONTENT_UPDATED = "content.updated",
-  CONTENT_DELETED = "content.deleted"
+  CONTENT_DELETED = "content.deleted",
+  
+  // Metrics events
+  METRICS_SLOW_PROCESSING = "metrics.slow.processing",
+  METRICS_ERROR_RECORDED = "metrics.error.recorded",
+  METRICS_RESET = "metrics.reset"
+}
+
+/**
+ * Metrics-specific event types
+ */
+export enum MetricsEventTypes {
+  SLOW_PROCESSING = "metrics.slow.processing",
+  ERROR_RECORDED = "metrics.error.recorded",
+  METRICS_RESET = "metrics.reset",
+  THRESHOLD_EXCEEDED = "metrics.threshold.exceeded",
+  PERFORMANCE_WARNING = "metrics.performance.warning",
+  BATCH_PROCESSED = "metrics.batch.processed",
+  QUEUE_SIZE_CHANGED = "metrics.queue.size.changed"
 }
 
 /**

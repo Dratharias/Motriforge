@@ -1,4 +1,4 @@
-import { EventType } from '../events/types/EventType';
+import { EventType } from '../../types/events/enums/eventTypes';
 
 /**
  * Event types for cache operations

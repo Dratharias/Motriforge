@@ -1,153 +1,19 @@
-import { EventHandler } from './EventHandler';
-import { Event } from '../models/Event';
-import { DomainEvent } from '../models/DomainEvent';
-import { LoggerFacade } from '../../logging/LoggerFacade';
-import { EventType } from '../types/EventType';
-
-/**
- * Notification data structure
- */
-export interface NotificationData {
-  /** ID of the user to notify */
-  userId: string;
-  
-  /** Type of notification (e.g., 'email', 'push', 'in-app') */
-  type: string;
-  
-  /** Notification title */
-  title: string;
-  
-  /** Notification body or message */
-  message: string;
-  
-  /** Time the notification should be delivered */
-  scheduledFor: Date;
-  
-  /** Notification priority */
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  
-  /** Any data payload to include with the notification */
-  data?: Record<string, any>;
-  
-  /** URL to navigate to when notification is clicked */
-  action?: {
-    url?: string;
-    type?: string;
-    data?: Record<string, any>;
-  };
-  
-  /** Notification category for grouping similar notifications */
-  category?: string;
-  
-  /** How long the notification should remain valid */
-  ttl?: number;
-  
-  /** Images or other media to include with the notification */
-  media?: Array<{
-    type: string;
-    url: string;
-    alt?: string;
-  }>;
-}
-
-/**
- * Configuration for notification mappings from events to notifications
- */
-export interface NotificationMapping {
-  /** The event type to trigger notifications for */
-  eventType: string;
-  
-  /** Types of notifications to send (e.g., 'email', 'push', 'in-app') */
-  notificationTypes: string[];
-  
-  /** User role or ID to determine who receives the notification */
-  forRole?: string;
-  
-  /** Notification title template */
-  titleTemplate: string;
-  
-  /** Notification message template */
-  messageTemplate: string;
-  
-  /** Priority for this notification */
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  
-  /** Notification category */
-  category?: string;
-  
-  /** Action template (URL or deeplink) */
-  actionTemplate?: string;
-  
-  /** Condition for sending notification */
-  condition?: (event: Event) => boolean;
-}
-
-/**
- * Interface for the notification service
- */
-export interface NotificationService {
-  /**
-   * Send a notification
-   * 
-   * @param notification The notification to send
-   */
-  sendNotification(notification: NotificationData): Promise<void>;
-  
-  /**
-   * Schedule a notification for later delivery
-   * 
-   * @param notification The notification to schedule
-   */
-  scheduleNotification(notification: NotificationData): Promise<void>;
-  
-  /**
-   * Cancel a scheduled notification
-   * 
-   * @param userId ID of the user
-   * @param category Category of notifications to cancel
-   */
-  cancelNotification(userId: string, category: string): Promise<void>;
-  
-  /**
-   * Send a batch of notifications
-   * 
-   * @param notifications The notifications to send
-   */
-  sendBatchNotifications(notifications: NotificationData[]): Promise<void>;
-}
+// src/core/events/handlers/NotificationEventHandler.ts
+import { LoggerFacade } from "@/core/logging";
+import { EventHandler, NotificationService, NotificationMapping, NotificationData, EventType } from "@/types/events";
+import { DomainEvent } from "../models/DomainEvent";
+import { Event } from "../models/Event";
 
 /**
  * Handles creating and sending notifications based on system events
  */
 export class NotificationEventHandler implements EventHandler {
-  /**
-   * Notification service for sending notifications
-   */
   private readonly notificationService: NotificationService;
-  
-  /**
-   * User service for looking up user information
-   */
-  private readonly userService: any; // This would be the actual UserService type
-  
-  /**
-   * Logger for the handler
-   */
+  /** TODO: Assign type upon implementation */
+  private readonly userService: any;
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Notification mappings from events to notifications
-   */
   private readonly mappings: NotificationMapping[] = [];
-  
-  /**
-   * Batch of pending notifications
-   */
   private readonly pendingNotifications: NotificationData[] = [];
-  
-  /**
-   * Timer for batch processing
-   */
   private batchTimer: NodeJS.Timeout | null = null;
 
   /**

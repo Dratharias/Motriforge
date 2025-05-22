@@ -1,132 +1,27 @@
+import { EventTypeMetrics, SubscriberMetrics, EventSystemMetrics } from "@/types/events";
 import { LoggerFacade } from "../logging/LoggerFacade";
+import { EventBus } from "./EventBus";
 
-/**
- * Metrics for a specific event type
- */
-export interface EventTypeMetrics {
-  /** Count of published events by type */
-  published: number;
-  
-  /** Count of processed events by type */
-  processed: number;
-  
-  /** Count of failed events by type */
-  errors: number;
-  
-  /** Average processing time in ms */
-  avgProcessingTime: number;
-  
-  /** Maximum processing time in ms */
-  maxProcessingTime: number;
-  
-  /** History of processing times (limited to last N) */
-  processingTimeHistory: number[];
-  
-  /** Distribution of error types */
-  errorTypeDistribution?: Record<string, number>;
-}
-
-/**
- * Metrics for a specific subscriber
- */
-export interface SubscriberMetrics {
-  /** Count of events processed by this subscriber */
-  processed: number;
-  
-  /** Count of errors encountered by this subscriber */
-  errors: number;
-  
-  /** Average processing time in ms */
-  avgProcessingTime: number;
-  
-  /** Event types processed by this subscriber */
-  eventTypes: Record<string, number>;
-}
-
-/**
- * Overall event system metrics
- */
-export interface EventSystemMetrics {
-  /** Total events published */
-  totalPublished: number;
-  
-  /** Total events processed */
-  totalProcessed: number;
-  
-  /** Total errors encountered */
-  totalErrors: number;
-  
-  /** Events published in the last minute */
-  publishedLastMinute: number;
-  
-  /** Events processed in the last minute */
-  processedLastMinute: number;
-  
-  /** Current queue size */
-  queueSize: number;
-  
-  /** Error rate as percentage of total events */
-  errorRate: number;
-  
-  /** Error rate in the last minute */
-  errorRateLastMinute: number;
-  
-  /** Number of distinct event types */
-  eventTypeCount: number;
-  
-  /** Most frequently published event type */
-  mostPublishedEventType: string | null;
-  
-  /** Event type with the most errors */
-  mostErroredEventType: string | null;
-  
-  /** Overall average processing time across all event types */
-  averageProcessingTime: number;
-  
-  /** Metrics by event type */
-  byEventType: Record<string, EventTypeMetrics>;
-  
-  /** Metrics by subscriber */
-  bySubscriber: Record<string, SubscriberMetrics>;
-}
 
 /**
  * Service for collecting and tracking event metrics
  */
 export class EventMetrics {
-  /** Track number of events published by type */
   private readonly eventCounts: Map<string, number> = new Map();
-  
-  /** Track processing times by event type */
   private readonly processingTimes: Map<string, number[]> = new Map();
-  
-  /** Track error counts by event type */
   private readonly errorCounts: Map<string, number> = new Map();
-  
-  /** Track error types by event type */
   private readonly errorTypes: Map<string, Map<string, number>> = new Map();
-  
-  /** Track subscriber processing times */
   private readonly subscriberTimes: Map<string, Record<string, number[]>> = new Map();
-  
-  /** Number of processing time samples to keep */
   private readonly maxSamples: number = 100;
-  
-  /** Current queue size (updated externally) */
   private queueSize: number = 0;
-  
-  /** Recent events for time-windowed metrics */
   private readonly recentEvents: { time: number; type: string; isError: boolean }[] = [];
-  
-  /** Logger for metrics operations */
   private readonly logger?: LoggerFacade;
-  
-  /** Event bus for publishing metrics events */
-  private readonly eventBus?: any; // Using any to avoid circular dependency
+
+  private readonly eventBus?: EventBus;
 
   constructor(options?: {
     logger?: LoggerFacade;
-    eventBus?: any;
+    eventBus?: EventBus;
   }) {
     this.logger = options?.logger;
     this.eventBus = options?.eventBus;

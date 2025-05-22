@@ -1,40 +1,11 @@
-/**
- * Result of validating an event payload against a schema
- */
-export interface ValidationResult {
-  valid: boolean;
-  errors?: string[];
-}
-
-/**
- * Defines a property in an event schema
- */
-export interface PropertyDefinition {
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null' | 'any';
-  format?: string;
-  required?: boolean;
-  description?: string;
-  enum?: any[];
-  properties?: Record<string, PropertyDefinition>;
-  items?: PropertyDefinition;
-  minLength?: number;
-  maxLength?: number;
-  minimum?: number;
-  maximum?: number;
-  pattern?: string;
-}
+import { ValidationResult, PropertyDefinition } from "@/types/events/schema";
 
 /**
  * Schema for validating event payloads
  */
 export class EventSchema {
-  /** Properties defined in the schema */
   public readonly properties: Record<string, PropertyDefinition>;
-  
-  /** Required property names */
   public readonly required: string[];
-  
-  /** Schema description */
   public readonly description?: string;
 
   constructor(data: {

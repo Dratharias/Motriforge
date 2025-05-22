@@ -1,130 +1,21 @@
-import { EventHandler } from './EventHandler';
-import { Event } from '../models/Event';
-import { DomainEvent } from '../models/DomainEvent';
-import { AuthEvent } from '../models/AuthEvent';
-import { LoggerFacade } from '../../logging/LoggerFacade';
-
-/**
- * Configuration for the audit event handler
- */
-export interface AuditEventHandlerConfig {
-  /** Types of events to always audit */
-  alwaysAuditEventTypes: string[];
-  
-  /** Types of events to never audit */
-  neverAuditEventTypes: string[];
-  
-  /** Whether to audit all auth events */
-  auditAllAuthEvents: boolean;
-  
-  /** Whether to audit sensitive data operations */
-  auditSensitiveDataOperations: boolean;
-  
-  /** Whether to include event payloads in audit records */
-  includePayloads: boolean;
-  
-  /** Maximum payload size to include (in bytes) */
-  maxPayloadSize: number;
-  
-  /** Fields to redact from payloads */
-  sensitiveFields: string[];
-}
-
-/**
- * Audit record entry structure
- */
-export interface AuditRecord {
-  /** Unique ID for the audit record */
-  id: string;
-  
-  /** Timestamp when the action occurred */
-  timestamp: Date;
-  
-  /** Type of event that triggered the audit */
-  eventType: string;
-  
-  /** User who performed the action */
-  userId?: string;
-  
-  /** Type of entity affected */
-  entityType?: string;
-  
-  /** ID of entity affected */
-  entityId?: string;
-  
-  /** Action that was performed */
-  action: string;
-  
-  /** IP address from which the action was performed */
-  ipAddress?: string;
-  
-  /** User agent string */
-  userAgent?: string;
-  
-  /** Result of the action (success/failure) */
-  result: 'success' | 'failure';
-  
-  /** Additional context about the action */
-  context?: Record<string, any>;
-  
-  /** Event payload (if included) */
-  payload?: any;
-  
-  /** Correlation ID for tracking related events */
-  correlationId?: string;
-}
-
-/**
- * Interface for the audit logger service
- */
-export interface AuditLogger {
-  /**
-   * Log an audit record
-   * 
-   * @param record The audit record to log
-   */
-  log(record: AuditRecord): Promise<void>;
-  
-  /**
-   * Log multiple audit records in batch
-   * 
-   * @param records The audit records to log
-   */
-  logBatch(records: AuditRecord[]): Promise<void>;
-}
+import { LoggerFacade } from "@/core/logging";
+import { EventHandler, AuditLogger, AuditEventHandlerConfig, AuditRecord } from "@/types/events";
+import { AuthEvent } from "../models/AuthEvent";
+import { DomainEvent } from "../models/DomainEvent";
+import { Event } from "../models/Event";
 
 /**
  * Handles audit logging based on system events
  */
 export class AuditEventHandler implements EventHandler {
-  /**
-   * Audit logger service for storing audit records
-   */
   private readonly auditLogger: AuditLogger;
   
-  /**
-   * User service for looking up user information
-   */
-  private readonly userService: any; // This would be the actual UserService type
-  
-  /**
-   * Logger for the handler
-   */
+  /* TODO: Change type upon implementation */
+  private readonly userService: any;
+
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Configuration for the handler
-   */
   private readonly config: AuditEventHandlerConfig;
-  
-  /**
-   * Batch of pending audit records
-   */
   private readonly pendingRecords: AuditRecord[] = [];
-  
-  /**
-   * Timer for batch processing
-   */
   private batchTimer: NodeJS.Timeout | null = null;
 
   /**

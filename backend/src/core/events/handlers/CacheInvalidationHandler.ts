@@ -1,53 +1,15 @@
-import { EventHandler } from './EventHandler';
-import { Event } from '../models/Event';
-import { DomainEvent } from '../models/DomainEvent';
-import { LoggerFacade } from '../../logging/LoggerFacade';
-import { SystemEventTypes } from '../types/EventType';
-
-/**
- * Cache invalidation pattern defining how to invalidate cache entries
- * when certain events occur
- */
-export interface InvalidationPattern {
-  /** Domain that this pattern applies to */
-  domain: string;
-  
-  /** Pattern for matching cache keys (can include wildcards) */
-  keyPattern: string;
-  
-  /** List of event types that should trigger invalidation */
-  eventTypes: string[];
-  
-  /** Optional condition function to determine if pattern should apply */
-  condition?: (event: Event) => boolean;
-  
-  /** Execution priority (higher numbers execute first) */
-  priority: number;
-  
-  /** Whether invalidation should cascade to dependent caches */
-  cascade?: boolean;
-  
-  /** Dependent cache domains to also invalidate */
-  dependencies?: string[];
-}
+import { LoggerFacade } from "@/core/logging";
+import { EventHandler, InvalidationPattern, SystemEventTypes } from "@/types/events";
+import { DomainEvent } from "../models/DomainEvent";
+import { Event } from "../models/Event";
 
 /**
  * Handles cache invalidation based on system events
  */
 export class CacheInvalidationHandler implements EventHandler {
-  /**
-   * Cache manager for cache operations
-   */
-  private readonly cacheManager: any; // This would be the actual CacheManager type
-  
-  /**
-   * Logger for the handler
-   */
+  /** TODO: Assign type upon implementation */
+  private readonly cacheManager: any;
   private readonly logger: LoggerFacade;
-  
-  /**
-   * Invalidation patterns registered with this handler
-   */
   private readonly patterns: InvalidationPattern[] = [];
 
   /**
@@ -233,7 +195,7 @@ export class CacheInvalidationHandler implements EventHandler {
     }
     
     // Replace dynamic properties from the event payload
-    const matches = result.match(/:([a-zA-Z0-9_]+)/g);
+    const matches = result.match(/:(\w+)/g);
     if (matches) {
       for (const match of matches) {
         const propName = match.substring(1); // Remove the colon

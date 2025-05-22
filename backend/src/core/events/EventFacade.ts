@@ -1,25 +1,12 @@
-import { EventType } from './types/EventType';
-import { Event } from './models/Event';
-import { EventMediator } from './EventMediator';
-import { EventRegistry } from './EventRegistry';
-import { EventPublisher } from './publishers/EventPublisher';
-import { EventContextProvider } from './EventContextProvider';
-import { EventHandler } from './handlers/EventHandler';
-import { Subscription } from './models/Subscription';
-import { v4 as uuidv4 } from 'uuid';
-import { LoggerFacade } from '../logging/LoggerFacade';
-import { EventMetadata } from './models/EventMetadata';
-
-/**
- * Configuration for the event facade
- */
-export interface EventFacadeConfig {
-  /** Whether to validate events against schemas */
-  validateEvents: boolean;
-  
-  /** Whether to enrich events with context */
-  enrichEvents: boolean;
-}
+import { EventFacadeConfig, EventHandler, EventType } from "@/types/events";
+import { LoggerFacade } from "../logging";
+import { EventContextProvider } from "./EventContextProvider";
+import { EventMediator } from "./EventMediator";
+import { EventRegistry } from "./EventRegistry";
+import { EventMetadata } from "./models/EventMetadata";
+import { Subscription } from "./models/Subscription";
+import { EventPublisher } from "./EventPublisher";
+import { Event as DomainEvent } from "./models/Event";
 
 /**
  * Main entry point for the event system
@@ -27,22 +14,11 @@ export interface EventFacadeConfig {
  * Provides a simplified interface for working with events
  */
 export class EventFacade {
-  /** Event mediator for distributing events */
   private readonly eventMediator: EventMediator;
-  
-  /** Event registry for event type definitions */
   private readonly eventRegistry: EventRegistry;
-  
-  /** Event publisher for creating and publishing events */
   private readonly eventPublisher: EventPublisher;
-  
-  /** Context provider for event context */
   private readonly contextProvider: EventContextProvider;
-  
-  /** Logger for the facade */
   private readonly logger: LoggerFacade;
-  
-  /** Configuration */
   private readonly config: EventFacadeConfig;
 
   constructor(
@@ -116,8 +92,15 @@ export class EventFacade {
    * @param payload Event payload
    * @returns The created event
    */
-  public createEvent(type: EventType, payload: any): Event {
-    return this.eventPublisher.createEvent(type, payload);
+  public createEvent(type: EventType, payload: any): DomainEvent {
+    const event = this.eventPublisher.createEvent(type, payload);
+    
+    // Enrich event with context if enabled
+    if (this.config.enrichEvents) {
+      return this.contextProvider.enrichEventWithContext(event);
+    }
+    
+    return event;
   }
 
   /**
@@ -128,7 +111,7 @@ export class EventFacade {
    * @param options Additional event creation options
    * @returns The created typed event
    */
-  public createTypedEvent<T extends Event>(
+  public createTypedEvent<T extends DomainEvent>(
     eventType: EventType,
     payload: any,
     options?: Partial<{
@@ -137,7 +120,14 @@ export class EventFacade {
       metadata: Partial<EventMetadata>;
     }>
   ): T {
-    return this.eventPublisher.createTypedEvent<T>(eventType, payload, options);
+    const event = this.eventPublisher.createTypedEvent<T>(eventType, payload, options);
+    
+    // Enrich event with context if enabled
+    if (this.config.enrichEvents) {
+      return this.contextProvider.enrichEventWithContext(event) as T;
+    }
+    
+    return event;
   }
 
   /**
@@ -164,7 +154,7 @@ export class EventFacade {
    */
   public subscribeOnce(eventType: EventType, handler: EventHandler): Subscription {
     const subscription = this.subscribe([eventType], {
-      handleEvent: async (event: Event) => {
+      handleEvent: async (event: DomainEvent) => {
         // Call the original handler
         await handler.handleEvent(event);
         
@@ -197,6 +187,26 @@ export class EventFacade {
   }
 
   /**
+   * Get the current event context
+   * 
+   * @returns The current event context
+   */
+  public getContext() {
+    return this.contextProvider.getContext();
+  }
+
+  /**
+   * Run a function with a specific event context
+   * 
+   * @param context The context to use
+   * @param fn The function to run
+   * @returns The result of the function
+   */
+  public withContext<T>(context: any, fn: () => T): T {
+    return this.contextProvider.withContext(context, fn);
+  }
+
+  /**
    * Create a subscriber adapter for a handler
    * 
    * @param handler The handler to adapt
@@ -204,10 +214,10 @@ export class EventFacade {
    * @returns A subscriber that delegates to the handler
    */
   private createSubscriber(handler: EventHandler, eventTypes: EventType[]): any {
-    const subscriberId = uuidv4();
+    const subscriberId = crypto.randomUUID();
     
     return {
-      handleEvent: (event: Event) => handler.handleEvent(event),
+      handleEvent: (event: DomainEvent) => handler.handleEvent(event),
       getSubscriptionTypes: () => eventTypes,
       getPriority: () => 0, // Default priority
       getId: () => subscriberId

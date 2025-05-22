@@ -1,8 +1,8 @@
-import { EventType } from './types/EventType';
-import { Event } from './models/Event';
+import { Event as DomainEvent } from './models/Event';
 import { EventMediator } from './EventMediator';
-import { Subscription, SubscriptionOptions } from './models/Subscription';
 import { v4 as uuidv4 } from 'uuid';
+import { EventType, SubscriptionOptions } from '@/types/events';
+import { Subscription } from './models/Subscription';
 
 /**
  * EventBus provides a pub/sub interface for the event system
@@ -11,16 +11,9 @@ import { v4 as uuidv4 } from 'uuid';
  * callbacks instead of requiring the implementation of interfaces.
  */
 export class EventBus {
-  /** Reference to the event mediator */
   private readonly mediator: EventMediator;
-  
-  /** Event types the bus is interested in */
-  private readonly eventTypes: string[] = [];
-  
-  /** Map of event types to sets of callbacks */
-  private readonly subscribers: Map<string, Set<(event: Event) => void>> = new Map();
-  
-  /** Map of event types to subscription IDs */
+  private readonly eventTypes: EventType[] = [];
+  private readonly subscribers: Map<string, Set<(event: DomainEvent) => void>> = new Map();
   private readonly subscriptionIds: Map<string, string> = new Map();
 
   constructor(mediator: EventMediator) {
@@ -33,7 +26,7 @@ export class EventBus {
    * @param eventType The event type to listen for
    * @param callback The function to call when the event occurs
    */
-  public on(eventType: EventType, callback: (event: Event) => void): void {
+  public on(eventType: EventType, callback: (event: DomainEvent) => void): void {
     // Ensure we have a set for this event type
     if (!this.subscribers.has(eventType)) {
       this.subscribers.set(eventType, new Set());
@@ -52,7 +45,7 @@ export class EventBus {
    * @param eventType The event type to unregister from
    * @param callback The callback function to remove
    */
-  public off(eventType: EventType, callback: (event: Event) => void): void {
+  public off(eventType: EventType, callback: (event: DomainEvent) => void): void {
     const callbacks = this.subscribers.get(eventType);
     
     if (callbacks) {
@@ -73,9 +66,9 @@ export class EventBus {
    * @param eventType The event type to listen for
    * @param callback The function to call when the event occurs
    */
-  public once(eventType: EventType, callback: (event: Event) => void): void {
+  public once(eventType: EventType, callback: (event: DomainEvent) => void): void {
     // Create a wrapper that will remove itself after execution
-    const wrapper = (event: Event) => {
+    const wrapper = (event: DomainEvent) => {
       // First remove this wrapper to prevent re-execution
       this.off(eventType, wrapper);
       
@@ -95,7 +88,7 @@ export class EventBus {
    */
   public emit(eventType: EventType, data: any): void {
     // Create a simple event
-    const event = new Event({
+    const event = new DomainEvent({
       type: eventType,
       payload: data,
       source: 'event-bus'
@@ -114,7 +107,7 @@ export class EventBus {
    */
   public async emitAsync(eventType: EventType, data: any): Promise<void> {
     // Create a simple event
-    const event = new Event({
+    const event = new DomainEvent({
       type: eventType,
       payload: data,
       source: 'event-bus'
@@ -132,9 +125,9 @@ export class EventBus {
    */
   public subscribe(options: {
     eventTypes: EventType[];
-    callback: (event: Event) => void;
+    callback: (event: DomainEvent) => void;
   } & Omit<SubscriptionOptions, 'filter'> & {
-    filter?: (event: Event) => boolean; // Override filter with more specific Event type
+    filter?: (event: DomainEvent) => boolean; // Override filter with more specific Event type
   }): Subscription {
     const { eventTypes, callback, once, filter } = options;
     
@@ -142,7 +135,7 @@ export class EventBus {
     const subscriberId = uuidv4();
     
     const subscriber = {
-      handleEvent: (event: Event) => {
+      handleEvent: (event: DomainEvent) => {
         // Apply filter if provided
         if (filter && !filter(event)) {
           return;
@@ -181,7 +174,7 @@ export class EventBus {
     const subscriberId = uuidv4();
     
     const subscriber = {
-      handleEvent: (event: Event) => {
+      handleEvent: (event: DomainEvent) => {
         // Forward to all callbacks for this event type
         const callbacks = this.subscribers.get(event.type);
         
@@ -247,7 +240,7 @@ export class EventBus {
     
     // Unsubscribe from each type
     for (const type of types) {
-      this.unsubscribeFromEventType(type as EventType);
+      this.unsubscribeFromEventType(type);
     }
     
     // Clear all collections

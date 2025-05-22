@@ -1,5 +1,15 @@
-import { Event } from './models/Event';
-import { EventType } from './types/EventType';
+import { EventType } from "./enums";
+import { Event as DomainEvent } from "@/core/events/models/Event";
+
+/**
+ * Options for event subscriptions
+ */
+export interface SubscriptionOptions {
+  once?: boolean;
+  includePast?: boolean;
+  fromTimestamp?: Date;
+  filter?: (event: DomainEvent) => boolean;
+}
 
 /**
  * Interface for event subscribers that can receive and handle events
@@ -12,7 +22,7 @@ export interface EventSubscriber {
    * @param event The event to handle
    * @returns A promise that resolves when the event is handled, or void if sync processing
    */
-  handleEvent(event: Event): void | Promise<void>;
+  handleEvent(event: DomainEvent): void | Promise<void>;
   
   /**
    * Get the event types this subscriber is interested in

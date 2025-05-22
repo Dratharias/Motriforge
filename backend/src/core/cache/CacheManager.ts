@@ -5,9 +5,9 @@ import { CacheStats, createCacheStats } from './CacheStats';
 import { CacheHealthMonitor } from './CacheHealthMonitor';
 import { LoggerFacade } from '../logging/LoggerFacade';
 import { EventMediator } from '../events/EventMediator';
-import { EventPublisher } from '../events/publishers/EventPublisher';
+import { EventPublisher } from '../events/EventPublisher';
 import { CacheEventTypes } from './CacheEventTypes';
-import { EventType } from '../events/types/EventType';
+import { EventType } from '../../types/events/enums/eventTypes';
 
 /**
  * Cache domains

@@ -1,59 +1,26 @@
-// src/core/events/EventQueue.ts
 import { Event } from './models/Event';
 import { LoggerFacade } from '../logging/LoggerFacade';
 import { EventMetrics } from './EventMetrics';
+import { EventQueueConfig } from '@/types/events';
 
-/**
- * Configuration for the event queue
- */
-export interface EventQueueConfig {
-  /** Maximum number of retries for failed events */
-  maxRetries: number;
-  
-  /** Whether to enable the dead letter queue */
-  enableDeadLetterQueue: boolean;
-  
-  /** Maximum size of the dead letter queue */
-  maxDeadLetterQueueSize: number;
-  
-  /** Whether to automatically log events sent to the dead letter queue */
-  logDeadLetterEvents: boolean;
-}
 
 /**
  * In-memory queue for handling events asynchronously
  */
 export class EventQueue {
-  /** Internal queue of events */
   private readonly queue: Event[] = [];
-  
-  /** Dead letter queue for events that failed processing */
   private readonly deadLetterQueue: Array<{
     event: Event;
     error: Error;
     failedAt: Date;
     attempts: number;
   }> = [];
-  
-  /** Number of concurrent worker processes */
   private workers: number;
-  
-  /** Function that processes events from the queue */
   private readonly processingFn: (event: Event) => Promise<void>;
-  
-  /** Whether the queue is actively processing */
   private active: boolean = false;
-  
-  /** Metrics collection service */
   private readonly metrics: EventMetrics;
-  
-  /** Logger for queue operations */
   private readonly logger: LoggerFacade;
-  
-  /** Currently active processing promises */
   private readonly activeProcesses: Promise<void>[] = [];
-  
-  /** Configuration */
   private readonly config: EventQueueConfig;
 
   constructor(

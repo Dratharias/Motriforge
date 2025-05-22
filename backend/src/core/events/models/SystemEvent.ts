@@ -1,63 +1,15 @@
-import { Event } from './Event';
-import { EventType } from '../types/EventType';
-import { EventMetadata } from './EventMetadata';
-import { EventContext } from './EventContext';
-import { EventPriority } from '../types/EventPriority';
-
-/**
- * Severity levels for system events
- */
-export enum SeverityLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  NOTICE = 'notice',
-  WARNING = 'warning',
-  ERROR = 'error',
-  CRITICAL = 'critical',
-  ALERT = 'alert',
-  EMERGENCY = 'emergency'
-}
-
-/**
- * System component types
- */
-export enum SystemComponent {
-  API = 'api',
-  DATABASE = 'database',
-  CACHE = 'cache',
-  AUTH = 'auth',
-  QUEUE = 'queue',
-  SCHEDULER = 'scheduler',
-  FILE_STORAGE = 'file-storage',
-  SEARCH = 'search',
-  NOTIFICATION = 'notification',
-  WORKER = 'worker',
-  MONITORING = 'monitoring',
-  CONFIG = 'config'
-}
+import { SeverityLevel, SystemComponent, EventType, EventPriority } from "@/types/events";
+import { Event } from "./Event";
+import { EventContext } from "./EventContext";
+import { EventMetadata } from "./EventMetadata";
 
 /**
  * Represents system-level events that are not tied to specific domain entities
  */
 export class SystemEvent<T = any> extends Event {
-  /**
-   * The system component that generated the event
-   */
   public readonly component: string;
-  
-  /**
-   * The action that occurred
-   */
   public readonly action: string;
-  
-  /**
-   * The severity level of the event
-   */
   public readonly severity: SeverityLevel;
-  
-  /**
-   * Event details
-   */
   public readonly details: T;
 
   /**
@@ -105,7 +57,17 @@ export class SystemEvent<T = any> extends Event {
    * @param updates Updates to apply to the event
    * @returns A new SystemEvent instance with the updates applied
    */
-  public with(updates: Partial<Omit<SystemEvent<T>, 'id' | 'timestamp' | 'metadata'> & { metadata?: Partial<EventMetadata>, details?: T }>): SystemEvent<T> {
+  public with(updates: Partial<{
+    component: string;
+    action: string;
+    severity: SeverityLevel;
+    details: T;
+    metadata: Partial<EventMetadata>;
+    context: EventContext;
+    correlationId: string;
+    source: string;
+    type: EventType;
+  }>): SystemEvent<T> {
     return new SystemEvent<T>({
       component: updates.component ?? this.component,
       action: updates.action ?? this.action,

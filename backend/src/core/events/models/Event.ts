@@ -1,40 +1,22 @@
-import { EventType } from '../types/EventType';
-import { EventMetadata } from './EventMetadata';
 import { EventContext } from './EventContext';
+import { EventMetadata } from './EventMetadata';
+import { EventType } from '@/types/events';
 import { v4 as uuidv4 } from 'uuid';
+
 
 /**
  * Represents an event in the system
  */
 export class Event {
-  /** Unique identifier for the event */
   public readonly id: string;
-  
-  /** Type of the event */
   public readonly type: EventType;
-  
-  /** Timestamp when the event was created */
   public readonly timestamp: Date;
-  
-  /** Event payload/data */
   public readonly payload: any;
-  
-  /** Event metadata */
   public readonly metadata: EventMetadata;
-  
-  /** Source component that created the event */
   public readonly source: string;
-  
-  /** Correlation ID for distributed tracing */
   public readonly correlationId?: string;
-  
-  /** Context information about the event */
   public readonly context?: EventContext;
-  
-  /** Schema version of the event */
   public readonly version: string;
-  
-  /** Whether the event has been acknowledged by handlers */
   private _isAcknowledged: boolean = false;
 
   constructor(data: {

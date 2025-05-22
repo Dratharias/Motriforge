@@ -1,47 +1,21 @@
-import { EventType } from './types/EventType';
-import { Event } from './models/Event';
-import { EventSubscriber } from './EventSubscriber';
-import { EventQueue } from './EventQueue';
-import { EventPublisher } from './publishers/EventPublisher';
-import { LoggerFacade } from '../logging/LoggerFacade';
-import { EventMetrics } from './EventMetrics';
-import { Subscription } from './models/Subscription';
-import { v4 as uuidv4 } from 'uuid';
-
-/**
- * Configuration for the event mediator
- */
-export interface EventMediatorConfig {
-  /** Whether to use async processing */
-  asyncProcessing: boolean;
-  
-  /** Number of worker threads for async processing */
-  workerCount: number;
-}
+import { EventType, EventMediatorConfig, EventSubscriber } from "@/types/events";
+import { LoggerFacade } from "../logging";
+import { EventMetrics } from "./EventMetrics";
+import { EventQueue } from "./EventQueue";
+import { Subscription } from "./models/Subscription";
+import { EventPublisher } from "./EventPublisher";
+import { Event as DomainEvent } from "./models/Event";
 
 /**
  * Central mediator for the event system
  */
 export class EventMediator {
-  /** Map of event types to subscriber sets */
   private readonly subscribers: Map<EventType, Set<EventSubscriber>> = new Map();
-  
-  /** Queue for async event processing */
   private readonly eventQueue: EventQueue;
-  
-  /** Reference to the event publisher */
   private readonly eventPublisher: EventPublisher;
-  
-  /** Logger for mediator operations */
   private readonly logger: LoggerFacade;
-  
-  /** Metrics tracking */
   private readonly metrics: EventMetrics;
-  
-  /** Configuration */
   private readonly config: EventMediatorConfig;
-  
-  /** Map of subscription IDs to subscriber info */
   private readonly subscriptionInfo: Map<string, {
     subscriber: EventSubscriber,
     eventTypes: EventType[]
@@ -97,7 +71,7 @@ export class EventMediator {
    * @returns A subscription that can be used to unsubscribe
    */
   public subscribe(eventTypes: EventType[], subscriber: EventSubscriber): Subscription {
-    const subscriptionId = uuidv4();
+    const subscriptionId = crypto.randomUUID();
     
     // Store subscription info for lookup
     this.subscriptionInfo.set(subscriptionId, {
@@ -132,7 +106,7 @@ export class EventMediator {
    * 
    * @param event The event to publish
    */
-  public publish(event: Event): void {
+  public publish(event: DomainEvent): void {
     if (this.config.asyncProcessing) {
       // Add to queue for async processing
       this.eventQueue.enqueue(event);
@@ -153,7 +127,7 @@ export class EventMediator {
    * @param event The event to publish
    * @returns Promise that resolves when the event is published
    */
-  public async publishAsync(event: Event): Promise<void> {
+  public async publishAsync(event: DomainEvent): Promise<void> {
     try {
       // Simply delegate to the synchronous version
       // The actual asynchronous behavior is handled by the queue
@@ -234,7 +208,7 @@ export class EventMediator {
    * 
    * @param event The event to process
    */
-  private async processEvent(event: Event): Promise<void> {
+  private async processEvent(event: DomainEvent): Promise<void> {
     const startTime = Date.now();
     
     try {
@@ -304,7 +278,7 @@ export class EventMediator {
    * @param subscriber The subscriber to notify
    * @param event The event to notify about
    */
-  private async notifySubscriber(subscriber: EventSubscriber, event: Event): Promise<void> {
+  private async notifySubscriber(subscriber: EventSubscriber, event: DomainEvent): Promise<void> {
     try {
       // Call subscriber's handleEvent method
       const result = subscriber.handleEvent(event);

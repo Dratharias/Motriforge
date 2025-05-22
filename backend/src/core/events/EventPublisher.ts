@@ -1,63 +1,25 @@
-import { Event } from '../models/Event';
-import { EventType } from '../types/EventType';
-import { EventMetrics } from '../EventMetrics';
-import { EventContextProvider } from '../EventContextProvider';
-import { LoggerFacade } from '../../logging/LoggerFacade';
-import { EventMetadata } from '../models/EventMetadata';
-import { EventRegistry } from '../EventRegistry';
-import { EventEnricher } from '../EventEnricher';
-import { DistributedEventPublisher } from './DistributedEventPublisher';
-import { EventMediator } from '../EventMediator';
-
-/**
- * Configuration for the event publisher
- */
-export interface EventPublisherConfig {
-  /** Whether to enable distributed publishing */
-  enableDistributedPublishing: boolean;
-  
-  /** Event types to always publish to distributed publisher */
-  alwaysDistributeEventTypes: string[];
-  
-  /** Whether to log events when published */
-  logEvents: boolean;
-  
-  /** Log level to use for event logging */
-  logLevel: string;
-  
-  /** Whether to validate events against schemas */
-  validateEvents: boolean;
-  
-  /** Whether to enrich events with context */
-  enrichEvents: boolean;
-}
+import { LoggerFacade } from "@/core/logging";
+import { EventType } from "@/types/events";
+import { DistributedEventPublisher, EventPublisherConfig } from "@/types/events/publisher";
+import { EventContextProvider } from "./EventContextProvider";
+import { EventEnricher } from "./EventEnricher";
+import { EventMediator } from "./EventMediator";
+import { EventMetrics } from "./EventMetrics";
+import { EventRegistry } from "./EventRegistry";
+import { EventMetadata } from "./models/EventMetadata";
+import { Event as DomainEvent } from "./models/Event";
 
 /**
  * Responsible for creating and publishing events
  */
 export class EventPublisher {
-  /** Event mediator instance */
   private mediator: EventMediator | undefined;
-  
-  /** Configuration */
   private readonly config: EventPublisherConfig;
-  
-  /** Event registry for validation */
   private readonly registry: EventRegistry;
-  
-  /** Metrics tracking */
   private readonly metrics: EventMetrics;
-  
-  /** Context provider */
   private readonly contextProvider: EventContextProvider;
-  
-  /** Event enricher for adding extra data */
   private readonly eventEnricher: EventEnricher;
-  
-  /** Logger */
   private readonly logger: LoggerFacade;
-  
-  /** Optional distributed publisher for cross-service events */
   private readonly distributedPublisher?: DistributedEventPublisher;
 
   constructor(
@@ -101,7 +63,7 @@ export class EventPublisher {
    * 
    * @param event The event to publish
    */
-  public publishEvent(event: Event): void {
+  public publishEvent(event: DomainEvent): void {
     try {
       let processedEvent = event;
       
@@ -169,7 +131,7 @@ export class EventPublisher {
    * @param event The event to publish
    * @returns Promise that resolves when the event is published
    */
-  public async publishEventAsync(event: Event): Promise<void> {
+  public async publishEventAsync(event: DomainEvent): Promise<void> {
     // For now, we just call the sync version
     // In a real system, this might use a different path
     this.publishEvent(event);
@@ -182,14 +144,14 @@ export class EventPublisher {
    * @param payload Event payload
    * @returns The created event
    */
-  public createEvent(type: EventType, payload: any): Event {
+  public createEvent(type: EventType, payload: any): DomainEvent {
     const metadata = new EventMetadata({
       origin: 'event-publisher'
     });
     
     const context = this.contextProvider.getContext();
     
-    return new Event({
+    return new DomainEvent({
       type,
       payload,
       metadata,
@@ -206,7 +168,7 @@ export class EventPublisher {
    * @param options Additional event creation options
    * @returns The created typed event
    */
-  public createTypedEvent<T extends Event>(
+  public createTypedEvent<T extends DomainEvent>(
     eventType: EventType,
     payload: any,
     options: Partial<{
@@ -218,7 +180,7 @@ export class EventPublisher {
     const { source, correlationId, metadata } = options;
     
     // Create event with the specific type and options
-    const event = new Event({
+    const event = new DomainEvent({
       type: eventType,
       payload,
       source: source ?? 'event-publisher',
@@ -236,7 +198,7 @@ export class EventPublisher {
    * @param event The event to enrich
    * @returns The enriched event
    */
-  private enrichEvent(event: Event): Event {
+  private enrichEvent(event: DomainEvent): DomainEvent {
     // First apply general context enrichment
     let enrichedEvent = this.contextProvider.enrichEventWithContext(event);
     
@@ -251,7 +213,7 @@ export class EventPublisher {
    * 
    * @param event The event to log
    */
-  private logEvent(event: Event): void {
+  private logEvent(event: DomainEvent): void {
     // Log at the configured level
     if (this.config.logLevel === 'debug') {
       this.logger.debug(`Event published: ${event.type}`, {
@@ -272,7 +234,7 @@ export class EventPublisher {
    * 
    * @param event The event to record metrics for
    */
-  private recordMetrics(event: Event): void {
+  private recordMetrics(event: DomainEvent): void {
     this.metrics.recordEventPublished(event.type);
   }
 
@@ -282,7 +244,7 @@ export class EventPublisher {
    * @param event The event to check
    * @returns True if the event should be distributed
    */
-  private shouldPublishToDistributed(event: Event): boolean {
+  private shouldPublishToDistributed(event: DomainEvent): boolean {
     if (!this.config.enableDistributedPublishing || !this.distributedPublisher) {
       return false;
     }
@@ -311,7 +273,7 @@ export class EventPublisher {
    * 
    * @param event The event to publish
    */
-  private async publishToDistributed(event: Event): Promise<void> {
+  private async publishToDistributed(event: DomainEvent): Promise<void> {
     if (!this.distributedPublisher) {
       throw new Error('Distributed publisher is not configured');
     }
