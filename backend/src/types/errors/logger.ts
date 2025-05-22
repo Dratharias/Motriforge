@@ -1,5 +1,5 @@
 import { ErrorContext } from "@/core/error/ErrorContext";
-import { ErrorSeverity } from "@/core/error/ErrorLoggerService";
+import { ErrorSeverity } from "./enums";
 
 export interface ErrorLogEntry {
   error: Error;

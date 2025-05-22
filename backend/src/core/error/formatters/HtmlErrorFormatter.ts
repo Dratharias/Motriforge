@@ -1,6 +1,6 @@
-import { ErrorFormatter } from '../ErrorFormatter';
 import { FormattedError } from '../FormattedError';
 import { ApiError } from '../ApiError';
+import { ErrorFormatter } from '@/types/errors';
 
 export class HtmlErrorFormatter implements ErrorFormatter {
   private readonly templates: Map<number, string>;
