@@ -1,4 +1,4 @@
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository } from './helpers';
 import { Database } from '../database/Database';
 import { LoggerFacade } from '../../core/logging/LoggerFacade';
 import { EventMediator } from '../../core/events/EventMediator';

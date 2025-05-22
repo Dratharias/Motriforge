@@ -9,7 +9,8 @@ export class MongooseDatabaseSession implements DatabaseSession {
 
   constructor(clientSession: ClientSession) {
     this.clientSession = clientSession;
-    this.id = JSON.stringify(clientSession.id) || 'unknown';
+    // Safely handle session ID conversion
+    this.id = this.extractSessionId(clientSession);
   }
 
   async startTransaction(): Promise<void> {
@@ -29,6 +30,80 @@ export class MongooseDatabaseSession implements DatabaseSession {
   // Expose ClientSession if needed
   getRawSession(): ClientSession {
     return this.clientSession;
+  }
+
+  /**
+   * Safely extract session ID from ClientSession
+   */
+  private extractSessionId(session: ClientSession): string {
+    if (!session.id) {
+      return this.generateFallbackId();
+    }
+
+    if (typeof session.id === 'string') {
+      return session.id;
+    }
+
+    if (typeof session.id === 'object' && session.id !== null) {
+      return this.extractIdFromObject(session.id);
+    }
+
+    return this.generateFallbackId();
+  }
+
+  /**
+   * Extract ID from object-type session IDs
+   */
+  private extractIdFromObject(sessionId: object): string {
+    // Try toHexString method (ObjectId)
+    if (this.hasMethod(sessionId, 'toHexString')) {
+      return (sessionId as any).toHexString();
+    }
+
+    // Try toString method with validation
+    if (this.hasMethod(sessionId, 'toString')) {
+      const stringified = (sessionId as any).toString();
+      if (this.isValidStringified(stringified)) {
+        return stringified;
+      }
+    }
+
+    // Try id property
+    if (this.hasProperty(sessionId, 'id')) {
+      return String((sessionId as any).id);
+    }
+
+    return this.generateFallbackId();
+  }
+
+  /**
+   * Check if object has a specific method
+   */
+  private hasMethod(obj: object, methodName: string): boolean {
+    return methodName in obj && typeof (obj as any)[methodName] === 'function';
+  }
+
+  /**
+   * Check if object has a specific property
+   */
+  private hasProperty(obj: object, propertyName: string): boolean {
+    return propertyName in obj;
+  }
+
+  /**
+   * Validate that stringified value is meaningful
+   */
+  private isValidStringified(value: string): boolean {
+    return value !== '[object Object]' && value.length > 0;
+  }
+
+  /**
+   * Generate fallback session ID
+   */
+  private generateFallbackId(): string {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9);
+    return `session_${timestamp}_${random}`;
   }
 }
 
@@ -92,6 +167,17 @@ export class TransactionImpl {
 
   public getSession(): DatabaseSession {
     return this.session;
+  }
+
+  /**
+   * Get the underlying Mongoose ClientSession
+   * Required by the Transaction interface
+   */
+  public getClientSession(): ClientSession {
+    if (isMongooseDatabaseSession(this.session)) {
+      return this.session.getRawSession();
+    }
+    throw new Error('Session is not a MongooseDatabaseSession');
   }
 
   public getStatus(): TransactionStatus {

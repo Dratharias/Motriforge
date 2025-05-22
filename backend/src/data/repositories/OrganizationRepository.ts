@@ -1,658 +1,582 @@
-import { BaseRepository } from './BaseRepository';
-import { Database } from '../database/Database';
-import { LoggerFacade } from '../../core/logging/LoggerFacade';
-import { EventMediator } from '../../core/events/EventMediator';
-import { ValidationError } from '../../core/error/exceptions/ValidationError';
-import { DatabaseError, EntityNotFoundError } from '../../core/error/exceptions/DatabaseError';
-import { Filter, ObjectId, OptionalUnlessRequiredId } from 'mongodb';
+import { CacheFacade } from "@/core/cache/facade/CacheFacade";
+import { EventMediator } from "@/core/events/EventMediator";
+import { LoggerFacade } from "@/core/logging";
+import { ValidationResult } from "@/types/events";
+import { IOrganization, IOrganizationMember, OrganizationVisibilityValue } from "@/types/models";
+import { IOrganizationRepository, RepositoryContext } from "@/types/repositories";
+import { Model, Types } from "mongoose";
+import { BaseRepository } from "./BaseRepository";
+import { ValidationHelpers } from "./helpers";
+
 
 /**
- * Organization model interface
+ * Repository for organization operations with enhanced validation and caching
  */
-export interface Organization {
-  _id?: ObjectId;
-  name: string;
-  type: string;
-  description: string;
-  logoUrl?: string;
-  owner: ObjectId;
-  admins: ObjectId[];
-  address?: {
-    street1?: string;
-    street2?: string;
-    city?: string;
-    state?: string;
-    postalCode?: string;
-    country?: string;
-  };
-  contact?: {
-    email?: string;
-    phone?: string;
-    website?: string;
-  };
-  visibility: 'public' | 'private' | 'secret';
-  isVerified: boolean;
-  trustLevel: 'unverified' | 'verified' | 'certified' | 'partner' | 'official';
-  settings: {
-    allowMemberInvite: boolean;
-    allowPublicJoin: boolean;
-    defaultRole: string;
-    contentModeration: string;
-    dataSharing: string;
-  };
-  stats: {
-    memberCount: number;
-    contentCount: number;
-    activityLevel: number;
-    creationDate: Date;
-    lastActivity: Date;
-  };
-  isActive: boolean;
-  isArchived: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export class OrganizationRepository extends BaseRepository<IOrganization> implements IOrganizationRepository {
+  private static readonly CACHE_TTL = 600; // 10 minutes
+  private static readonly ORG_CACHE_TTL = 1800; // 30 minutes for organization data
+  private static readonly MEMBER_CACHE_TTL = 300; // 5 minutes for member data
 
-/**
- * Organization member interface
- */
-export interface OrganizationMember {
-  _id?: ObjectId;
-  organizationId: ObjectId;
-  userId: ObjectId;
-  role: string;
-  permissions?: string[];
-  joinedAt: Date;
-  active: boolean;
-  invitedBy?: ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-/**
- * Data required to create a new organization
- */
-export interface OrganizationCreationData {
-  name: string;
-  type: string;
-  description: string;
-  logoUrl?: string;
-  owner: string | ObjectId;
-  visibility?: 'public' | 'private' | 'secret';
-  address?: {
-    street1?: string;
-    street2?: string;
-    city?: string;
-    state?: string;
-    postalCode?: string;
-    country?: string;
-  };
-  contact?: {
-    email?: string;
-    phone?: string;
-    website?: string;
-  };
-  settings?: {
-    allowMemberInvite?: boolean;
-    allowPublicJoin?: boolean;
-    defaultRole?: string;
-    contentModeration?: string;
-    dataSharing?: string;
-  };
-}
-
-/**
- * Data required to add a member to an organization
- */
-export interface MemberData {
-  userId: string | ObjectId;
-  role: string;
-  permissions?: string[];
-  invitedBy?: string | ObjectId;
-}
-
-/**
- * Data for updating an organization member
- */
-export interface MemberUpdateData {
-  role?: string;
-  permissions?: string[];
-  active?: boolean;
-}
-
-/**
- * Repository for organization data access
- */
-export class OrganizationRepository extends BaseRepository<Organization> {
-  private readonly membersCollectionName: string = 'organization_members';
-  
   constructor(
-    db: Database,
+    organizationModel: Model<IOrganization>,
     logger: LoggerFacade,
-    eventMediator?: EventMediator
+    eventMediator: EventMediator,
+    cache?: CacheFacade
   ) {
-    super('organizations', db, logger, eventMediator);
+    super(organizationModel, logger, eventMediator, cache, 'OrganizationRepository');
   }
 
-  public async findByName(name: string): Promise<Organization | null> {
-    return this.findOne({ name });
-  }
-
-  public async findByOwnerId(ownerId: string | ObjectId): Promise<Organization[]> {
-    const ownerObjectId = this.convertToObjectId(ownerId);
-    return this.find({ owner: ownerObjectId });
-  }
-
-  public async findForUser(userId: string | ObjectId, includeInactive: boolean = false): Promise<Organization[]> {
-    const userObjectId = this.convertToObjectId(userId);
+  /**
+   * Find organization by name
+   */
+  public async findByName(name: string): Promise<IOrganization | null> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('name', { name });
     
-    const memberships = await this.getUserMemberships(userObjectId, includeInactive);
-    if (memberships.length === 0) {
-      return [];
+    const cached = await this.cacheHelpers.getCustom<IOrganization>(cacheKey);
+    if (cached) {
+      return this.mapToEntity(cached);
     }
-    
-    const organizationIds = memberships.map(m => m.organizationId);
-    return this.find({ 
-      _id: { $in: organizationIds },
-      isArchived: false,
-      isActive: true
-    });
+
+    try {
+      this.logger.debug('Finding organization by name', { name });
+      
+      const org = await this.crudOps.findOne({
+        name: { $regex: new RegExp(`^${name}$`, 'i') },
+        isArchived: { $ne: true }
+      });
+
+      if (org && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, org, OrganizationRepository.ORG_CACHE_TTL);
+        const orgId = this.extractId(org);
+        if (orgId) {
+          await this.cacheHelpers.cacheById(orgId, org, OrganizationRepository.ORG_CACHE_TTL);
+        }
+      }
+
+      return org ? this.mapToEntity(org) : null;
+    } catch (error) {
+      this.logger.error('Error finding organization by name', error as Error, { name });
+      throw error;
+    }
   }
 
-  public async create(data: OrganizationCreationData): Promise<Organization> {
-    await this.validateOrganizationNameUniqueness(data.name);
-    
-    const ownerObjectId = this.convertToObjectId(data.owner);
-    const organizationData = this.buildOrganizationData(data, ownerObjectId);
-    
-    return this.withTransaction(async (transaction) => {
-      const org = await transaction.insertOne(this.collectionName, organizationData);
-      await this.createOwnerMembership(transaction, org._id, ownerObjectId);
-      return org as Organization;
+  /**
+   * Find organizations by owner ID
+   */
+  public async findByOwnerId(ownerId: string | Types.ObjectId): Promise<IOrganization[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('owner', { 
+      ownerId: ownerId.toString() 
     });
+    
+    const cached = await this.cacheHelpers.getCustom<IOrganization[]>(cacheKey);
+    if (cached) {
+      return cached.map(org => this.mapToEntity(org));
+    }
+
+    try {
+      this.logger.debug('Finding organizations by owner', { ownerId: ownerId.toString() });
+      
+      const orgs = await this.crudOps.find({
+        owner: new Types.ObjectId(ownerId.toString()),
+        isArchived: { $ne: true }
+      }, {
+        sort: [{ field: 'createdAt', direction: 'desc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, orgs, OrganizationRepository.CACHE_TTL);
+      }
+
+      return orgs.map(org => this.mapToEntity(org));
+    } catch (error) {
+      this.logger.error('Error finding organizations by owner', error as Error, { 
+        ownerId: ownerId.toString() 
+      });
+      throw error;
+    }
   }
 
-  public async addMember(organizationId: string | ObjectId, member: MemberData): Promise<OrganizationMember> {
-    const orgObjectId = this.convertToObjectId(organizationId);
-    const userObjectId = this.convertToObjectId(member.userId);
+  /**
+   * Find organizations for user (including memberships)
+   */
+  public async findForUser(userId: string | Types.ObjectId): Promise<IOrganization[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('user', { 
+      userId: userId.toString() 
+    });
     
-    await this.findById(orgObjectId); // Validate organization exists
-    
-    const existingMember = await this.findExistingMember(orgObjectId, userObjectId);
-    
-    if (existingMember?.active) {
-      throw new ValidationError(
-        'User is already a member of this organization',
-        [{ field: 'userId', message: 'User is already a member of this organization' }],
-        'ALREADY_MEMBER'
+    const cached = await this.cacheHelpers.getCustom<IOrganization[]>(cacheKey);
+    if (cached) {
+      return cached.map(org => this.mapToEntity(org));
+    }
+
+    try {
+      this.logger.debug('Finding organizations for user', { userId: userId.toString() });
+      
+      // Use aggregation to find organizations where user is owner or member
+      const orgs = await this.crudOps.aggregate<IOrganization>([
+        {
+          $match: {
+            $or: [
+              { owner: new Types.ObjectId(userId.toString()) },
+              { 'members.user': new Types.ObjectId(userId.toString()) }
+            ],
+            isArchived: { $ne: true }
+          }
+        },
+        {
+          $sort: { createdAt: -1 }
+        }
+      ]);
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, orgs, OrganizationRepository.CACHE_TTL);
+      }
+
+      return orgs.map(org => this.mapToEntity(org));
+    } catch (error) {
+      this.logger.error('Error finding organizations for user', error as Error, { 
+        userId: userId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Add member to organization
+   */
+  public async addMember(
+    organizationId: string | Types.ObjectId, 
+    member: Partial<IOrganizationMember>
+  ): Promise<IOrganizationMember> {
+    try {
+      this.logger.debug('Adding member to organization', { 
+        organizationId: organizationId.toString(),
+        userId: member.user?.toString() 
+      });
+
+      // Check if member already exists
+      const org = await this.findById(organizationId);
+      if (!org) {
+        throw new Error('Organization not found');
+      }
+
+      // Validate required fields
+      if (!member.user || !member.role || !member.invitedBy) {
+        throw new Error('User, role, and invitedBy are required fields');
+      }
+
+      // Check if user is already a member
+      const existingMember = org.members?.find(
+        m => m.user.toString() === member.user!.toString()
       );
+      if (existingMember) {
+        throw new Error('User is already a member of this organization');
+      }
+
+      // Create the member object with proper typing
+      const newMember: IOrganizationMember = {
+        _id: new Types.ObjectId(),
+        organization: new Types.ObjectId(organizationId.toString()),
+        user: new Types.ObjectId(member.user.toString()),
+        role: new Types.ObjectId(member.role.toString()),
+        permissions: member.permissions || [],
+        joinedAt: member.joinedAt || new Date(),
+        active: member.active ?? true,
+        invitedBy: new Types.ObjectId(member.invitedBy.toString()),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Add member to organization using proper MongoDB update syntax
+      const updateResult = await this.crudOps.update(organizationId, {
+        $push: { members: newMember }
+      });
+
+      if (!updateResult) {
+        throw new Error('Failed to add member to organization');
+      }
+
+      // Invalidate relevant caches
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateAfterUpdate(organizationId);
+        await this.cacheHelpers.invalidateByPattern('user:*');
+        await this.cacheHelpers.invalidateByPattern('members:*');
+      }
+
+      // Publish event
+      await this.publishEvent('organization.member.added', {
+        organizationId: organizationId.toString(),
+        userId: member.user.toString(),
+        addedBy: member.invitedBy.toString(),
+        timestamp: new Date()
+      });
+
+      return newMember;
+    } catch (error) {
+      this.logger.error('Error adding member to organization', error as Error, { 
+        organizationId: organizationId.toString(),
+        userId: member.user?.toString()
+      });
+      throw error;
     }
-    
-    if (existingMember && !existingMember.active) {
-      return this.reactivateMember(existingMember, member, orgObjectId, userObjectId);
-    }
-    
-    return this.createNewMember(orgObjectId, userObjectId, member);
   }
 
-  public async removeMember(organizationId: string | ObjectId, userId: string | ObjectId): Promise<boolean> {
-    const orgObjectId = this.convertToObjectId(organizationId);
-    const userObjectId = this.convertToObjectId(userId);
-    
-    const organization = await this.findById(orgObjectId);
-    this.validateCanRemoveMember(organization, userObjectId);
-    
-    const member = await this.findActiveMember(orgObjectId, userObjectId);
-    if (!member) {
-      return false;
+  /**
+   * Remove member from organization
+   */
+  public async removeMember(
+    organizationId: string | Types.ObjectId, 
+    userId: string | Types.ObjectId
+  ): Promise<boolean> {
+    try {
+      this.logger.debug('Removing member from organization', { 
+        organizationId: organizationId.toString(),
+        userId: userId.toString() 
+      });
+
+      const result = await this.crudOps.update(organizationId, {
+        $pull: { members: { user: new Types.ObjectId(userId.toString()) } }
+      });
+
+      if (result && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateAfterUpdate(organizationId);
+        await this.cacheHelpers.invalidateByPattern('user:*');
+        await this.cacheHelpers.invalidateByPattern('members:*');
+      }
+
+      if (result) {
+        await this.publishEvent('organization.member.removed', {
+          organizationId: organizationId.toString(),
+          userId: userId.toString(),
+          timestamp: new Date()
+        });
+      }
+
+      return !!result;
+    } catch (error) {
+      this.logger.error('Error removing member from organization', error as Error, { 
+        organizationId: organizationId.toString(),
+        userId: userId.toString()
+      });
+      throw error;
     }
-    
-    await this.deactivateMember(member);
-    await this.updateOrganizationStats(orgObjectId, -1);
-    await this.removeFromAdminsIfNeeded(organization, userObjectId);
-    
-    return true;
   }
 
+  /**
+   * Update organization member
+   */
   public async updateMember(
-    organizationId: string | ObjectId,
-    userId: string | ObjectId,
-    updates: MemberUpdateData
-  ): Promise<OrganizationMember> {
-    const orgObjectId = this.convertToObjectId(organizationId);
-    const userObjectId = this.convertToObjectId(userId);
-    
-    const organization = await this.findById(orgObjectId);
-    const existingMember = await this.getMember(orgObjectId, userObjectId);
-    
-    this.validateMemberUpdate(organization, userObjectId, updates);
-    
-    const updateData = this.buildMemberUpdateData(updates);
-    await this.updateMemberRecord(existingMember, updateData);
-    
-    await this.handleMemberCountChange(orgObjectId, existingMember, updates);
-    await this.handleRoleChange(orgObjectId, userObjectId, existingMember, updates);
-    
-    return this.getMember(orgObjectId, userObjectId);
+    organizationId: string | Types.ObjectId, 
+    userId: string | Types.ObjectId, 
+    updates: Partial<IOrganizationMember>
+  ): Promise<IOrganizationMember | null> {
+    try {
+      this.logger.debug('Updating organization member', { 
+        organizationId: organizationId.toString(),
+        userId: userId.toString() 
+      });
+
+      // Build update fields with proper typing
+      const updateFields: Record<string, any> = {};
+      const allowedFields = ['role', 'permissions', 'active'] as const;
+      
+      allowedFields.forEach(field => {
+        if (field in updates && updates[field] !== undefined) {
+          if (field === 'role') {
+            updateFields[`members.$.${field}`] = new Types.ObjectId(updates[field]!.toString());
+          } else {
+            updateFields[`members.$.${field}`] = updates[field];
+          }
+        }
+      });
+      
+      updateFields['members.$.updatedAt'] = new Date();
+
+      const result = await this.crudOps.findOneAndUpdate(
+        { 
+          _id: new Types.ObjectId(organizationId.toString()), 
+          'members.user': new Types.ObjectId(userId.toString())
+        },
+        { $set: updateFields },
+        { returnNew: true }
+      );
+
+      if (result && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateAfterUpdate(organizationId);
+        await this.cacheHelpers.invalidateByPattern('members:*');
+      }
+
+      if (result) {
+        await this.publishEvent('organization.member.updated', {
+          organizationId: organizationId.toString(),
+          userId: userId.toString(),
+          updates: Object.keys(updates),
+          timestamp: new Date()
+        });
+
+        // Find and return the updated member
+        const org = this.mapToEntity(result);
+        const updatedMember = org.members?.find(
+          m => m.user.toString() === userId.toString()
+        );
+        return updatedMember || null;
+      }
+
+      return null;
+    } catch (error) {
+      this.logger.error('Error updating organization member', error as Error, { 
+        organizationId: organizationId.toString(),
+        userId: userId.toString()
+      });
+      throw error;
+    }
   }
 
-  public async getMembers(
-    organizationId: string | ObjectId,
-    includeInactive: boolean = false
-  ): Promise<OrganizationMember[]> {
-    const orgObjectId = this.convertToObjectId(organizationId);
-    await this.findById(orgObjectId); // Validate organization exists
+  /**
+   * Get organization members
+   */
+  public async getMembers(organizationId: string | Types.ObjectId): Promise<IOrganizationMember[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('members', { 
+      organizationId: organizationId.toString() 
+    });
     
-    return this.getUserMemberships(orgObjectId, includeInactive);
+    const cached = await this.cacheHelpers.getCustom<IOrganizationMember[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      this.logger.debug('Getting organization members', { 
+        organizationId: organizationId.toString() 
+      });
+
+      const org = await this.findById(organizationId);
+      const members = org?.members || [];
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(
+          cacheKey, 
+          members, 
+          OrganizationRepository.MEMBER_CACHE_TTL
+        );
+      }
+
+      return members;
+    } catch (error) {
+      this.logger.error('Error getting organization members', error as Error, { 
+        organizationId: organizationId.toString() 
+      });
+      throw error;
+    }
   }
 
+  /**
+   * Get specific organization member
+   */
   public async getMember(
-    organizationId: string | ObjectId,
-    userId: string | ObjectId
-  ): Promise<OrganizationMember> {
-    const orgObjectId = this.convertToObjectId(organizationId);
-    const userObjectId = this.convertToObjectId(userId);
-    
-    await this.findById(orgObjectId); // Validate organization exists
-    
-    const member = await this.findExistingMember(orgObjectId, userObjectId);
-    if (!member) {
-      throw new EntityNotFoundError(
-        'OrganizationMember',
-        `${orgObjectId.toString()}_${userObjectId.toString()}`
-      );
-    }
-    
-    return member;
-  }
+    organizationId: string | Types.ObjectId, 
+    userId: string | Types.ObjectId
+  ): Promise<IOrganizationMember | null> {
+    try {
+      this.logger.debug('Getting organization member', { 
+        organizationId: organizationId.toString(),
+        userId: userId.toString() 
+      });
 
-  public async archive(id: string | ObjectId): Promise<boolean> {
-    return this.updateArchiveStatus(id, true);
-  }
+      const members = await this.getMembers(organizationId);
+      const member = members.find(m => m.user.toString() === userId.toString());
 
-  public async restore(id: string | ObjectId): Promise<boolean> {
-    return this.updateArchiveStatus(id, false);
-  }
-
-  // Private helper methods
-
-  private convertToObjectId(id: string | ObjectId): ObjectId {
-    return typeof id === 'string' ? new ObjectId(id) : id;
-  }
-
-  private async validateOrganizationNameUniqueness(name: string): Promise<void> {
-    const existingOrg = await this.findByName(name);
-    if (existingOrg) {
-      throw new ValidationError(
-        'Organization name already exists',
-        [{ field: 'name', message: 'Organization name already exists' }],
-        'NAME_ALREADY_EXISTS'
-      );
+      return member || null;
+    } catch (error) {
+      this.logger.error('Error getting organization member', error as Error, { 
+        organizationId: organizationId.toString(),
+        userId: userId.toString()
+      });
+      throw error;
     }
   }
 
-  private buildOrganizationData(data: OrganizationCreationData, ownerObjectId: ObjectId): OptionalUnlessRequiredId<Organization> {
-    const now = new Date();
+  /**
+   * Find organizations by visibility
+   */
+  public async findByVisibility(visibility: string): Promise<IOrganization[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('visibility', { visibility });
     
+    const cached = await this.cacheHelpers.getCustom<IOrganization[]>(cacheKey);
+    if (cached) {
+      return cached.map(org => this.mapToEntity(org));
+    }
+
+    try {
+      this.logger.debug('Finding organizations by visibility', { visibility });
+      
+      const orgs = await this.crudOps.find({
+        visibility: visibility as OrganizationVisibilityValue,
+        isArchived: { $ne: true }
+      }, {
+        sort: [{ field: 'createdAt', direction: 'desc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, orgs, OrganizationRepository.CACHE_TTL);
+      }
+
+      return orgs.map(org => this.mapToEntity(org));
+    } catch (error) {
+      this.logger.error('Error finding organizations by visibility', error as Error, { 
+        visibility 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Search organizations by name
+   */
+  public async searchByName(query: string, limit: number = 10): Promise<IOrganization[]> {
+    try {
+      this.logger.debug('Searching organizations by name', { query, limit });
+      
+      const orgs = await this.crudOps.find({
+        name: { $regex: query, $options: 'i' },
+        isArchived: { $ne: true }
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }],
+        pagination: { limit, offset: 0, page: 1, pageSize: limit }
+      });
+
+      return orgs.map(org => this.mapToEntity(org));
+    } catch (error) {
+      this.logger.error('Error searching organizations by name', error as Error, { 
+        query, 
+        limit 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Override create to handle organization-specific logic
+   */
+  public async create(data: Partial<IOrganization>, context?: RepositoryContext): Promise<IOrganization> {
+    // Validate unique name before creation
+    if (data.name) {
+      const existingOrg = await this.findByName(data.name);
+      if (existingOrg) {
+        throw new Error('Organization with this name already exists');
+      }
+    }
+
+    // Set default values with proper typing
+    const organizationData: Partial<IOrganization> = {
+      ...data,
+      isActive: data.isActive ?? true,
+      isArchived: data.isArchived ?? false,
+      members: data.members || []
+    };
+
+    const org = await super.create(organizationData, context);
+
+    // Publish organization creation event
+    await this.publishEvent('organization.created', {
+      organizationId: org._id.toString(),
+      name: org.name,
+      ownerId: org.owner.toString(),
+      type: org.type,
+      timestamp: new Date()
+    });
+
+    return org;
+  }
+
+  /**
+   * Validate organization data
+   */
+  protected validateData(data: Partial<IOrganization>): ValidationResult {
+    const errors: string[] = [];
+
+    // Name validation
+    if (data.name !== undefined) {
+      const nameValidation = ValidationHelpers.validateFieldLength(
+        data.name, 
+        'name', 
+        2, 
+        100
+      );
+      if (!nameValidation.valid) {
+        errors.push(...nameValidation.errors);
+      }
+    }
+
+    // Description validation
+    if (data.description !== undefined && data.description.length > 500) {
+      errors.push('Description must be less than 500 characters');
+    }
+
+    // Email validation in contact info
+    if (data.contact?.email && !ValidationHelpers.validateEmail(data.contact.email)) {
+      errors.push('Invalid contact email format');
+    }
+
+    // Phone validation in contact info
+    if (data.contact?.phone && !ValidationHelpers.validatePhoneNumber(data.contact.phone)) {
+      errors.push('Invalid contact phone number format');
+    }
+
+    // Website URL validation
+    if (data.contact?.website && !ValidationHelpers.validateUrl(data.contact.website)) {
+      errors.push('Invalid website URL format');
+    }
+
     return {
+      valid: errors.length === 0,
+      errors: errors.length > 0 ? errors : undefined
+    };
+  }
+
+  /**
+   * Map database document to domain entity
+   */
+  protected mapToEntity(data: any): IOrganization {
+    return {
+      _id: data._id,
       name: data.name,
       type: data.type,
-      description: data.description,
-      logoUrl: data.logoUrl,
-      owner: ownerObjectId,
-      admins: [ownerObjectId],
-      visibility: data.visibility ?? 'private',
-      address: data.address,
-      contact: data.contact,
-      isVerified: false,
-      trustLevel: 'unverified',
-      settings: this.buildOrganizationSettings(data.settings),
-      stats: this.buildInitialStats(now),
-      isActive: true,
-      isArchived: false,
-      createdAt: now,
-      updatedAt: now
-    };
+      description: data.description || '',
+      logoUrl: data.logoUrl || '',
+      owner: data.owner,
+      admins: data.admins || [],
+      address: data.address || {},
+      contact: data.contact || {},
+      visibility: data.visibility,
+      isVerified: data.isVerified ?? false,
+      trustLevel: data.trustLevel,
+      settings: data.settings || {},
+      stats: data.stats || {
+        memberCount: 0,
+        exerciseCount: 0,
+        workoutCount: 0,
+        programCount: 0,
+        averageEngagement: 0,
+        lastActivityDate: new Date()
+      },
+      isActive: data.isActive ?? true,
+      isArchived: data.isArchived ?? false,
+      members: data.members || [],
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    } as IOrganization;
   }
 
-  private buildOrganizationSettings(settings?: OrganizationCreationData['settings']) {
-    return {
-      allowMemberInvite: settings?.allowMemberInvite ?? false,
-      allowPublicJoin: settings?.allowPublicJoin ?? false,
-      defaultRole: settings?.defaultRole ?? 'member',
-      contentModeration: settings?.contentModeration ?? 'standard',
-      dataSharing: settings?.dataSharing ?? 'private'
-    };
-  }
-
-  private buildInitialStats(now: Date) {
-    return {
-      memberCount: 1, // Owner is the first member
-      contentCount: 0,
-      activityLevel: 0,
-      creationDate: now,
-      lastActivity: now
-    };
-  }
-
-  private async createOwnerMembership(transaction: any, orgId: ObjectId, ownerId: ObjectId): Promise<void> {
-    const now = new Date();
-    await transaction.insertOne(this.membersCollectionName, {
-      organizationId: orgId,
-      userId: ownerId,
-      role: 'owner',
-      permissions: ['*'],
-      joinedAt: now,
-      active: true,
-      createdAt: now,
-      updatedAt: now
-    } as OptionalUnlessRequiredId<OrganizationMember>);
-  }
-
-  private async getUserMemberships(
-    entityId: ObjectId,
-    includeInactive: boolean,
-    isUserId: boolean = true
-  ): Promise<OrganizationMember[]> {
-    const membersCollection = this.db.getCollection<OrganizationMember>(this.membersCollectionName);
-    const query: Filter<OrganizationMember> = isUserId 
-      ? { userId: entityId }
-      : { organizationId: entityId };
+  /**
+   * Map domain entity to database document
+   */
+  protected mapFromEntity(entity: IOrganization): any {
+    const doc = { ...entity };
     
-    if (!includeInactive) {
-      query.active = true;
-    }
+    // Remove any computed fields
+    delete (doc as any).__v;
     
-    return membersCollection.find(query);
-  }
-
-  private async findExistingMember(orgId: ObjectId, userId: ObjectId): Promise<OrganizationMember | null> {
-    const membersCollection = this.db.getCollection<OrganizationMember>(this.membersCollectionName);
-    return membersCollection.findOne({
-      organizationId: orgId,
-      userId: userId
-    });
-  }
-
-  private async findActiveMember(orgId: ObjectId, userId: ObjectId): Promise<OrganizationMember | null> {
-    const membersCollection = this.db.getCollection<OrganizationMember>(this.membersCollectionName);
-    return membersCollection.findOne({
-      organizationId: orgId,
-      userId: userId,
-      active: true
-    });
-  }
-
-  private async reactivateMember(
-    existingMember: OrganizationMember,
-    member: MemberData,
-    orgId: ObjectId,
-    userId: ObjectId
-  ): Promise<OrganizationMember> {
-    const now = new Date();
-    const invitedByObjectId = member.invitedBy 
-      ? this.convertToObjectId(member.invitedBy)
-      : undefined;
-    
-    const membersCollection = this.db.getCollection<OrganizationMember>(this.membersCollectionName);
-    await membersCollection.updateOne(
-      { _id: existingMember._id },
-      { 
-        $set: { 
-          active: true,
-          role: member.role,
-          permissions: member.permissions,
-          invitedBy: invitedByObjectId,
-          updatedAt: now
-        } 
-      }
-    );
-    
-    await this.updateOrganizationStats(orgId, 1);
-    return this.getMember(orgId, userId);
-  }
-
-  private async createNewMember(orgId: ObjectId, userId: ObjectId, member: MemberData): Promise<OrganizationMember> {
-    const now = new Date();
-    const invitedByObjectId = member.invitedBy 
-      ? this.convertToObjectId(member.invitedBy)
-      : undefined;
-    
-    const memberData: OptionalUnlessRequiredId<OrganizationMember> = {
-      organizationId: orgId,
-      userId: userId,
-      role: member.role,
-      permissions: member.permissions,
-      joinedAt: now,
-      active: true,
-      invitedBy: invitedByObjectId,
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    return this.withTransaction(async (transaction) => {
-      const result = await transaction.insertOne(this.membersCollectionName, memberData);
-      await this.updateOrganizationStatsInTransaction(transaction, orgId, 1);
-      return result as OrganizationMember;
-    });
-  }
-
-  private validateCanRemoveMember(organization: Organization, userId: ObjectId): void {
-    if (organization.owner.toString() === userId.toString()) {
-      throw new ValidationError(
-        'Cannot remove the organization owner',
-        [{ field: 'userId', message: 'Cannot remove the organization owner' }],
-        'CANNOT_REMOVE_OWNER'
-      );
-    }
-  }
-
-  private async deactivateMember(member: OrganizationMember): Promise<void> {
-    const membersCollection = this.db.getCollection<OrganizationMember>(this.membersCollectionName);
-    const now = new Date();
-    
-    await membersCollection.updateOne(
-      { _id: member._id },
-      { $set: { active: false, updatedAt: now } }
-    );
-  }
-
-  private async removeFromAdminsIfNeeded(organization: Organization, userId: ObjectId): Promise<void> {
-    const isAdmin = organization.admins.some(adminId => adminId.toString() === userId.toString());
-    if (!isAdmin) {
-      return;
-    }
-    
-    const now = new Date();
-    await this.collection.updateOne(
-      { _id: organization._id } as Filter<Organization>,
-      { 
-        $pull: { admins: userId },
-        $set: { updatedAt: now }
-      }
-    );
-  }
-
-  private validateMemberUpdate(organization: Organization, userId: ObjectId, updates: MemberUpdateData): void {
-    const isOwner = organization.owner.toString() === userId.toString();
-    const isChangingOwnerRole = isOwner && updates.role && updates.role !== 'owner';
-    
-    if (isChangingOwnerRole) {
-      throw new ValidationError(
-        'Cannot change the organization owner\'s role',
-        [{ field: 'role', message: 'Cannot change the organization owner\'s role' }],
-        'CANNOT_CHANGE_OWNER_ROLE'
-      );
-    }
-  }
-
-  private buildMemberUpdateData(updates: MemberUpdateData): any {
-    const updateData: any = { updatedAt: new Date() };
-    
-    if (updates.role !== undefined) {
-      updateData.role = updates.role;
-    }
-    
-    if (updates.permissions !== undefined) {
-      updateData.permissions = updates.permissions;
-    }
-    
-    if (updates.active !== undefined) {
-      updateData.active = updates.active;
-    }
-    
-    return updateData;
-  }
-
-  private async updateMemberRecord(existingMember: OrganizationMember, updateData: any): Promise<void> {
-    const membersCollection = this.db.getCollection<OrganizationMember>(this.membersCollectionName);
-    const result = await membersCollection.updateOne(
-      { _id: existingMember._id },
-      { $set: updateData }
-    );
-    
-    if (result.matchedCount === 0) {
-      throw new DatabaseError(
-        'Failed to update member',
-        'updateOne',
-        'UPDATE_FAILURE',
-        undefined,
-        this.membersCollectionName
-      );
-    }
-  }
-
-  private async handleMemberCountChange(
-    orgId: ObjectId, 
-    existingMember: OrganizationMember, 
-    updates: MemberUpdateData
-  ): Promise<void> {
-    if (updates.active === undefined || updates.active === existingMember.active) {
-      return;
-    }
-    
-    const memberCountDelta = updates.active ? 1 : -1;
-    await this.updateOrganizationStats(orgId, memberCountDelta);
-  }
-
-  private async handleRoleChange(
-    orgId: ObjectId,
-    userId: ObjectId, 
-    existingMember: OrganizationMember,
-    updates: MemberUpdateData
-  ): Promise<void> {
-    if (!updates.role || updates.role === existingMember.role) {
-      return;
-    }
-    
-    if (updates.role === 'admin') {
-      await this.addToAdmins(orgId, userId);
-    } else if (existingMember.role === 'admin') {
-      await this.removeFromAdmins(orgId, userId);
-    }
-  }
-
-  private async addToAdmins(orgId: ObjectId, userId: ObjectId): Promise<void> {
-    const now = new Date();
-    await this.collection.updateOne(
-      { 
-        _id: orgId,
-        admins: { $ne: userId }
-      } as Filter<Organization>,
-      { 
-        $addToSet: { admins: userId },
-        $set: { updatedAt: now }
-      }
-    );
-  }
-
-  private async removeFromAdmins(orgId: ObjectId, userId: ObjectId): Promise<void> {
-    const now = new Date();
-    await this.collection.updateOne(
-      { _id: orgId } as Filter<Organization>,
-      { 
-        $pull: { admins: userId },
-        $set: { updatedAt: now }
-      }
-    );
-  }
-
-  private async updateOrganizationStats(orgId: ObjectId, memberCountDelta: number): Promise<void> {
-    const now = new Date();
-    await this.collection.updateOne(
-      { _id: orgId } as Filter<Organization>,
-      { 
-        $inc: { 'stats.memberCount': memberCountDelta },
-        $set: { 
-          'stats.lastActivity': now,
-          updatedAt: now
-        }
-      }
-    );
-  }
-
-  private async updateOrganizationStatsInTransaction(
-    transaction: any, 
-    orgId: ObjectId, 
-    memberCountDelta: number
-  ): Promise<void> {
-    const now = new Date();
-    await transaction.updateOne(
-      this.collectionName,
-      { _id: orgId } as Filter<Organization>,
-      { 
-        $inc: { 'stats.memberCount': memberCountDelta },
-        $set: { 
-          'stats.lastActivity': now,
-          updatedAt: now
-        }
-      }
-    );
-  }
-
-  private async updateArchiveStatus(id: string | ObjectId, isArchived: boolean): Promise<boolean> {
-    const objectId = this.convertToObjectId(id);
-    const now = new Date();
-    
-    const result = await this.collection.updateOne(
-      { _id: objectId } as Filter<Organization>,
-      { $set: { isArchived, updatedAt: now } }
-    );
-    
-    return result.matchedCount > 0;
-  }
-
-  protected validateData(data: any, isUpdate: boolean = false): void {
-    const errors: Array<{ field: string; message: string }> = [];
-    
-    if (isUpdate && Object.keys(data).length === 0) {
-      return;
-    }
-    
-    if (!isUpdate && !data.name) {
-      errors.push({ field: 'name', message: 'Name is required' });
-    } else if (data.name && typeof data.name === 'string' && data.name.length < 2) {
-      errors.push({ field: 'name', message: 'Name must be at least 2 characters long' });
-    }
-    
-    if (!isUpdate && !data.type) {
-      errors.push({ field: 'type', message: 'Type is required' });
-    }
-    
-    if (!isUpdate && !data.description) {
-      errors.push({ field: 'description', message: 'Description is required' });
-    }
-    
-    if (!isUpdate && !data.owner) {
-      errors.push({ field: 'owner', message: 'Owner is required' });
-    }
-    
-    if (errors.length > 0) {
-      throw new ValidationError(
-        'Validation failed',
-        errors,
-        'VALIDATION_ERROR'
-      );
-    }
+    return doc;
   }
 }

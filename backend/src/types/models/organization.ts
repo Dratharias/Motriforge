@@ -5,6 +5,19 @@ import { IBaseModel, IAddress, IContact, IOrganizationSettings, IOrganizationSta
 import { InvitationStatus, OrganizationRoleValue, OrganizationTypeValue, OrganizationVisibilityValue, TrustLevelValue } from './enums';
 
 /**
+ * Organization member interface
+ */
+export interface IOrganizationMember extends IBaseModel {
+  readonly organization: Types.ObjectId;
+  readonly user: Types.ObjectId;
+  role: Types.ObjectId;
+  permissions: readonly string[];
+  readonly joinedAt: Date;
+  active: boolean;
+  invitedBy: Types.ObjectId;
+}
+
+/**
  * Core organization interface
  */
 export interface IOrganization extends IBaseModel {
@@ -23,19 +36,7 @@ export interface IOrganization extends IBaseModel {
   readonly stats: IOrganizationStats;
   readonly isActive: boolean;
   readonly isArchived: boolean;
-}
-
-/**
- * Organization member interface
- */
-export interface IOrganizationMember extends IBaseModel {
-  readonly organization: Types.ObjectId;
-  readonly user: Types.ObjectId;
-  role: Types.ObjectId;
-  permissions: readonly string[];
-  readonly joinedAt: Date;
-  active: boolean;
-  invitedBy: Types.ObjectId;
+  readonly members: IOrganizationMember[];
 }
 
 /**
@@ -115,6 +116,9 @@ export interface ITrustLevelInfo extends IBaseModel {
   readonly contentVisibility: string;
 }
 
+/**
+ * Extended organization document interface with Mongoose methods
+ */
 export interface IOrganizationDocument extends Omit<IOrganization, '_id'>, Document {
   _id: Types.ObjectId;
   addMember(userId: Types.ObjectId, role: OrganizationRoleValue, invitedBy: Types.ObjectId): Promise<IOrganizationDocument>;
@@ -124,7 +128,104 @@ export interface IOrganizationDocument extends Omit<IOrganization, '_id'>, Docum
   canUserAccess(userId: Types.ObjectId, requiredRole: OrganizationRoleValue): Promise<boolean>;
 }
 
-// Extend interface to include Mongoose document methods
+/**
+ * Extended invitation document interface with Mongoose methods
+ */
 export interface IInvitationDocument extends Omit<IInvitation, '_id'>, Document {
   _id: Types.ObjectId;
+  accept(): Promise<IInvitationDocument>;
+  decline(): Promise<IInvitationDocument>;
+  revoke(): Promise<IInvitationDocument>;
+  isExpired(): boolean;
+  canBeAccepted(): boolean;
+}
+
+/**
+ * Member creation data for adding new members
+ */
+export interface IMemberCreationData {
+  user: Types.ObjectId;
+  role: Types.ObjectId;
+  permissions?: string[];
+  invitedBy: Types.ObjectId;
+  joinedAt?: Date;
+  active?: boolean;
+}
+
+/**
+ * Member update data for modifying existing members
+ */
+export interface IMemberUpdateData {
+  role?: Types.ObjectId;
+  permissions?: string[];
+  active?: boolean;
+}
+
+/**
+ * Organization creation data
+ */
+export interface IOrganizationCreationData {
+  name: string;
+  type: OrganizationTypeValue;
+  description?: string;
+  logoUrl?: string;
+  owner: Types.ObjectId;
+  address?: Partial<IAddress>;
+  contact?: Partial<IContact>;
+  visibility?: OrganizationVisibilityValue;
+  settings?: Partial<IOrganizationSettings>;
+}
+
+/**
+ * Organization update data
+ */
+export interface IOrganizationUpdateData {
+  name?: string;
+  description?: string;
+  logoUrl?: string;
+  address?: Partial<IAddress>;
+  contact?: Partial<IContact>;
+  visibility?: OrganizationVisibilityValue;
+  settings?: Partial<IOrganizationSettings>;
+  admins?: Types.ObjectId[];
+  isActive?: boolean;
+  isArchived?: boolean;
+}
+
+/**
+ * Organization search criteria
+ */
+export interface IOrganizationSearchCriteria {
+  name?: string;
+  type?: OrganizationTypeValue;
+  visibility?: OrganizationVisibilityValue;
+  trustLevel?: TrustLevelValue;
+  isVerified?: boolean;
+  isActive?: boolean;
+  ownerId?: Types.ObjectId;
+  memberUserId?: Types.ObjectId;
+}
+
+/**
+ * Member search criteria
+ */
+export interface IMemberSearchCriteria {
+  organizationId: Types.ObjectId;
+  role?: Types.ObjectId;
+  active?: boolean;
+  joinedAfter?: Date;
+  joinedBefore?: Date;
+  invitedBy?: Types.ObjectId;
+}
+
+/**
+ * Organization statistics update data
+ */
+export interface IOrganizationStatsUpdate {
+  memberCount?: number;
+  exerciseCount?: number;
+  workoutCount?: number;
+  programCount?: number;
+  averageEngagement?: number;
+  lastActivityDate?: Date;
 }

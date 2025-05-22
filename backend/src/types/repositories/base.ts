@@ -1,4 +1,4 @@
-import { Types, ClientSession, PipelineStage } from 'mongoose';
+import { Types, ClientSession, PipelineStage, UpdateWriteOpResult, DeleteResult as MongoDeleteResult } from 'mongoose';
 
 /**
  * Filter query interface for database operations
@@ -84,7 +84,7 @@ export interface TransactionOperation {
   operation: 'create' | 'update' | 'delete';
   data: any;
   execute(session: DatabaseSession): Promise<any>;
-  execute(session: DatabaseSession): Promise<any>;
+  rollback(session: DatabaseSession): Promise<any>;
 }
 
 /**
@@ -113,9 +113,9 @@ export interface Transaction {
 }
 
 /**
- * Update result interface
+ * Repository update result interface
  */
-export interface UpdateResult {
+export interface RepositoryUpdateResult {
   acknowledged: boolean;
   modifiedCount: number;
   upsertedId?: Types.ObjectId;
@@ -124,9 +124,9 @@ export interface UpdateResult {
 }
 
 /**
- * Delete result interface
+ * Repository delete result interface
  */
-export interface DeleteResult {
+export interface RepositoryDeleteResult {
   acknowledged: boolean;
   deletedCount: number;
 }
@@ -153,6 +153,44 @@ export interface RepositoryContext {
 }
 
 /**
+ * Validation context for data validation
+ */
+export interface ValidationContext {
+  isCreate: boolean;
+  isUpdate: boolean;
+  currentData?: any;
+  userId?: string;
+  organizationId?: string;
+}
+
+/**
+ * Repository configuration interface
+ */
+export interface RepositoryConfig {
+  enableCaching?: boolean;
+  cacheDefaultTTL?: number;
+  enableEventPublishing?: boolean;
+  enableValidation?: boolean;
+  sensitiveFields?: string[];
+}
+
+/**
+ * Aggregate pipeline stage type
+ */
+export type AggregationPipeline = PipelineStage[];
+
+/**
+ * Repository event data
+ */
+export interface RepositoryEventData {
+  repository: string;
+  collection: string;
+  operation: string;
+  timestamp: Date;
+  [key: string]: any;
+}
+
+/**
  * Base repository interface that all repositories should implement
  */
 export interface Repository<T> {
@@ -166,10 +204,10 @@ export interface Repository<T> {
   createMany(data: Partial<T>[], context?: RepositoryContext): Promise<T[]>;
 
   update(id: string | Types.ObjectId, data: Partial<T>, context?: RepositoryContext): Promise<T | null>;
-  updateMany(query: FilterQuery, data: Partial<T>, context?: RepositoryContext): Promise<UpdateResult>;
+  updateMany(query: FilterQuery, data: Partial<T>, context?: RepositoryContext): Promise<RepositoryUpdateResult>;
   
   delete(id: string | Types.ObjectId, context?: RepositoryContext): Promise<boolean>;
-  deleteMany(query: FilterQuery, context?: RepositoryContext): Promise<DeleteResult>;
+  deleteMany(query: FilterQuery, context?: RepositoryContext): Promise<RepositoryDeleteResult>;
   
   exists(query: FilterQuery, context?: RepositoryContext): Promise<boolean>;
   
@@ -202,54 +240,26 @@ export interface Repository<T> {
   withTransaction<R>(fn: (transaction: Transaction) => Promise<R>): Promise<R>;
 }
 
-
 /**
- * Repository configuration interface
+ * Utility functions to convert Mongoose results to repository results
  */
-export interface RepositoryConfig {
-  enableCaching?: boolean;
-  cacheDefaultTTL?: number;
-  enableEventPublishing?: boolean;
-  enableValidation?: boolean;
-  sensitiveFields?: string[];
+export function toRepositoryUpdateResult(result: UpdateWriteOpResult): RepositoryUpdateResult {
+  return {
+    acknowledged: result.acknowledged ?? true,
+    modifiedCount: result.modifiedCount ?? 0,
+    upsertedId: result.upsertedId ? new Types.ObjectId(result.upsertedId) : undefined,
+    upsertedCount: result.upsertedCount ?? 0,
+    matchedCount: result.matchedCount ?? 0
+  };
 }
 
-/**
- * Repository context for operations
- */
-export interface RepositoryContext {
-  userId?: string;
-  organizationId?: string;
-  requestId?: string;
-  skipValidation?: boolean;
-  skipEvents?: boolean;
-  session?: ClientSession;
+export function toRepositoryDeleteResult(result: MongoDeleteResult): RepositoryDeleteResult {
+  return {
+    acknowledged: result.acknowledged ?? true,
+    deletedCount: result.deletedCount ?? 0
+  };
 }
 
-/**
- * Validation context for data validation
- */
-export interface ValidationContext {
-  isCreate: boolean;
-  isUpdate: boolean;
-  currentData?: any;
-  userId?: string;
-  organizationId?: string;
-}
-
-
-/**
- * Aggregate pipeline stage type
- */
-export type AggregationPipeline = PipelineStage[];
-
-/**
- * Repository event data
- */
-export interface RepositoryEventData {
-  repository: string;
-  collection: string;
-  operation: string;
-  timestamp: Date;
-  [key: string]: any;
-}
+// Legacy aliases for backward compatibility
+export type UpdateResult = RepositoryUpdateResult;
+export type DeleteResult = RepositoryDeleteResult;
