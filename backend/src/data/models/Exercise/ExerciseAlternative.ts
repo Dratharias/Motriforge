@@ -1,16 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IExerciseAlternative extends Document {
-  exerciseId: Types.ObjectId;
-  alternativeExerciseId: Types.ObjectId;
-  reason: string;
-  notes: string;
-  accommodates: string[];
-  similarityScore: number;
-  createdBy: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IExerciseAlternative } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ExerciseAlternativeSchema: Schema = new Schema<IExerciseAlternative>({
   exerciseId: {

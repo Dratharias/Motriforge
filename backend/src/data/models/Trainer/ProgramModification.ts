@@ -1,19 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IProgramModification extends Document {
-  programAssignment: Types.ObjectId;
-  originalExercise: Types.ObjectId;
-  replacementExercise: Types.ObjectId;
-  reason: string;
-  modifiedBy: Types.ObjectId;
-  modificationDate: Date;
-  programDay?: number;
-  workoutBlock?: Types.ObjectId;
-  applyToFutureSessions: boolean;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IProgramModification } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ProgramModificationSchema: Schema = new Schema<IProgramModification>({
   programAssignment: {

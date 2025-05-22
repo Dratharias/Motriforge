@@ -1,23 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
-export interface IPermissionSet extends Document {
-  viewWorkoutHistory: boolean;
-  viewProgressionData: boolean;
-  viewPersonalData: boolean;
-  assignWorkouts: boolean;
-  assignPrograms: boolean;
-  modifyWorkouts: boolean;
-  viewActivityStatus: boolean;
-  canContactOutsideHours: boolean;
-  viewNutritionData: boolean;
-  provideFeedback: boolean;
-  modifyGoals: boolean;
-  exportClientData: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  viewAllClientData(): boolean;
-  updatePermissions(permissions: Partial<IPermissionSet>): void;
-}
+import { IPermissionSet } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const PermissionSetSchema: Schema = new Schema<IPermissionSet>({
   viewWorkoutHistory: {

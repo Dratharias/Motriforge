@@ -1,18 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IProgramScheduleItem extends Document {
-  programId: Types.ObjectId;
-  day: number; // Day number within the program
-  workoutId: Types.ObjectId;
-  notes: string;
-  isOptional: boolean;
-  restDay: boolean;
-  alternateWorkoutIds: Types.ObjectId[]; // Alternative workouts
-  week: number; // Week number within the program
-  dayOfWeek: number; // 0-6 for Sunday-Saturday
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IProgramScheduleItem } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ProgramScheduleItemSchema: Schema = new Schema<IProgramScheduleItem>({
   programId: {

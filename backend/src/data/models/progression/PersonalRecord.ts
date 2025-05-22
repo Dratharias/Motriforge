@@ -1,19 +1,6 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { PerformanceContextSchema } from './DailyPerformance';
-
-export interface IPersonalRecord extends Document {
-  user: Types.ObjectId;
-  exercise: Types.ObjectId;
-  metric: string;
-  value: number;
-  date: Date;
-  previousRecord?: number;
-  improvement?: number;
-  improvementPercentage?: number;
-  context: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IPersonalRecord } from '@/types/models';
 
 const PersonalRecordSchema: Schema = new Schema<IPersonalRecord>({
   user: {

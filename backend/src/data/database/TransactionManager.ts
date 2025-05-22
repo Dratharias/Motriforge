@@ -33,12 +33,13 @@ export class TransactionManager {
     try {
       const session = this.client.startSession();
       session.startTransaction(options || this.defaultTransactionOptions);
-      
-      this.logger.debug('Transaction started', { transactionId: session.id });
+      const sessionId = (session as any)?.id?.id?.toString('hex');
+      this.logger.debug('Transaction started', { transactionId: session.id ? String(sessionId) : undefined });
       
       return new Transaction(session, this.db, this.logger);
-    } catch (error) {
-      this.logger.error('Failed to start transaction', { error });
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Failed to start transaction', error);
       throw error;
     }
   }
@@ -62,16 +63,18 @@ export class TransactionManager {
       await transaction.commit();
       
       return result;
-    } catch (error) {
+    } catch (err) {
       if (transaction) {
         try {
           await transaction.abort();
-        } catch (abortError) {
-          this.logger.error('Failed to abort transaction after error', { abortError });
+        } catch (abortErr) {
+          const abortError = abortErr instanceof Error ? abortErr : new Error(String(abortErr));
+          this.logger.error('Failed to abort transaction after error', abortError);
         }
       }
       
-      this.logger.error('Transaction failed', { error });
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction failed', error);
       throw error;
     } finally {
       if (transaction) {

@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import { IMuscleLevelInfo, IMuscleTypeInfo, IMuscleZoneInfo, MuscleLevel, MuscleType, MuscleZone } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 /** ============================
  *  This file list muscle
@@ -11,28 +12,11 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
  *  MuscleType
  ** ======================== */
 
-const muscleTypeEnum = [
-  'muscle',
-  'tendon'
-] as const;
-
-export type MuscleTypeValue = typeof muscleTypeEnum[number];
-
-export interface IMuscleTypeInfo extends Document {
-  type: MuscleTypeValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  properties: string[];
-  commonExercises: Types.ObjectId[];
-  recoveryTime: string;
-}
 
 const MuscleTypeInfoSchema: Schema = new Schema<IMuscleTypeInfo>({
   type: { 
     type: String, 
-    enum: muscleTypeEnum, 
+    enum: MuscleType, 
     required: true, 
     unique: true 
   },
@@ -55,43 +39,10 @@ export const MuscleTypeInfoModel = mongoose.model<IMuscleTypeInfo>('MuscleTypeIn
  *  MuscleZone
  ** ======================== */
 
-const muscleZoneEnum = [
-  'ankle',
-  'knee',
-  'hip',
-  'calf',
-  'shoulder',
-  'neck',
-  'chest',
-  'back',
-  'abs',
-  'forearm',
-  'biceps',
-  'triceps',
-  'glutes',
-  'quadriceps',
-  'hamstrings'
-] as const;
-
-export type MuscleZoneValue = typeof muscleZoneEnum[number];
-
-export interface IMuscleZoneInfo extends Document {
-  zone: MuscleZoneValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  muscleCount: number;
-  relatedZones: Types.ObjectId[];
-  commonInjuries: string[];
-  recommendedExercises: Types.ObjectId[];
-  majorMuscles: Types.ObjectId[];
-}
-
 const MuscleZoneInfoSchema: Schema = new Schema<IMuscleZoneInfo>({
   zone: { 
     type: String, 
-    enum: muscleZoneEnum, 
+    enum: MuscleZone, 
     required: true, 
     unique: true 
   },
@@ -115,30 +66,11 @@ export const MuscleZoneInfoModel = mongoose.model<IMuscleZoneInfo>('MuscleZoneIn
  *  MuscleLevel
  ** ======================== */
 
-const muscleLevelEnum = [
-  'training',
-  'intermediate',
-  'medical'
-] as const;
-
-export type MuscleLevelValue = typeof muscleLevelEnum[number];
-
-export interface IMuscleLevelInfo extends Document {
-  level: MuscleLevelValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  knowledgeRequirements: string;
-  recommendedAudience: string[];
-  detailLevel: string;
-  anatomicalPrecision: string;
-}
 
 const MuscleLevelInfoSchema: Schema = new Schema<IMuscleLevelInfo>({
   level: { 
     type: String, 
-    enum: muscleLevelEnum, 
+    enum: MuscleLevel, 
     required: true, 
     unique: true 
   },

@@ -1,33 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IWorkoutSessionExerciseMetrics {
-  totalVolume?: number;
-  maxWeight?: number;
-  averageRPE?: number;
-  restTime?: number;
-  workTime?: number;
-  [key: string]: any;
-}
-
-export interface IWorkoutSessionExercise extends Document {
-  workoutSession: Types.ObjectId;
-  exercise: Types.ObjectId;
-  originalWorkoutExercise?: Types.ObjectId;
-  sets: Types.DocumentArray<Types.ObjectId>;
-  order: number;
-  startTime?: Date;
-  endTime?: Date;
-  duration?: number; // in seconds
-  wasSubstituted: boolean;
-  substitutionReason?: string;
-  metrics: IWorkoutSessionExerciseMetrics;
-  notes: string;
-  completed: boolean;
-  skipped: boolean;
-  mediaIds?: Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IWorkoutSessionExercise } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const WorkoutSessionExerciseSchema: Schema = new Schema<IWorkoutSessionExercise>({
   workoutSession: {

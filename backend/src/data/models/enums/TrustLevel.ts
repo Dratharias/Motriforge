@@ -1,30 +1,10 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
-const trustLevelEnum = [
-  'unverified',
-  'verified',
-  'certified',
-  'partner',
-  'official'
-] as const;
-
-export type TrustLevelValue = typeof trustLevelEnum[number];
-
-export interface ITrustLevelInfo extends Document {
-  level: TrustLevelValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  privileges: string[];
-  requirements: string[];
-  contentVisibility: string;
-}
+import { ITrustLevelInfo, TrustLevel } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const TrustLevelInfoSchema: Schema = new Schema<ITrustLevelInfo>({
   level: { 
     type: String, 
-    enum: trustLevelEnum, 
+    enum: TrustLevel, 
     required: true, 
     unique: true 
   },

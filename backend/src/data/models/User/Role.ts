@@ -1,13 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IRole extends Document {
-  name: string;
-  description: string;
-  permissions: string[];
-  organizationId?: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IRole } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const RoleSchema: Schema = new Schema<IRole>({
   name: { 

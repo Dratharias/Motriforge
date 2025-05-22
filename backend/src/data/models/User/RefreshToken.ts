@@ -1,19 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IRefreshToken extends Document {
-  token: string;
-  user: Types.ObjectId;
-  expiresAt: Date;
-  clientId: string;
-  userAgent: string;
-  ipAddress: string;
-  isRevoked: boolean;
-  revokedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  isExpired(): boolean;
-  revoke(): Promise<IRefreshToken>;
-}
+import { IRefreshToken } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const RefreshTokenSchema: Schema = new Schema<IRefreshToken>({
   token: {

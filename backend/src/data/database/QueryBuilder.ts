@@ -42,9 +42,9 @@ export class QueryBuilder<T extends Document> {
       fields.forEach(field => {
         projection[field] = 1;
       });
-      this.projectFields = projection;
+      this.projectFields = projection as Document;
     } else {
-      this.projectFields = fields;
+      this.projectFields = fields as unknown as Document;
     }
     return this;
   }
@@ -101,7 +101,7 @@ export class QueryBuilder<T extends Document> {
   /**
    * Execute query and return a single document
    */
-  public async findOne(): Promise<T | null> {
+  public async findOne(): Promise<WithId<T> | null> {
     this.buildOptions();
     return this.collection.findOne(this.filters, this.options);
   }

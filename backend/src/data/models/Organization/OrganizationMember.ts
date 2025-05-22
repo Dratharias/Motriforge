@@ -1,16 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IOrganizationMember extends Document {
-  organization: Types.ObjectId;
-  user: Types.ObjectId;
-  role: Types.ObjectId;
-  permissions: string[];
-  joinedAt: Date;
-  active: boolean;
-  invitedBy: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IOrganizationMember } from '@/types/models';
+import mongoose, { Schema, Types } from 'mongoose';
 
 const OrganizationMemberSchema: Schema = new Schema<IOrganizationMember>({
   organization: { 

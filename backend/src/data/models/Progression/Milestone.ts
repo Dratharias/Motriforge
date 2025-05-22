@@ -1,15 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IMilestone extends Document {
-  goalTracking: Types.ObjectId;
-  value: number;
-  targetDate: Date;
-  achievedDate?: Date;
-  isAchieved: boolean;
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IMilestone } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const MilestoneSchema: Schema = new Schema<IMilestone>({
   goalTracking: {

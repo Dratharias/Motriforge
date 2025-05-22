@@ -1,43 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum WorkoutGoal {
-  STRENGTH = 'strength',
-  HYPERTROPHY = 'hypertrophy',
-  ENDURANCE = 'endurance',
-  CARDIO = 'cardio',
-  FLEXIBILITY = 'flexibility',
-  WEIGHT_LOSS = 'weight_loss',
-  REHABILITATION = 'rehabilitation',
-  SKILL = 'skill',
-  GENERAL_FITNESS = 'general_fitness',
-  SPORT_SPECIFIC = 'sport_specific',
-  BALANCE = 'balance',
-  POWER = 'power'
-}
-
-export interface IWorkout extends Document {
-  name: string;
-  description: string;
-  durationInMinutes: number;
-  intensityLevel: Types.ObjectId;
-  goal: Types.ObjectId[];
-  tags: string[];
-  mediaIds: Types.ObjectId[];
-  equipment: Types.ObjectId[];
-  targetMuscleGroups: string[];
-  prerequisites: string[];
-  estimatedCalories: number;
-  isTemplate: boolean;
-  templateCategory: string;
-  shared: boolean;
-  organizationVisibility: string;
-  isArchived: boolean;
-  createdBy: Types.ObjectId;
-  organization: Types.ObjectId;
-  subscribersCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IWorkout } from '@/types/models';
+import mongoose, { Schema, Types } from 'mongoose';
 
 const WorkoutSchema: Schema = new Schema<IWorkout>({
   name: {

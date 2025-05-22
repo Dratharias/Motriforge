@@ -1,28 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IExercise extends Document {
-  name: string;
-  description: string;
-  instructions: string;
-  muscleGroups: string[];
-  primaryMuscleGroup: string;
-  equipment: Types.ObjectId[];
-  exerciseType: Types.ObjectId;
-  difficulty: Types.ObjectId;
-  mediaIds: Types.ObjectId[];
-  prerequisites: string[];
-  formCues: string[];
-  commonMistakes: string[];
-  tags: string[];
-  organization: Types.ObjectId;
-  createdBy: Types.ObjectId;
-  shared: boolean;
-  organizationVisibility: string;
-  isArchived: boolean;
-  workoutsCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IExercise } from '@/types/models';
+import mongoose, { Schema, Types } from 'mongoose';
 
 const ExerciseSchema: Schema = new Schema<IExercise>({
   name: { 

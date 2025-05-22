@@ -1,39 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum GoalStatus {
-  NOT_STARTED = 'not_started',
-  IN_PROGRESS = 'in_progress',
-  ON_TRACK = 'on_track',
-  BEHIND = 'behind',
-  ACHIEVED = 'achieved',
-  MISSED = 'missed'
-}
-
-export interface IMilestone {
-  value: number;
-  targetDate: Date;
-  achievedDate?: Date;
-  isAchieved: boolean;
-}
-
-export interface IGoalTracking extends Document {
-  user: Types.ObjectId;
-  exercise: Types.ObjectId;
-  metric: string;
-  targetValue: number;
-  startValue: number;
-  currentValue: number;
-  deadline: Date;
-  milestones: IMilestone[];
-  progressPercentage: number;
-  strategies: string[];
-  isAchieved: boolean;
-  achievedDate?: Date;
-  createdBy: Types.ObjectId;
-  trainer?: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IGoalTracking } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const MilestoneSchema = new Schema({
   value: {

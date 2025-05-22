@@ -1,25 +1,5 @@
+import { IMuscle } from "@/types/models";
 import mongoose, { Schema } from "mongoose";
-import { MuscleZoneValue, MuscleTypeValue, MuscleLevelValue } from "./enums/Muscle";
-
-export interface IMuscle extends Document {
-  id: string;
-  zone: MuscleZoneValue;
-  name: string;
-  type: MuscleTypeValue;
-  level: MuscleLevelValue;
-  conventional_name: string;
-  latin_term: string;
-  description?: string;
-  attachments?: string[];
-  functions?: string[];
-  innervation?: string;
-  bloodSupply?: string;
-  relatedMuscles?: string[];
-  imagePath?: string;
-  threeDModelPath?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const MuscleSchema: Schema = new Schema<IMuscle>({
   id: { 

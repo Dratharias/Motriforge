@@ -1,31 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IWorkoutExerciseMetrics {
-  rpe?: number; // Rate of Perceived Exertion
-  tempo?: string; // e.g., "3-1-3" for 3s down, 1s pause, 3s up
-  restPause?: boolean; // Whether to use rest-pause technique
-  failureType?: string; // e.g., "technical", "muscular", "none"
-  percentOfOneRepMax?: number; // Percentage of 1RM
-  [key: string]: any; // Additional custom metrics
-}
-
-export interface IWorkoutExercise extends Document {
-  workoutBlockId: Types.ObjectId;
-  exerciseId: Types.ObjectId;
-  sets: number;
-  reps: number | null;
-  weight: number | null;
-  time: number | null; // Duration in seconds
-  distance: number | null; // Distance in meters
-  rest: number; // Rest in seconds
-  notes: string;
-  metrics: IWorkoutExerciseMetrics;
-  position: number; // Order within block
-  alternativeExerciseIds: Types.ObjectId[];
-  isRequired: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IWorkoutExercise } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const WorkoutExerciseSchema: Schema = new Schema<IWorkoutExercise>({
   workoutBlockId: {

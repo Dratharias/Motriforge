@@ -1,25 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IEquipment extends Document {
-  name: string;
-  description: string;
-  aliases: string[];
-  category: string;
-  subcategory: string;
-  mediaIds: Types.ObjectId[];
-  specifications: Record<string, any>;
-  usage: string;
-  safetyNotes: string[];
-  commonUses: string[];
-  relatedEquipment: Types.ObjectId[];
-  tags: string[];
-  isPlatformEquipment: boolean;
-  createdBy: Types.ObjectId;
-  organization: Types.ObjectId;
-  isArchived: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IEquipment } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const EquipmentSchema: Schema = new Schema<IEquipment>({
   name: {

@@ -1,30 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum MuscleGroupCategory {
-  UPPER_BODY = 'Upper Body',
-  LOWER_BODY = 'Lower Body',
-  ARMS = 'Arms',
-  CORE = 'Core',
-  BACK = 'Back',
-  LEGS = 'Legs',
-  FULL_BODY = 'Full Body',
-  OTHER = 'Other'
-}
-
-export interface IMuscleGroup extends Document {
-  name: string;
-  muscles: Types.ObjectId[];
-  description: string;
-  category: MuscleGroupCategory;
-  primaryFunction: string;
-  icon: string;
-  color: string;
-  recommendedExercises: Types.ObjectId[];
-  antagonistGroup?: Types.ObjectId[];
-  synergistGroups?: Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IMuscleGroup, MuscleGroupCategory } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const MuscleGroupSchema: Schema = new Schema<IMuscleGroup>({
   name: { 
@@ -45,7 +20,7 @@ const MuscleGroupSchema: Schema = new Schema<IMuscleGroup>({
   },
   category: { 
     type: String, 
-    enum: Object.values(MuscleGroupCategory),
+    enum: MuscleGroupCategory,
     required: true,
     index: true 
   },

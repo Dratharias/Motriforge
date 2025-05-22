@@ -1,22 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface ICertificate extends Document {
-  user: Types.ObjectId;
-  name: string;
-  issuingBody: string;
-  dateObtained: Date;
-  expirationDate?: Date;
-  verificationLink?: string;
-  certificateNumber?: string;
-  media?: Types.ObjectId;
-  documentUrl?: string;
-  isVerified: boolean;
-  verifiedBy?: Types.ObjectId;
-  verifiedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  isValid(): boolean;
-}
+import { ICertificate } from '@/types/models';
+import mongoose, { Schema, Types } from 'mongoose';
 
 const CertificateSchema: Schema = new Schema<ICertificate>({
   user: {

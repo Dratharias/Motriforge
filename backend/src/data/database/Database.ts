@@ -1,6 +1,6 @@
 import { Collection } from './Collection';
 import { TransactionManager } from './TransactionManager';
-import { MongoClient, Db as MongoDb } from 'mongodb';
+import { MongoClient, Db as MongoDb, Document } from 'mongodb';
 import { LoggerFacade } from '../../core/logging/LoggerFacade';
 
 /**
@@ -28,9 +28,9 @@ export class Database {
    * Get singleton instance of Database
    */
   public static getInstance(
+    logger: LoggerFacade,
     connectionString: string = process.env.MONGODB_URI ?? 'mongodb://localhost:27017',
-    dbName: string = process.env.DB_NAME ?? 'fitness-app',
-    logger: LoggerFacade = new LoggerFacade()
+    dbName: string = process.env.DB_NAME ?? 'Motriforge',
   ): Database {
     if (!Database.instance) {
       Database.instance = new Database(connectionString, dbName, logger);
@@ -65,10 +65,10 @@ export class Database {
       this.transactionManager = new TransactionManager(this.client, this.db, this.logger);
       
       this.logger.info('Successfully connected to database', { dbName: this.dbName });
-    } catch (error) {
+    } catch (err) {
       this.isConnected = false;
-      this.logger.error('Failed to connect to database', { 
-        error, 
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Failed to connect to database', error, { 
         connectionString: this.connectionString.replace(/mongodb\+srv:\/\/([^:]+):([^@]+)@/, 'mongodb+srv://***:***@') 
       });
       throw error;
@@ -89,8 +89,9 @@ export class Database {
       this.client = null;
       this.db = null;
       this.logger.info('Disconnected from database');
-    } catch (error) {
-      this.logger.error('Failed to disconnect from database', { error });
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Failed to disconnect from database', error);
       throw error;
     }
   }
@@ -99,13 +100,13 @@ export class Database {
    * Get collection wrapper for the specified collection name
    * @param name Collection name
    */
-  public getCollection<T>(name: string): Collection<T> {
+  public getCollection<T extends Document>(name: string): Collection<T> {
     if (!this.isConnected || !this.db) {
       throw new Error('Database not connected');
     }
 
     if (!this.collections.has(name)) {
-      const mongoCollection = this.db.collection(name);
+      const mongoCollection = this.db.collection<T>(name);
       const collection = new Collection<T>(mongoCollection, this.logger);
       this.collections.set(name, collection);
     }
@@ -161,8 +162,9 @@ export class Database {
     try {
       const result = await this.db.command({ ping: 1 });
       return result.ok === 1;
-    } catch (error) {
-      this.logger.error('Failed to ping database', { error });
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Failed to ping database', error);
       return false;
     }
   }
@@ -177,8 +179,9 @@ export class Database {
 
     try {
       return await this.db.stats();
-    } catch (error) {
-      this.logger.error('Failed to get database stats', { error });
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Failed to get database stats', error);
       throw error;
     }
   }

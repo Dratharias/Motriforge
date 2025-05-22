@@ -43,8 +43,9 @@ export class Transaction {
       await this.session.commitTransaction();
       this.committed = true;
       this.logger.debug('Transaction committed', { operationsCount: this.operations.length });
-    } catch (error) {
-      this.logger.error('Failed to commit transaction', { error });
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Failed to commit transaction', error);
       throw error;
     }
   }
@@ -61,8 +62,9 @@ export class Transaction {
       await this.session.abortTransaction();
       this.aborted = true;
       this.logger.debug('Transaction aborted', { operationsCount: this.operations.length });
-    } catch (error) {
-      this.logger.error('Failed to abort transaction', { error });
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Failed to abort transaction', error);
       throw error;
     }
   }
@@ -108,15 +110,69 @@ export class Transaction {
     
     try {
       return await collection.findOne(filter, { ...options, session: this.session });
-    } catch (error) {
-      this.logger.error('Transaction findOne operation failed', { 
-        error, 
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction findOne operation failed', error, { 
         collectionName, 
         filter 
       });
       throw error;
     }
   }
+
+  /**
+   * Insert multiple documents in a transaction
+   * @param collectionName Collection name
+   * @param documents Documents to insert
+   */
+  public async insertMany<T extends Document>(
+    collectionName: string,
+    documents: OptionalUnlessRequiredId<T>[]
+  ): Promise<Array<T & { _id: any }>> {
+    const collection = this.db.collection<T>(collectionName);
+
+    const operation = new TransactionOperation('insertMany', collectionName, { documents });
+    this.operations.push(operation);
+
+    try {
+      const result = await collection.insertMany(documents, { session: this.session });
+      return documents.map((doc, idx) => ({
+        ...doc,
+        _id: result.insertedIds[idx]
+      })) as Array<T & { _id: any }>;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction insertMany operation failed', error, { collectionName });
+      throw error;
+    }
+  }
+
+  /**
+   * Aggregate documents in a transaction
+   * @param collectionName Collection name
+   * @param pipeline Aggregation pipeline
+   * @param options Optional aggregation options
+   */
+  public async aggregate<T extends Document, R extends Document = Document>(
+    collectionName: string,
+    pipeline: Document[],
+    options?: Document
+  ): Promise<R[]> {
+    const collection = this.db.collection<T>(collectionName);
+
+    const operation = new TransactionOperation('aggregate', collectionName, { pipeline, options });
+    this.operations.push(operation);
+
+    try {
+      return await collection.aggregate<R>(pipeline, { ...options, session: this.session }).toArray();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction aggregate operation failed', error, { collectionName, pipeline });
+      throw error;
+    }
+  }
+
+
 
   /**
    * Insert one document in a transaction
@@ -126,7 +182,7 @@ export class Transaction {
   public async insertOne<T extends Document>(
     collectionName: string,
     document: OptionalUnlessRequiredId<T>
-  ): Promise<T> {
+  ): Promise<T & { _id: any }> {
     const collection = this.db.collection<T>(collectionName);
     
     const operation = new TransactionOperation('insertOne', collectionName, { document });
@@ -134,10 +190,10 @@ export class Transaction {
     
     try {
       const result = await collection.insertOne(document, { session: this.session });
-      return { ...document, _id: result.insertedId } as T;
-    } catch (error) {
-      this.logger.error('Transaction insertOne operation failed', { 
-        error, 
+      return { ...document, _id: result.insertedId } as T & { _id: any };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction insertOne operation failed', error, { 
         collectionName 
       });
       throw error;
@@ -165,9 +221,9 @@ export class Transaction {
     try {
       const result = await collection.updateOne(filter, update, { ...options, session: this.session });
       return result.modifiedCount > 0;
-    } catch (error) {
-      this.logger.error('Transaction updateOne operation failed', { 
-        error, 
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction updateOne operation failed', error, { 
         collectionName, 
         filter 
       });
@@ -194,9 +250,9 @@ export class Transaction {
     try {
       const result = await collection.deleteOne(filter, { ...options, session: this.session });
       return result.deletedCount === 1;
-    } catch (error) {
-      this.logger.error('Transaction deleteOne operation failed', { 
-        error, 
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction deleteOne operation failed', error, { 
         collectionName, 
         filter 
       });
@@ -222,9 +278,9 @@ export class Transaction {
     
     try {
       return await collection.find(filter, { ...options, session: this.session }).toArray();
-    } catch (error) {
-      this.logger.error('Transaction findMany operation failed', { 
-        error, 
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction findMany operation failed', error, { 
         collectionName, 
         filter 
       });
@@ -253,9 +309,9 @@ export class Transaction {
     try {
       const result = await collection.updateMany(filter, update, { ...options, session: this.session });
       return result.modifiedCount;
-    } catch (error) {
-      this.logger.error('Transaction updateMany operation failed', { 
-        error, 
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction updateMany operation failed', error, { 
         collectionName, 
         filter 
       });
@@ -282,9 +338,9 @@ export class Transaction {
     try {
       const result = await collection.deleteMany(filter, { ...options, session: this.session });
       return result.deletedCount || 0;
-    } catch (error) {
-      this.logger.error('Transaction deleteMany operation failed', { 
-        error, 
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Transaction deleteMany operation failed', error, { 
         collectionName, 
         filter 
       });

@@ -1,33 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IClientOverview {
-  client: Types.ObjectId;
-  lastActivity: Date;
-  adherenceScore: number;
-  missedWorkouts: number;
-  completedWorkouts: number;
-  nextSession?: Date;
-  activeAlerts: number;
-  progressMetrics: Map<string, number>;
-  notes: string;
-}
-
-export interface ITrainerDashboard extends Document {
-  trainer: Types.ObjectId;
-  lastUpdated: Date;
-  clientOverviews: IClientOverview[];
-  upcomingSessions: Types.ObjectId[];
-  pendingFeedback: Types.ObjectId[];
-  clientAlerts: Types.ObjectId[];
-  recentActivities: Types.ObjectId[];
-  savedFilters: Map<string, any>;
-  favoriteClients: Types.ObjectId[];
-  activePrograms: number;
-  completedPrograms: number;
-  averageClientAdherence: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { ITrainerDashboard } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ClientOverviewSchema = new Schema({
   client: {

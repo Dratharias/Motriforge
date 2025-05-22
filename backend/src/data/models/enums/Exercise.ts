@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { ExerciseType, IExerciseTypeInfo, IMetricTypeInfo, MetricType } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 /** ============================
  *  This file list exercise
@@ -10,36 +11,10 @@ import mongoose, { Schema, Document } from 'mongoose';
  *  ExerciseType
  ** ======================== */
 
-const exerciseTypeEnum = [
-  'strength',
-  'cardio',
-  'flexibility',
-  'balance',
-  'plyometric',
-  'compound',
-  'isolation',
-  'calisthenics',
-  'sport_specific',
-  'rehabilitation',
-  'other'
-] as const;
-
-export type ExerciseTypeValue = typeof exerciseTypeEnum[number];
-
-export interface IExerciseTypeInfo extends Document {
-  type: ExerciseTypeValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  primaryMetrics: string[];
-  recommendedEquipment: string[];
-}
-
 const ExerciseTypeInfoSchema: Schema = new Schema<IExerciseTypeInfo>({
   type: { 
     type: String, 
-    enum: exerciseTypeEnum, 
+    enum: ExerciseType, 
     required: true, 
     unique: true 
   },
@@ -61,41 +36,10 @@ export const ExerciseTypeInfoModel = mongoose.model<IExerciseTypeInfo>('Exercise
  *  MetricType
  ** ======================== */
 
-const metricTypeEnum = [
-  'weight',
-  'reps',
-  'sets',
-  'distance',
-  'duration',
-  'speed',
-  'one_rep_max',
-  'volume',
-  'rpe',
-  'heart_rate',
-  'rest_time',
-  'range_of_motion'
-] as const;
-
-export type MetricTypeValue = typeof metricTypeEnum[number];
-
-export interface IMetricTypeInfo extends Document {
-  type: MetricTypeValue;
-  label: string;
-  description: string;
-  unit: string;
-  alternateUnits: string[];
-  icon: string;
-  color: string;
-  minValue: number;
-  maxValue: number;
-  defaultIncrement: number;
-  bestForExerciseTypes: string[];
-}
-
 const MetricTypeInfoSchema: Schema = new Schema<IMetricTypeInfo>({
   type: { 
     type: String, 
-    enum: metricTypeEnum, 
+    enum: MetricType, 
     required: true, 
     unique: true 
   },

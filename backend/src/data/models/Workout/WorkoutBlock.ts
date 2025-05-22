@@ -1,36 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum BlockType {
-  WARM_UP = 'warm_up',
-  COOL_DOWN = 'cool_down',
-  STRENGTH = 'strength',
-  CARDIO = 'cardio',
-  CIRCUIT = 'circuit',
-  SUPERSET = 'superset',
-  GIANT_SET = 'giant_set',
-  EMOM = 'emom', // Every Minute On the Minute
-  AMRAP = 'amrap', // As Many Rounds As Possible
-  PYRAMID = 'pyramid',
-  DROP_SET = 'drop_set',
-  TABATA = 'tabata',
-  HIIT = 'hiit', // High-Intensity Interval Training
-  ACTIVE_RECOVERY = 'active_recovery',
-  MOBILITY = 'mobility',
-  CUSTOM = 'custom'
-}
-
-export interface IWorkoutBlock extends Document {
-  workoutId: Types.ObjectId;
-  title: string;
-  description: string;
-  blockType: BlockType;
-  position: number; // Order within workout
-  restBetweenBlocks: number; // Rest in seconds
-  rounds: number;
-  timeCap: number; // Time cap in seconds, 0 = no cap
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IWorkoutBlock, BlockType } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const WorkoutBlockSchema: Schema = new Schema<IWorkoutBlock>({
   workoutId: {

@@ -1,3 +1,4 @@
+import { IOrganizationTypeInfo, IOrganizationVisibilityInfo, IOrganizationRoleInfo, OrganizationRole, OrganizationType, OrganizationVisibility } from '@/types/models';
 import mongoose, { Schema, Document } from 'mongoose';
 
 /** ============================
@@ -11,35 +12,10 @@ import mongoose, { Schema, Document } from 'mongoose';
  *  Organization Type
  ** ======================== */
 
-const organizationTypeEnum = [
-  'gym',
-  'studio',
-  'personal_trainer',
-  'physical_therapy',
-  'corporate',
-  'school',
-  'team',
-  'family',
-  'other'
-] as const;
-
-export type OrganizationTypeValue = typeof organizationTypeEnum[number];
-
-export interface IOrganizationTypeInfo extends Document {
-  type: OrganizationTypeValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  memberRoles: string[];
-  features: string[];
-  limitations: string[];
-}
-
 const OrganizationTypeInfoSchema: Schema = new Schema<IOrganizationTypeInfo>({
   type: { 
     type: String, 
-    enum: organizationTypeEnum, 
+    enum: OrganizationType, 
     required: true, 
     unique: true 
   },
@@ -62,30 +38,11 @@ export const OrganizationTypeInfoModel = mongoose.model<IOrganizationTypeInfo>('
  *  Organization Visibility
  ** ======================== */
 
-const organizationVisibilityEnum = [
-  'public',
-  'private',
-  'secret'
-] as const;
-
-export type OrganizationVisibilityValue = typeof organizationVisibilityEnum[number];
-
-export interface IOrganizationVisibilityInfo extends Document {
-  visibility: OrganizationVisibilityValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  searchable: boolean;
-  joinable: boolean;
-  viewableContent: boolean;
-  requiresApproval: boolean;
-}
 
 const OrganizationVisibilityInfoSchema: Schema = new Schema<IOrganizationVisibilityInfo>({
   visibility: { 
     type: String, 
-    enum: organizationVisibilityEnum, 
+    enum: OrganizationVisibility, 
     required: true, 
     unique: true 
   },
@@ -109,34 +66,10 @@ export const OrganizationVisibilityInfoModel = mongoose.model<IOrganizationVisib
  *  Organization Role
  ** ======================== */
 
-const organizationRoleEnum = [
-  'owner',
-  'admin',
-  'manager',
-  'trainer',
-  'member',
-  'guest'
-] as const;
-
-export type OrganizationRoleValue = typeof organizationRoleEnum[number];
-
-export interface IOrganizationRoleInfo extends Document {
-  role: OrganizationRoleValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  permissions: string[];
-  canInvite: boolean;
-  canModify: boolean;
-  canDelete: boolean;
-  level: number; // Hierarchy level: 1 for Owner (highest), 6 for Guest (lowest)
-}
-
 const OrganizationRoleInfoSchema: Schema = new Schema<IOrganizationRoleInfo>({
   role: { 
     type: String, 
-    enum: organizationRoleEnum, 
+    enum: OrganizationRole, 
     required: true, 
     unique: true 
   },

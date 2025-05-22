@@ -1,22 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface ITrainingFeedback extends Document {
-  client: Types.ObjectId;
-  coach: Types.ObjectId;
-  workoutSession: Types.ObjectId;
-  date: Date;
-  feedbackText: string;
-  correctionNotes: string;
-  formComments: string;
-  performanceRating: number;
-  progressionSuggestions: string;
-  mediaNotes: Types.ObjectId[];
-  wasReviewed: boolean;
-  reviewDate?: Date;
-  exerciseFeedback?: Map<string, string>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { ITrainingFeedback } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const TrainingFeedbackSchema: Schema = new Schema<ITrainingFeedback>({
   client: {

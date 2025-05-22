@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { ActivityAction, IActivityActionInfo, ITimeResolutionInfo, TimeResolution } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 /** ============================
  *  This file list analytics
@@ -6,35 +7,10 @@ import mongoose, { Schema, Document } from 'mongoose';
  *  - ActivityAction
  ** ============================ */
 
-/** ========================
- *  TimeResolution
- ** ======================== */
-
-const timeResolutionEnum = [
-  'daily',
-  'weekly',
-  'monthly',
-  'quarterly',
-  'yearly'
-] as const;
-
-export type TimeResolutionValue = typeof timeResolutionEnum[number];
-
-export interface ITimeResolutionInfo extends Document {
-  resolution: TimeResolutionValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  durationInDays: number;
-  format: string;
-  recommendedUse: string;
-}
-
 const TimeResolutionInfoSchema: Schema = new Schema<ITimeResolutionInfo>({
   resolution: { 
     type: String, 
-    enum: timeResolutionEnum, 
+    enum: TimeResolution, 
     required: true, 
     unique: true 
   },
@@ -58,50 +34,11 @@ export const TimeResolutionInfoModel = mongoose.model<ITimeResolutionInfo>('Time
  *  ActivityAction
  ** ======================== */
 
-const activityActionEnum = [
-  'workout_started',
-  'workout_completed',
-  'workout_paused',
-  'workout_resumed',
-  'workout_cancelled',
-  'program_started',
-  'program_completed',
-  'program_paused',
-  'program_resumed',
-  'program_cancelled',
-  'exercise_completed',
-  'personal_record',
-  'goal_achieved',
-  'feedback_received',
-  'profile_updated',
-  'logged_in',
-  'logged_out',
-  'joined_organization',
-  'content_created',
-  'content_saved'
-] as const;
-
-export type ActivityActionValue = typeof activityActionEnum[number];
-
-export interface IActivityActionInfo extends Document {
-  action: ActivityActionValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  category: string;
-  points: number; // Points awarded for this action
-  requiresVerification: boolean;
-  notifiable: boolean;
-  displayInFeed: boolean;
-}
-
 const ActivityActionInfoSchema: Schema = new Schema<IActivityActionInfo>({
-  action: { 
-    type: String, 
-    enum: activityActionEnum, 
-    required: true, 
-    unique: true 
+  action: {
+    type: String,
+    enum: ActivityAction,
+    required: true
   },
   label: { type: String, required: true },
   description: { type: String, required: true },

@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { GoalStatus, RelationshipStatus, IRelationshipStatusInfo, IGoalStatusInfo } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 /** ============================
  *  This file list status
@@ -10,32 +11,10 @@ import mongoose, { Schema, Document } from 'mongoose';
  *  GoalStatus
  ** ======================== */
 
-const goalStatusEnum = [
-  'not_started',
-  'in_progress',
-  'on_track',
-  'behind',
-  'achieved',
-  'missed'
-] as const;
-
-export type GoalStatusValue = typeof goalStatusEnum[number];
-
-export interface IGoalStatusInfo extends Document {
-  status: GoalStatusValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  progressRequired: number; // percentage of progress required
-  recommendedActions: string[];
-  alertLevel: string;
-}
-
 const GoalStatusInfoSchema: Schema = new Schema<IGoalStatusInfo>({
   status: { 
     type: String, 
-    enum: goalStatusEnum, 
+    enum: GoalStatus, 
     required: true, 
     unique: true 
   },
@@ -64,32 +43,10 @@ export const GoalStatusInfoModel = mongoose.model<IGoalStatusInfo>('GoalStatusIn
  *  RelationshipStatus
  ** ======================== */
 
-const relationshipStatusEnum = [
-  'pending',
-  'active',
-  'paused',
-  'terminated',
-  'expired'
-] as const;
-
-export type RelationshipStatusValue = typeof relationshipStatusEnum[number];
-
-export interface IRelationshipStatusInfo extends Document {
-  status: RelationshipStatusValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  allowedActions: string[];
-  clientPermissions: boolean;
-  trainerPermissions: boolean;
-  recommendedFollowUp: string;
-}
-
 const RelationshipStatusInfoSchema: Schema = new Schema<IRelationshipStatusInfo>({
   status: { 
     type: String, 
-    enum: relationshipStatusEnum, 
+    enum: RelationshipStatus, 
     required: true, 
     unique: true 
   },

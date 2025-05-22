@@ -1,48 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum SessionType {
-  ASSESSMENT = 'assessment',
-  TRAINING = 'training',
-  REVIEW = 'review',
-  GOAL_SETTING = 'goal_setting',
-  NUTRITION = 'nutrition',
-  RECOVERY = 'recovery'
-}
-
-export enum SessionStatus {
-  SCHEDULED = 'scheduled',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  RESCHEDULED = 'rescheduled'
-}
-
-export interface ICoachingSession extends Document {
-  client: Types.ObjectId;
-  coach: Types.ObjectId;
-  scheduledDate: Date;
-  duration: number; // in minutes
-  type: SessionType;
-  status: SessionStatus;
-  notes: string;
-  focusAreas: string[];
-  goals: string[];
-  outcomes: string[];
-  sessionRecording?: Types.ObjectId;
-  preparationNotes?: string;
-  followupRequired: boolean;
-  followupCompleted: boolean;
-  location?: string;
-  isVirtual: boolean;
-  meetingLink?: string;
-  reminderSent: boolean;
-  cancellationReason?: string;
-  cancelledBy?: Types.ObjectId;
-  feedbackProvided: boolean;
-  clientFeedbackRating?: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { ICoachingSession, SessionType, SessionStatus } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const CoachingSessionSchema: Schema = new Schema<ICoachingSession>({
   client: {
@@ -70,13 +27,13 @@ const CoachingSessionSchema: Schema = new Schema<ICoachingSession>({
   },
   type: {
     type: String,
-    enum: Object.values(SessionType),
+    enum: SessionType,
     required: true,
     index: true
   },
   status: {
     type: String,
-    enum: Object.values(SessionStatus),
+    enum: SessionStatus,
     default: SessionStatus.SCHEDULED,
     required: true,
     index: true

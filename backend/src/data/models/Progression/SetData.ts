@@ -1,22 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface ISetData extends Document {
-  workoutSessionExercise: Types.ObjectId;
-  setNumber: number;
-  weight?: number;
-  reps?: number;
-  distance?: number;
-  duration?: number; // in seconds
-  rpe?: number; // Rate of Perceived Exertion (1-10)
-  tempo?: string; // e.g. "3-1-3" for 3s down, 1s pause, 3s up
-  isWarmupSet: boolean;
-  isDropSet: boolean;
-  restAfter?: number; // in seconds
-  completedAt: Date;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { ISetData } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 export const SetDataSchema: Schema = new Schema<ISetData>({
   workoutSessionExercise: {

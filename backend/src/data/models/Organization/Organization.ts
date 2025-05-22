@@ -1,88 +1,8 @@
-import mongoose, { Schema, Document, Types, Model } from 'mongoose';
-import {
-  OrganizationVisibilityValue,
-  OrganizationRoleValue,
-  OrganizationTypeValue,
-  OrganizationRoleInfoModel
-} from '../enums/Organization';
-import { TrustLevelValue } from '../enums/TrustLevel';
-import { OrganizationMemberModel } from './OrganizationMember';
+import { IOrganizationDocument, OrganizationRole, OrganizationRoleValue } from "@/types/models";
+import mongoose, { Schema, Types } from "mongoose";
+import { OrganizationRoleInfoModel } from "../enums/Organization";
+import { OrganizationMemberModel } from "./OrganizationMember";
 
-interface IAddress {
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  coordinates?: {
-    latitude: number;
-    longitude: number;
-  };
-}
-
-interface IContact {
-  phone: string;
-  email: string;
-  website?: string;
-  socialMedia?: {
-    facebook?: string;
-    instagram?: string;
-    twitter?: string;
-    linkedin?: string;
-  };
-}
-
-interface IOrganizationSettings {
-  allowMemberInvites: boolean;
-  requireAdminApproval: boolean;
-  defaultMemberRole: string;
-  contentSharingLevel: string;
-  customBranding: {
-    logo?: string;
-    colors?: {
-      primary: string;
-      secondary: string;
-      accent: string;
-    };
-  };
-}
-
-interface IOrganizationStats {
-  memberCount: number;
-  exerciseCount: number;
-  workoutCount: number;
-  programCount: number;
-  averageEngagement: number;
-  lastActivityDate: Date;
-}
-
-export interface IOrganizationDocument extends IOrganization, Document {
-  addMember(userId: Types.ObjectId, role: OrganizationRoleValue, invitedBy: Types.ObjectId): Promise<IOrganizationDocument>;
-  removeMember(userId: Types.ObjectId): Promise<IOrganizationDocument>;
-  updateMemberRole(userId: Types.ObjectId, newRole: OrganizationRoleValue): Promise<IOrganizationDocument>;
-  hasMember(userId: Types.ObjectId): Promise<boolean>;
-  canUserAccess(userId: Types.ObjectId, requiredRole: OrganizationRoleValue): Promise<boolean>;
-}
-
-export interface IOrganization {
-  name: string;
-  type: OrganizationTypeValue;
-  description: string;
-  logoUrl: string;
-  owner: Types.ObjectId;
-  admins: Types.ObjectId[];
-  address: IAddress;
-  contact: IContact;
-  visibility: OrganizationVisibilityValue;
-  isVerified: boolean;
-  trustLevel: TrustLevelValue;
-  settings: IOrganizationSettings;
-  stats: IOrganizationStats;
-  isActive: boolean;
-  isArchived: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const AddressSchema = new Schema({
   street: { type: String },
@@ -132,12 +52,8 @@ const StatsSchema = new Schema({
   lastActivityDate: { type: Date, default: Date.now }
 }, { _id: false });
 
-// Methods interface
-interface IOrganizationModel extends Model<IOrganizationDocument> {
-  // Static methods would go here
-}
 
-const OrganizationSchema = new Schema<IOrganizationDocument, IOrganizationModel>({
+const OrganizationSchema = new Schema<IOrganizationDocument>({
   name: { 
     type: String, 
     required: true, 
@@ -294,7 +210,7 @@ OrganizationSchema.methods.removeMember = async function(
 OrganizationSchema.methods.updateMemberRole = async function(
   this: IOrganizationDocument,
   userId: Types.ObjectId, 
-  newRole: OrganizationRoleValue
+  newRole: OrganizationRole
 ): Promise<IOrganizationDocument> {
   // Cannot change owner's role
   if (this.owner.equals(userId)) {
@@ -317,7 +233,7 @@ OrganizationSchema.methods.updateMemberRole = async function(
   await member.save();
 
   // Update admins array based on new role
-  const isNowAdmin = newRole === 'admin'; // Adjust according to your role constants
+  const isNowAdmin = newRole === OrganizationRole.Admin; // Adjust according to your role constants
   const isCurrentlyAdmin = this.admins.some(adminId => adminId.equals(userId));
 
   if (isNowAdmin && !isCurrentlyAdmin) {

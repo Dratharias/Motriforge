@@ -1,33 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum InvitationStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  DECLINED = 'declined',
-  EXPIRED = 'expired',
-  REVOKED = 'revoked'
-}
-
-export interface IInvitation extends Document {
-  organization: Types.ObjectId;
-  email: string;
-  invitedBy: Types.ObjectId;
-  role: string;
-  status: InvitationStatus;
-  token: string;
-  message?: string;
-  expiresAt: Date;
-  acceptedAt?: Date;
-  declinedAt?: Date;
-  revokedAt?: Date;
-  permissions?: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  isExpired(): boolean;
-  accept(): Promise<IInvitation>;
-  decline(): Promise<IInvitation>;
-  revoke(reason?: string): Promise<IInvitation>;
-}
+import { IInvitation, InvitationStatus } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const InvitationSchema: Schema = new Schema<IInvitation>({
   organization: {

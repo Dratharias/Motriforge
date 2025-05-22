@@ -1,61 +1,6 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
-
-export interface IUserPreferences {
-  theme: string;
-  language: string;
-  measurementSystem: 'metric' | 'imperial';
-  workoutDisplayMode: 'standard' | 'compact';
-  emailNotifications: boolean;
-  pushNotifications: boolean;
-}
-
-export interface IPrivacySettings {
-  profileVisibility: 'public' | 'organization' | 'private';
-  showWorkoutHistory: boolean;
-  showProgression: boolean;
-  allowDataAnalytics: boolean;
-  shareWithTrainers: boolean;
-}
-
-export interface INotificationSettings {
-  workoutReminders: boolean;
-  achievementAlerts: boolean;
-  newMessages: boolean;
-  systemAnnouncements: boolean;
-  programUpdates: boolean;
-  trainerFeedback: boolean;
-  dailySummary: boolean;
-  marketingEmails: boolean;
-}
-
-export interface IUser extends Document {
-  firstName: string;
-  lastName: string;
-  email: string;
-  passwordHash: string;
-  role: Types.ObjectId;
-  organizations: Array<{
-    organization: Types.ObjectId;
-    role: string;
-    joinedAt: Date;
-    active: boolean;
-  }>;
-  primaryOrganization: Types.ObjectId;
-  active: boolean;
-  storageQuota: number;
-  storageUsed: number;
-  notificationSettings: INotificationSettings;
-  privacySettings: IPrivacySettings;
-  preferences: IUserPreferences;
-  createdAt: Date;
-  updatedAt: Date;
-  comparePassword(candidate: string): Promise<boolean>;
-}
-
-export interface IUserDocument extends IUser {
-  _password?: string;
-}
+import { IUser, IUserDocument } from '@/types/models';
 
 const UserSchema: Schema = new Schema<IUserDocument>({
   firstName: { type: String, required: true, trim: true },

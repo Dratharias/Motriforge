@@ -1,18 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IExerciseSwap extends Document {
-  originalExerciseId: Types.ObjectId;
-  replacementExerciseId: Types.ObjectId;
-  userId: Types.ObjectId;
-  workoutId?: Types.ObjectId;
-  programId?: Types.ObjectId;
-  sessionId?: string;
-  reason: string;
-  permanent: boolean;
-  swappedAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IExerciseSwap } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ExerciseSwapSchema: Schema = new Schema<IExerciseSwap>({
   originalExerciseId: {

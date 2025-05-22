@@ -1,35 +1,5 @@
+import { IDailyPerformance } from '@/types/models';
 import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IPerformanceContext {
-  workout?: Types.ObjectId;
-  workoutSession?: Types.ObjectId;
-  program?: Types.ObjectId;
-  notes?: string;
-  energyLevel?: number;
-  rpe?: number;
-  equipment?: Types.ObjectId;
-  sets?: ISetData[];
-}
-
-export interface ISetData {
-  setNumber: number;
-  weight?: number;
-  reps?: number;
-  distance?: number;
-  duration?: number;
-  rpe?: number;
-}
-
-export interface IDailyPerformance extends Document {
-  user: Types.ObjectId;
-  exercise: Types.ObjectId;
-  progressionTracking: Types.ObjectId;
-  date: Date;
-  metrics: Map<string, number>;
-  context: IPerformanceContext;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const SetDataSchema = new Schema({
   setNumber: {

@@ -1,24 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface INotificationSettings extends Document {
-  user: Types.ObjectId;
-  workoutReminders: boolean;
-  achievementAlerts: boolean;
-  newMessages: boolean;
-  systemAnnouncements: boolean;
-  programUpdates: boolean;
-  trainerFeedback: boolean;
-  dailySummary: boolean;
-  marketingEmails: boolean;
-  mobileEnabled: boolean;
-  emailEnabled: boolean;
-  webEnabled: boolean;
-  quietHoursStart?: number;
-  quietHoursEnd?: number;
-  customCategories?: Map<string, boolean>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { INotificationSettings } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const NotificationSettingsSchema: Schema = new Schema<INotificationSettings>({
   user: {

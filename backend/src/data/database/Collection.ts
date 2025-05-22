@@ -1,94 +1,59 @@
-import { 
-  Collection as MongoCollection, 
-  Document, 
-  Filter, 
-  FindOptions, 
-  UpdateFilter, 
-  UpdateOptions, 
-  InsertOneOptions,
-  DeleteOptions,
-  InsertManyResult,
-  ObjectId,
-  IndexSpecification,
-  CreateIndexesOptions,
-  CountDocumentsOptions,
-  AggregateOptions,
-  BulkWriteOptions,
-  BulkWriteResult,
-  WithId,
-  OptionalUnlessRequiredId
-} from 'mongodb';
-import { QueryBuilder } from './QueryBuilder';
+import { Collection as MongoCollection, Filter, FindOptions, UpdateFilter, UpdateOptions, Document, WithId, OptionalUnlessRequiredId } from 'mongodb';
 import { LoggerFacade } from '../../core/logging/LoggerFacade';
 
 /**
- * Typed wrapper around MongoDB collection with enhanced functionality
+ * Wrapper around MongoDB collection providing logging and error handling
  */
 export class Collection<T extends Document> {
-  private readonly collection: MongoCollection<T>;
-  private readonly logger: LoggerFacade;
-
-  constructor(collection: MongoCollection<T>, logger: LoggerFacade) {
-    this.collection = collection;
-    this.logger = logger;
-  }
-
   /**
-   * Create a query builder for complex queries
+   * Create a new Collection wrapper
+   * 
+   * @param collection MongoDB collection
+   * @param logger Logger facade
    */
-  public createQueryBuilder(): QueryBuilder<T> {
-    return new QueryBuilder<T>(this);
-  }
+  constructor(
+    private readonly collection: MongoCollection<T>,
+    private readonly logger: LoggerFacade
+  ) {}
 
   /**
-   * Find document by ID
-   * @param id Document ID
-   */
-  public async findById(id: string | ObjectId): Promise<WithId<T> | null> {
-    try {
-      const objectId = typeof id === 'string' ? new ObjectId(id) : id;
-      return await this.collection.findOne({ _id: objectId } as Filter<T>);
-    } catch (error) {
-      this.logger.error('Failed to find document by ID', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        id 
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Find a single document matching the filter
+   * Find documents matching a filter
+   * 
    * @param filter Query filter
    * @param options Find options
-   */
-  public async findOne(filter: Filter<T>, options?: FindOptions): Promise<T | null> {
-    try {
-      return await this.collection.findOne(filter, options);
-    } catch (error) {
-      this.logger.error('Failed to find document', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        filter 
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Find all documents matching the filter
-   * @param filter Query filter
-   * @param options Find options
+   * @returns Array of matching documents
    */
   public async find(filter: Filter<T> = {}, options?: FindOptions): Promise<WithId<T>[]> {
     try {
-      return await this.collection.find(filter, options).toArray();
-    } catch (error) {
-      this.logger.error('Failed to find documents', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        filter 
+      const cursor = this.collection.find(filter, options);
+      return await cursor.toArray();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.find', error, {
+        collection: this.collection.collectionName,
+        filter,
+        options
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Find a single document matching a filter
+   * 
+   * @param filter Query filter
+   * @param options Find options
+   * @returns Matching document or null if not found
+   */
+  public async findOne(filter: Filter<T>, options?: FindOptions): Promise<WithId<T> | null> {
+    try {
+      return await this.collection.findOne(filter, options);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.findOne', error, {
+        collection: this.collection.collectionName,
+        filter,
+        options
       });
       throw error;
     }
@@ -96,18 +61,18 @@ export class Collection<T extends Document> {
 
   /**
    * Insert a single document
+   * 
    * @param document Document to insert
-   * @param options Insert options
+   * @returns Result of insert operation
    */
-  public async insertOne(document: OptionalUnlessRequiredId<T>, options?: InsertOneOptions): Promise<T> {
+  public async insertOne(document: OptionalUnlessRequiredId<T>): Promise<any> {
     try {
-      const result = await this.collection.insertOne(document, options);
-      // Return the document with its new _id
-      return { ...document, _id: result.insertedId } as T;
-    } catch (error) {
-      this.logger.error('Failed to insert document', { 
-        error, 
-        collectionName: this.collection.collectionName 
+      return await this.collection.insertOne(document);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.insertOne', error, {
+        collection: this.collection.collectionName,
+        document
       });
       throw error;
     }
@@ -115,17 +80,18 @@ export class Collection<T extends Document> {
 
   /**
    * Insert multiple documents
+   * 
    * @param documents Documents to insert
-   * @param options Insert options
+   * @returns Result of insert operation
    */
-  public async insertMany(documents: Array<OptionalUnlessRequiredId<T>>, options?: BulkWriteOptions): Promise<InsertManyResult<T>> {
+  public async insertMany(documents: OptionalUnlessRequiredId<T>[]): Promise<any> {
     try {
-      return await this.collection.insertMany(documents, options);
-    } catch (error) {
-      this.logger.error('Failed to insert multiple documents', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        count: documents.length 
+      return await this.collection.insertMany(documents);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.insertMany', error, {
+        collection: this.collection.collectionName,
+        documentCount: documents.length
       });
       throw error;
     }
@@ -133,19 +99,22 @@ export class Collection<T extends Document> {
 
   /**
    * Update a single document
-   * @param filter Query filter
+   * 
+   * @param filter Filter to match document
    * @param update Update operations
    * @param options Update options
+   * @returns Result of update operation
    */
-  public async updateOne(filter: Filter<T>, update: UpdateFilter<T>, options?: UpdateOptions): Promise<boolean> {
+  public async updateOne(filter: Filter<T>, update: UpdateFilter<T>, options?: UpdateOptions): Promise<any> {
     try {
-      const result = await this.collection.updateOne(filter, update, options);
-      return result.modifiedCount > 0;
-    } catch (error) {
-      this.logger.error('Failed to update document', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        filter 
+      return await this.collection.updateOne(filter, update, options);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.updateOne', error, {
+        collection: this.collection.collectionName,
+        filter,
+        update,
+        options
       });
       throw error;
     }
@@ -153,19 +122,22 @@ export class Collection<T extends Document> {
 
   /**
    * Update multiple documents
-   * @param filter Query filter
+   * 
+   * @param filter Filter to match documents
    * @param update Update operations
    * @param options Update options
+   * @returns Result of update operation
    */
-  public async updateMany(filter: Filter<T>, update: UpdateFilter<T>, options?: UpdateOptions): Promise<number> {
+  public async updateMany(filter: Filter<T>, update: UpdateFilter<T>, options?: UpdateOptions): Promise<any> {
     try {
-      const result = await this.collection.updateMany(filter, update, options);
-      return result.modifiedCount;
-    } catch (error) {
-      this.logger.error('Failed to update multiple documents', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        filter 
+      return await this.collection.updateMany(filter, update, options);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.updateMany', error, {
+        collection: this.collection.collectionName,
+        filter,
+        update,
+        options
       });
       throw error;
     }
@@ -173,18 +145,18 @@ export class Collection<T extends Document> {
 
   /**
    * Delete a single document
-   * @param filter Query filter
-   * @param options Delete options
+   * 
+   * @param filter Filter to match document
+   * @returns Result of delete operation
    */
-  public async deleteOne(filter: Filter<T>, options?: DeleteOptions): Promise<boolean> {
+  public async deleteOne(filter: Filter<T>): Promise<any> {
     try {
-      const result = await this.collection.deleteOne(filter, options);
-      return result.deletedCount === 1;
-    } catch (error) {
-      this.logger.error('Failed to delete document', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        filter 
+      return await this.collection.deleteOne(filter);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.deleteOne', error, {
+        collection: this.collection.collectionName,
+        filter
       });
       throw error;
     }
@@ -192,90 +164,60 @@ export class Collection<T extends Document> {
 
   /**
    * Delete multiple documents
-   * @param filter Query filter
-   * @param options Delete options
+   * 
+   * @param filter Filter to match documents
+   * @returns Result of delete operation
    */
-  public async deleteMany(filter: Filter<T>, options?: DeleteOptions): Promise<number> {
+  public async deleteMany(filter: Filter<T>): Promise<any> {
     try {
-      const result = await this.collection.deleteMany(filter, options);
-      return result.deletedCount || 0;
-    } catch (error) {
-      this.logger.error('Failed to delete multiple documents', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        filter 
+      return await this.collection.deleteMany(filter);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.deleteMany', error, {
+        collection: this.collection.collectionName,
+        filter
       });
       throw error;
     }
   }
 
   /**
-   * Count documents matching the filter
-   * @param filter Query filter
-   * @param options Count options
+   * Find a document and update it in one operation
+   * 
+   * @param filter Filter to match document
+   * @param update Update operations
+   * @param options Options for findOneAndUpdate
+   * @returns Result of findOneAndUpdate operation
    */
-  public async countDocuments(filter: Filter<T> = {}, options?: CountDocumentsOptions): Promise<number> {
+  public async findOneAndUpdate(filter: Filter<T>, update: UpdateFilter<T>, options?: any): Promise<any> {
     try {
-      return await this.collection.countDocuments(filter, options);
-    } catch (error) {
-      this.logger.error('Failed to count documents', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        filter 
+      return await this.collection.findOneAndUpdate(filter, update, options);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.findOneAndUpdate', error, {
+        collection: this.collection.collectionName,
+        filter,
+        update,
+        options
       });
       throw error;
     }
   }
 
   /**
-   * Create an index on the collection
-   * @param indexSpec Index specification
-   * @param options Create index options
+   * Count documents matching a filter
+   * 
+   * @param filter Filter to match documents
+   * @returns Count of matching documents
    */
-  public async createIndex(indexSpec: IndexSpecification, options?: CreateIndexesOptions): Promise<string> {
+  public async countDocuments(filter: Filter<T> = {}): Promise<number> {
     try {
-      return await this.collection.createIndex(indexSpec, options);
-    } catch (error) {
-      this.logger.error('Failed to create index', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        indexSpec 
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Execute an aggregation pipeline
-   * @param pipeline Aggregation pipeline
-   * @param options Aggregate options
-   */
-  public async aggregate<U extends Document = T>(pipeline: object[], options?: AggregateOptions): Promise<U[]> {
-    try {
-      return await this.collection.aggregate<U>(pipeline, options).toArray();
-    } catch (error) {
-      this.logger.error('Failed to execute aggregate pipeline', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        pipeline 
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Execute bulk write operations
-   * @param operations Bulk write operations
-   * @param options Bulk write options
-   */
-  public async bulkWrite(operations: any[], options?: BulkWriteOptions): Promise<BulkWriteResult> {
-    try {
-      return await this.collection.bulkWrite(operations, options);
-    } catch (error) {
-      this.logger.error('Failed to execute bulk write operations', { 
-        error, 
-        collectionName: this.collection.collectionName, 
-        operationsCount: operations.length 
+      return await this.collection.countDocuments(filter);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Error in collection.countDocuments', error, {
+        collection: this.collection.collectionName,
+        filter
       });
       throw error;
     }
@@ -283,6 +225,8 @@ export class Collection<T extends Document> {
 
   /**
    * Get the raw MongoDB collection
+   * 
+   * @returns MongoDB collection
    */
   public getRawCollection(): MongoCollection<T> {
     return this.collection;
@@ -290,8 +234,10 @@ export class Collection<T extends Document> {
 
   /**
    * Get the collection name
+   * 
+   * @returns Collection name
    */
-  public getName(): string {
+  public get name(): string {
     return this.collection.collectionName;
   }
 }

@@ -54,10 +54,10 @@
 - [x] `CacheDomain` (`src/core/cache/CacheDomain.ts`) [B] `cache-system`
 
 ### 10. Dépôts Core
-- [ ] `BaseRepository<T>` (`src/data/repositories/BaseRepository.ts`) [B] `repository-layer`
-- [ ] `UserRepository` (`src/data/repositories/UserRepository.ts`) [B] `repository-layer`
-- [ ] `OrganizationRepository` (`src/data/repositories/OrganizationRepository.ts`) [B] `repository-layer`
-- [ ] `TokenRepository` (`src/data/repositories/TokenRepository.ts`) [B] `repository-layer`
+- [x] `BaseRepository<T>` (`src/data/repositories/BaseRepository.ts`) [B] `repository-layer`
+- [x] `UserRepository` (`src/data/repositories/UserRepository.ts`) [B] `repository-layer`
+- [x] `OrganizationRepository` (`src/data/repositories/OrganizationRepository.ts`) [B] `repository-layer`
+- [x] `TokenRepository` (`src/data/repositories/TokenRepository.ts`) [B] `repository-layer`
 - [ ] `PermissionRepository` (`src/data/repositories/PermissionRepository.ts`) [B] `repository-layer`
 - [ ] `MediaRepository` (`src/data/repositories/MediaRepository.ts`) [B] `repository-layer`
 - [ ] `ExerciseRepository` (`src/data/repositories/ExerciseRepository.ts`) [B] `repository-layer`

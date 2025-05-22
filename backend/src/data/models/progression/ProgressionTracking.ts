@@ -1,49 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum MetricType {
-  WEIGHT = 'weight',
-  REPS = 'reps',
-  SETS = 'sets',
-  DISTANCE = 'distance',
-  DURATION = 'duration',
-  SPEED = 'speed',
-  ONE_REP_MAX = 'one_rep_max',
-  VOLUME = 'volume',
-  RPE = 'rpe',
-  ORM = 'orm',
-  HEART_RATE = 'heart_rate',
-  REST_TIME = 'rest_time',
-  RANGE_OF_MOTION = 'range_of_motion'
-}
-
-export enum TimeResolution {
-  DAILY = 'daily',
-  WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-  QUARTERLY = 'quarterly',
-  YEARLY = 'yearly'
-}
-
-export interface IMetricSnapshot {
-  date: Date;
-  metrics: Map<string, number>;
-}
-
-export interface IProgressMetrics {
-  percentage: number;
-  absoluteChange: number;
-}
-
-export interface IProgressionTracking extends Document {
-  user: Types.ObjectId;
-  exercise: Types.ObjectId;
-  trackedMetrics: MetricType[];
-  firstRecorded: IMetricSnapshot;
-  lastRecorded: IMetricSnapshot;
-  overallProgress: Record<string, IProgressMetrics>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IProgressionTracking, MetricType } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const MetricSnapshotSchema = new Schema({
   date: {

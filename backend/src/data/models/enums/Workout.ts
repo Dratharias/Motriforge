@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { BlockType, IBlockTypeInfo, IIntensityLevelInfo, IntensityLevel, IWorkoutGoalInfo, WorkoutGoal } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 /** ============================
  *  This file list workout
@@ -11,47 +12,16 @@ import mongoose, { Schema, Document } from 'mongoose';
  *  Workout Goal
  ** ======================== */
 
-const workoutGoalEnum = [
-  'strength',
-  'hypertrophy',
-  'endurance',
-  'cardio',
-  'flexibility',
-  'weight_loss',
-  'rehabilitation',
-  'skill',
-  'general_fitness',
-  'sport_specific',
-  'balance',
-  'power'
-] as const;
-
-export type WorkoutGoalValue = typeof workoutGoalEnum[number];
-
-export interface IWorkoutGoalInfo extends Document {
-  goal: WorkoutGoalValue;
-  subGoal: WorkoutGoalValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  recommendedFrequency: string;
-  recommendedDuration: string;
-  recommendedIntensity: string;
-  recommendedRecovery: string;
-  bestMetrics: string[];
-}
-
 const WorkoutGoalInfoSchema: Schema = new Schema<IWorkoutGoalInfo>({
   goal: { 
     type: String, 
-    enum: workoutGoalEnum, 
+    enum: WorkoutGoal, 
     required: true, 
     unique: true 
   },
   subGoal: { 
     type: String, 
-    enum: workoutGoalEnum, 
+    enum: WorkoutGoal, 
     required: true, 
     unique: true 
   },
@@ -76,44 +46,10 @@ export const WorkoutGoalInfoModel = mongoose.model<IWorkoutGoalInfo>('WorkoutGoa
  *  Block Type
  ** ======================== */
 
-const blockTypeEnum = [
-  'warm_up',
-  'cool_down',
-  'strength',
-  'cardio',
-  'circuit',
-  'superset',
-  'giant_set',
-  'emom',
-  'amrap',
-  'pyramid',
-  'drop_set',
-  'tabata',
-  'hiit',
-  'active_recovery',
-  'mobility',
-  'custom'
-] as const;
-
-export type BlockTypeValue = typeof blockTypeEnum[number];
-
-export interface IBlockTypeInfo extends Document {
-  type: BlockTypeValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  recommendedPosition: string;
-  typicalDuration: string;
-  typicalRestPeriod: string;
-  structure: string;
-  bestFor: string[];
-}
-
 const BlockTypeInfoSchema: Schema = new Schema<IBlockTypeInfo>({
   type: { 
     type: String, 
-    enum: blockTypeEnum, 
+    enum: BlockType, 
     required: true, 
     unique: true 
   },
@@ -138,34 +74,10 @@ export const BlockTypeInfoModel = mongoose.model<IBlockTypeInfo>('BlockTypeInfo'
  *  IntensityLevel
  ** ======================== */
 
-const intensityLevelEnum = [
-  'very_light',
-  'light',
-  'moderate',
-  'vigorous',
-  'intense',
-  'maximum'
-] as const;
-
-export type IntensityLevelValue = typeof intensityLevelEnum[number];
-
-export interface IIntensityLevelInfo extends Document {
-  level: IntensityLevelValue;
-  label: string;
-  description: string;
-  heartRatePercent: string;
-  perceivedExertion: string;
-  color: string;
-  icon: string;
-  // Percentage of max heart rate typically associated with this intensity
-  targetHeartRateZoneMin: number;
-  targetHeartRateZoneMax: number;
-}
-
 const IntensityLevelInfoSchema: Schema = new Schema<IIntensityLevelInfo>({
   level: { 
     type: String, 
-    enum: intensityLevelEnum, 
+    enum: IntensityLevel, 
     required: true, 
     unique: true 
   },

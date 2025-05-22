@@ -1,42 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum AlertType {
-  MISSED_WORKOUT = 'missed_workout',
-  PERFORMANCE_DECLINE = 'performance_decline',
-  GOAL_ACHIEVED = 'goal_achieved',
-  INJURY_REPORTED = 'injury_reported',
-  PROGRAM_COMPLETED = 'program_completed',
-  INACTIVITY = 'inactivity'
-}
-
-export enum AlertSeverity {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  CRITICAL = 'critical'
-}
-
-export interface IClientAlert extends Document {
-  client: Types.ObjectId;
-  trainer: Types.ObjectId;
-  alertType: AlertType;
-  date: Date;
-  message: string;
-  severity: AlertSeverity;
-  isResolved: boolean;
-  resolvedBy?: Types.ObjectId;
-  resolvedDate?: Date;
-  resolutionNotes?: string;
-  relatedEntity?: {
-    type: string;
-    id: Types.ObjectId;
-  };
-  requiresAction: boolean;
-  notificationSent: boolean;
-  snoozeUntil?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IClientAlert, AlertType, AlertSeverity } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ClientAlertSchema: Schema = new Schema<IClientAlert>({
   client: {
@@ -53,7 +16,7 @@ const ClientAlertSchema: Schema = new Schema<IClientAlert>({
   },
   alertType: {
     type: String,
-    enum: Object.values(AlertType),
+    enum: AlertType,
     required: true,
     index: true
   },
@@ -69,7 +32,7 @@ const ClientAlertSchema: Schema = new Schema<IClientAlert>({
   },
   severity: {
     type: String,
-    enum: Object.values(AlertSeverity),
+    enum: AlertSeverity,
     required: true,
     index: true
   },

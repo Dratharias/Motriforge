@@ -1,30 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum RelationshipStatus {
-  PENDING = 'pending',
-  ACTIVE = 'active',
-  PAUSED = 'paused',
-  TERMINATED = 'terminated',
-  EXPIRED = 'expired'
-}
-
-export interface IClientCoachRelationship extends Document {
-  client: Types.ObjectId;
-  coach: Types.ObjectId;
-  startDate: Date;
-  endDate?: Date;
-  status: RelationshipStatus;
-  permissions: Types.ObjectId;
-  notes: string;
-  terminationReason?: string;
-  terminatedBy?: Types.ObjectId;
-  lastInteractionDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  isActive(): boolean;
-  terminateRelationship(reason: string): Promise<IClientCoachRelationship>;
-  extendRelationship(duration: number): Promise<IClientCoachRelationship>;
-}
+import { IClientCoachRelationship, RelationshipStatus } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ClientCoachRelationshipSchema: Schema = new Schema<IClientCoachRelationship>({
   client: {
@@ -50,7 +25,7 @@ const ClientCoachRelationshipSchema: Schema = new Schema<IClientCoachRelationshi
   },
   status: {
     type: String,
-    enum: Object.values(RelationshipStatus),
+    enum: RelationshipStatus,
     default: RelationshipStatus.PENDING,
     required: true,
     index: true
@@ -100,7 +75,7 @@ ClientCoachRelationshipSchema.methods.terminateRelationship = async function(
 ClientCoachRelationshipSchema.methods.extendRelationship = async function(
   durationDays: number
 ): Promise<IClientCoachRelationship> {
-  const endDate = this.endDate || new Date();
+  const endDate = this.endDate ?? new Date();
   const newEndDate = new Date(endDate);
   newEndDate.setDate(newEndDate.getDate() + durationDays);
   this.endDate = newEndDate;

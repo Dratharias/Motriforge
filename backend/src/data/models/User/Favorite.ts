@@ -1,15 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IFavorite extends Document {
-  user: Types.ObjectId;
-  exercises: Types.ObjectId[];
-  workouts: Types.ObjectId[];
-  programs: Types.ObjectId[];
-  swaps: Types.ObjectId[];
-  theme: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IFavorite } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const FavoriteSchema: Schema = new Schema<IFavorite>({
   user: {

@@ -1,23 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface ITrainerProfile extends Document {
-  user: Types.ObjectId;
-  specializations: string[];
-  certifications: Types.ObjectId[];
-  experience: number; // in months
-  bio: string;
-  rating: number;
-  availabilitySchedule: Record<string, any>;
-  clientLimit: number;
-  activeClientCount: number;
-  hourlyRate?: number;
-  portfolio?: string;
-  featured: boolean;
-  isAcceptingClients: boolean;
-  socialMedia?: Record<string, string>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { ITrainerProfile } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const TrainerProfileSchema: Schema = new Schema<ITrainerProfile>({
   user: {

@@ -1,31 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IProgramTargetExercise {
-  exerciseId: Types.ObjectId;
-  targetMetrics: Record<string, any>;
-  progressionPlan: string;
-}
-
-export interface IProgram extends Document {
-  name: string;
-  description: string;
-  durationInWeeks: number;
-  goal: Types.ObjectId;
-  subgoals: Types.ObjectId[];
-  targetExercises: IProgramTargetExercise[];
-  targetMetrics: Record<string, any>;
-  tags: string[];
-  mediaIds: Types.ObjectId[];
-  organizationVisibility: string;
-  shared: boolean;
-  isTemplate: boolean;
-  isArchived: boolean;
-  createdBy: Types.ObjectId;
-  organization: Types.ObjectId;
-  subscribersCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IProgram } from '@/types/models';
+import mongoose, { Schema, Types } from 'mongoose';
 
 const ProgramTargetExerciseSchema = new Schema({
   exerciseId: {

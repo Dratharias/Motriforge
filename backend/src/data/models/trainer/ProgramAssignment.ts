@@ -1,30 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum AssignmentStatus {
-  ASSIGNED = 'assigned',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  MODIFIED = 'modified'
-}
-
-export interface IProgramAssignment extends Document {
-  client: Types.ObjectId;
-  program: Types.ObjectId;
-  assignedBy: Types.ObjectId;
-  assignedDate: Date;
-  startDate: Date;
-  endDate: Date;
-  status: AssignmentStatus;
-  modifications: Types.ObjectId[];
-  notes: string;
-  progressPercentage: number;
-  adherenceScore: number;
-  lastActivity: Date;
-  feedbackRequestDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IProgramAssignment, AssignmentStatus } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ProgramAssignmentSchema: Schema = new Schema<IProgramAssignment>({
   client: {

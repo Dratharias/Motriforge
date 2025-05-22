@@ -1,42 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export enum MediaType {
-  IMAGE = 'image',
-  VIDEO = 'video',
-  GIF = 'gif',
-  AUDIO = 'audio',
-  DOCUMENT = 'document'
-}
-
-export enum MediaCategory {
-  EXERCISE = 'exercise',
-  WORKOUT = 'workout',
-  PROGRAM = 'program',
-  EQUIPMENT = 'equipment',
-  USER = 'user',
-  ORGANIZATION = 'organization',
-  ACHIEVEMENT = 'achievement',
-  GUIDE = 'guide',
-  OTHER = 'other'
-}
-
-export interface IMedia extends Document {
-  title: string;
-  description: string;
-  type: MediaType;
-  category: MediaCategory;
-  url: string;
-  mimeType: string;
-  sizeInBytes: number;
-  tags: string[];
-  organizationVisibility: Types.ObjectId;
-  metadata: Record<string, any>;
-  createdBy: Types.ObjectId;
-  organization: Types.ObjectId;
-  isArchived: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IMedia, MediaType, MediaCategory } from '@/types/models';
+import mongoose, { Schema, Types } from 'mongoose';
 
 const MediaSchema: Schema = new Schema<IMedia>({
   title: {
@@ -50,13 +13,13 @@ const MediaSchema: Schema = new Schema<IMedia>({
   },
   type: {
     type: String,
-    enum: Object.values(MediaType),
+    enum: MediaType,
     required: true,
     index: true
   },
   category: {
     type: String,
-    enum: Object.values(MediaCategory),
+    enum: MediaCategory,
     required: true,
     index: true
   },

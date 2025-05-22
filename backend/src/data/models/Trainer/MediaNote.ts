@@ -1,18 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IMediaNote extends Document {
-  media: Types.ObjectId;
-  creator: Types.ObjectId;
-  timestamp: number; // In seconds for video/audio, or coordinates for images
-  comment: string;
-  drawingData?: string; // SVG path or canvas data
-  visibleToClient: boolean;
-  relatedExercise?: Types.ObjectId;
-  relatedWorkoutSession?: Types.ObjectId;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IMediaNote } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const MediaNoteSchema: Schema = new Schema<IMediaNote>({
   media: {

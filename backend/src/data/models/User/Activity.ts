@@ -1,37 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IActiveWorkout {
-  workoutId: Types.ObjectId;
-  startedAt: Date;
-  lastUpdatedAt: Date;
-  completionPercentage: number;
-  notes: string;
-}
-
-export interface IActiveProgram {
-  programId: Types.ObjectId;
-  startedAt: Date;
-  currentDay: number;
-  completedWorkouts: Types.ObjectId[];
-  lastCompletedDate: Date;
-  adherencePercentage: number;
-  notes: string;
-}
-
-export interface IActivity extends Document {
-  user: Types.ObjectId;
-  subscribedWorkouts: Types.ObjectId[];
-  subscribedPrograms: Types.ObjectId[];
-  activeWorkout: IActiveWorkout | null;
-  activeProgram: IActiveProgram | null;
-  totalWorkoutsCompleted: number;
-  totalWorkoutDuration: number; // in minutes
-  lastWorkoutDate: Date;
-  streak: number; // consecutive days with activity
-  longestStreak: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IActivity } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ActiveWorkoutSchema = new Schema({
   workoutId: {

@@ -1,17 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IExerciseProgression extends Document {
-  exerciseId: Types.ObjectId;
-  progressionExerciseId: Types.ObjectId;
-  notes: string;
-  modifications: string[];
-  isEasier: boolean;
-  progressionOrder: number;
-  difficultyDelta: number;
-  createdBy: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IExerciseProgression } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const ExerciseProgressionSchema: Schema = new Schema<IExerciseProgression>({
   exerciseId: {

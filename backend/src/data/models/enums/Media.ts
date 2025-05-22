@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { IMediaCategoryInfo, IMediaTypeInfo, MediaCategory, MediaType } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 /** ============================
  *  This file list media
@@ -10,32 +11,10 @@ import mongoose, { Schema, Document } from 'mongoose';
  *  Media Type
  ** ======================== */
 
-const mediaTypeEnum = [
-  'image',
-  'video',
-  'gif',
-  'audio',
-  'document'
-] as const;
-
-export type MediaTypeValue = typeof mediaTypeEnum[number];
-
-export interface IMediaTypeInfo extends Document {
-  type: MediaTypeValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  allowedMimeTypes: string[];
-  maxFileSize: number; // in bytes
-  supportedResolutions: string[];
-  supportedFeatures: string[];
-}
-
 const MediaTypeInfoSchema: Schema = new Schema<IMediaTypeInfo>({
   type: { 
     type: String, 
-    enum: mediaTypeEnum, 
+    enum: MediaType, 
     required: true, 
     unique: true 
   },
@@ -60,36 +39,10 @@ export const MediaTypeInfoModel = mongoose.model<IMediaTypeInfo>('MediaTypeInfo'
  *  Media Category
  ** ======================== */
 
-const mediaCategoryEnum = [
-  'exercise',
-  'workout',
-  'program',
-  'equipment',
-  'user',
-  'organization',
-  'achievement',
-  'guide',
-  'other'
-] as const;
-
-export type MediaCategoryValue = typeof mediaCategoryEnum[number];
-
-export interface IMediaCategoryInfo extends Document {
-  category: MediaCategoryValue;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-  recommendedTypes: string[];
-  recommendedDimensions: string;
-  storageLocation: string;
-  visibilityDefault: string;
-}
-
 const MediaCategoryInfoSchema: Schema = new Schema<IMediaCategoryInfo>({
   category: { 
     type: String, 
-    enum: mediaCategoryEnum, 
+    enum: MediaCategory, 
     required: true, 
     unique: true 
   },

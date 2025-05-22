@@ -1,18 +1,5 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IMediaVariant extends Document {
-  mediaId: Types.ObjectId;
-  url: string;
-  width: number;
-  height: number;
-  quality: string; // e.g., "thumbnail", "low", "medium", "high", "original"
-  mimeType: string;
-  sizeInBytes: number;
-  purpose: string; // e.g., "thumbnail", "preview", "optimized", "original"
-  metadata: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IMediaVariant } from '@/types/models';
+import mongoose, { Schema } from 'mongoose';
 
 const MediaVariantSchema: Schema = new Schema<IMediaVariant>({
   mediaId: {
