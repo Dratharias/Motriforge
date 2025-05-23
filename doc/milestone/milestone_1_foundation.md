@@ -31,7 +31,7 @@
 
 ### src/shared-kernel/infrastructure/database/
 - [x] `DatabaseConnection.ts` `system_architecture`
-- [ ] `MongoRepository.ts` `system_architecture`
+- [x] `MongoRepository.ts` `system_architecture`
 - [x] `BaseRepository.ts` `system_architecture`
 
 ### src/shared-kernel/infrastructure/security/
