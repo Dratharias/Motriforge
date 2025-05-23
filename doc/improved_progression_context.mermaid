@@ -2,6 +2,44 @@ graph TB
     %% ===== PROGRESSION TRACKING CONTEXT =====
     subgraph ProgressionContext ["📈 Progression Tracking Context"]
         
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph ProgressionApplicationLayer ["Application Service Layer <<Application>>"]
+            ProgressionApplicationService["📈 Progression Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph ProgressionCommands ["Commands"]
+                RecordPerformanceCmd["📊 Record Performance<br/><<Command>>"]
+                StartSessionCmd["▶️ Start Session<br/><<Command>>"]
+                CompleteSessionCmd["✅ Complete Session<br/><<Command>>"]
+                RecordSetCmd["📊 Record Set<br/><<Command>>"]
+                SetGoalCmd["🎯 Set Goal<br/><<Command>>"]
+                UpdateGoalCmd["✏️ Update Goal<br/><<Command>>"]
+                AchieveMilestoneCmd["🎖️ Achieve Milestone<br/><<Command>>"]
+                ValidateRecordCmd["✅ Validate Record<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph ProgressionQueries ["Queries"]
+                GetProgressionQuery["📈 Get Progression<br/><<Query>>"]
+                GetPersonalRecordsQuery["🏆 Get Records<br/><<Query>>"]
+                GetGoalsQuery["🎯 Get Goals<br/><<Query>>"]
+                GetSessionHistoryQuery["📅 Get Session History<br/><<Query>>"]
+                GetProgressStatsQuery["📊 Get Progress Stats<br/><<Query>>"]
+                GetInsightsQuery["🤖 Get AI Insights<br/><<Query>>"]
+                GetLeaderboardQuery["🏅 Get Leaderboard<br/><<Query>>"]
+                GetTrendsQuery["📈 Get Trends<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph ProgressionSagas ["Sagas"]
+                SessionCompletionSaga["📝 Session Completion<br/><<Saga>>"]
+                RecordAchievementSaga["🏆 Record Achievement<br/><<Saga>>"]
+                GoalProgressSaga["🎯 Goal Progress<br/><<Saga>>"]
+                ProgressAnalysisSaga["📊 Progress Analysis<br/><<Saga>>"]
+                MotivationSaga["💪 Motivation<br/><<Saga>>"]
+            end
+        end
+        
         %% ===== DOMAIN LAYER (HEXAGON CORE) =====
         subgraph ProgressionDomain ["Domain Layer <<DomainCore>>"]
             direction TB
@@ -29,6 +67,7 @@ graph TB
             GoalSettingService["🎯 Goal Setting<br/><<DomainService>>"]
             RecordValidationService["✅ Record Validation<br/><<DomainService>>"]
             LoadCalculationService["⚖️ Load Calculation<br/><<DomainService>>"]
+            MotivationService["💪 Motivation<br/><<DomainService>>"]
         end
         
         %% ===== PORTS (DOMAIN INTERFACES) =====
@@ -48,41 +87,8 @@ graph TB
             INotificationService["🔔 INotificationService<br/><<Port>>"]
             IAIInsightsService["🤖 IAIInsightsService<br/><<Port>>"]
             IWorkoutService["💪 IWorkoutService<br/><<Port>>"]
-        end
-        
-        %% ===== APPLICATION LAYER =====
-        subgraph ProgressionApplication ["Application Layer <<Application>>"]
-            direction TB
-            
-            %% Commands
-            subgraph ProgressionCommands ["Commands"]
-                RecordPerformanceCmd["📊 Record Performance<br/><<Command>>"]
-                StartSessionCmd["▶️ Start Session<br/><<Command>>"]
-                CompleteSessionCmd["✅ Complete Session<br/><<Command>>"]
-                RecordSetCmd["📊 Record Set<br/><<Command>>"]
-                SetGoalCmd["🎯 Set Goal<br/><<Command>>"]
-                UpdateGoalCmd["✏️ Update Goal<br/><<Command>>"]
-                AchieveMilestoneCmd["🎖️ Achieve Milestone<br/><<Command>>"]
-            end
-            
-            %% Queries
-            subgraph ProgressionQueries ["Queries"]
-                GetProgressionQuery["📈 Get Progression<br/><<Query>>"]
-                GetPersonalRecordsQuery["🏆 Get Records<br/><<Query>>"]
-                GetGoalsQuery["🎯 Get Goals<br/><<Query>>"]
-                GetSessionHistoryQuery["📅 Get Session History<br/><<Query>>"]
-                GetProgressStatsQuery["📊 Get Progress Stats<br/><<Query>>"]
-                GetInsightsQuery["🤖 Get AI Insights<br/><<Query>>"]
-                GetLeaderboardQuery["🏅 Get Leaderboard<br/><<Query>>"]
-            end
-            
-            %% Sagas
-            subgraph ProgressionSagas ["Sagas"]
-                SessionCompletionSaga["📝 Session Completion<br/><<Saga>>"]
-                RecordAchievementSaga["🏆 Record Achievement<br/><<Saga>>"]
-                GoalProgressSaga["🎯 Goal Progress<br/><<Saga>>"]
-                ProgressAnalysisSaga["📊 Progress Analysis<br/><<Saga>>"]
-            end
+            IUserService["👤 IUserService<br/><<Port>>"]
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
         end
         
         %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
@@ -105,6 +111,8 @@ graph TB
                 OpenAIInsightsAdapter["🤖 OpenAI Insights<br/><<AIAdapter>>"]
                 FCMNotificationAdapter["📱 FCM Notification<br/><<NotificationAdapter>>"]
                 TensorFlowMLAdapter["🧠 TensorFlow ML<br/><<MLAdapter>>"]
+                UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
             end
             
             %% Cache Adapters
@@ -114,6 +122,20 @@ graph TB
                 LeaderboardCache["💾 Leaderboard Cache<br/><<CacheAdapter>>"]
                 InsightsCache["💾 Insights Cache<br/><<CacheAdapter>>"]
             end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph ProgressionContextBus ["Context Bus Interfaces"]
+            ProgressionCommandBus["⚡ Progression Command Bus<br/><<CommandBus>>"]
+            ProgressionQueryBus["❓ Progression Query Bus<br/><<QueryBus>>"]
+            ProgressionEventBus["📨 Progression Event Bus<br/><<EventBus>>"]
+        end
+        
+        %% ===== POLICY ENFORCEMENT =====
+        subgraph ProgressionPolicyLayer ["Policy Enforcement Layer"]
+            ProgressionPolicyEnforcementPoint["🛡️ Progression Policy Enforcement Point<br/><<PEP>>"]
+            RecordValidationPolicyService["✅ Record Validation Policy<br/><<Policy>>"]
+            PrivacyPolicyService["🔒 Privacy Policy<br/><<Policy>>"]
         end
     end
     
@@ -126,6 +148,7 @@ graph TB
         OpenAIAPI["🤖 OpenAI API<br/><<AIService>>"]
         TensorFlowServing["🧠 TensorFlow Serving<br/><<MLService>>"]
         FCMService["📱 FCM Service<br/><<NotificationService>>"]
+        ElasticsearchCluster["🔍 Elasticsearch<br/><<SearchEngine>>"]
     end
     
     %% ===== EVENTS =====
@@ -138,6 +161,7 @@ graph TB
         GoalAchievedEvent["🏅 Goal Achieved<br/><<DomainEvent>>"]
         MilestoneAchievedEvent["🎖️ Milestone Achieved<br/><<DomainEvent>>"]
         PlateauDetectedEvent["📉 Plateau Detected<br/><<DomainEvent>>"]
+        RecordValidatedEvent["✅ Record Validated<br/><<DomainEvent>>"]
     end
     
     %% ===== READ MODELS =====
@@ -149,9 +173,45 @@ graph TB
         LeaderboardRM["🏅 Leaderboard<br/><<ReadModel>>"]
         ProgressInsightsRM["🤖 Progress Insights<br/><<ReadModel>>"]
         TrainingLoadRM["💪 Training Load<br/><<ReadModel>>"]
+        TrendsAnalysisRM["📈 Trends Analysis<br/><<ReadModel>>"]
+    end
+    
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        WorkoutContext["💪 Workout Context<br/><<ExternalContext>>"]
+        UserContext["👤 User Context<br/><<ExternalContext>>"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        NotificationContext["🔔 Notification Context<br/><<ExternalContext>>"]
+        TrainerContext["👨‍🏫 Trainer Context<br/><<ExternalContext>>"]
     end
     
     %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    ProgressionApplicationService --> ProgressionCommandBus
+    ProgressionApplicationService --> ProgressionQueryBus
+    ProgressionApplicationService --> ProgressionEventBus
+    
+    %% Commands and Queries through Application Service
+    ProgressionCommands --> ProgressionApplicationService
+    ProgressionQueries --> ProgressionApplicationService
+    ProgressionSagas --> ProgressionApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    ProgressionApplicationService --> ProgressionTracking
+    ProgressionApplicationService --> PersonalRecord
+    ProgressionApplicationService --> GoalTracking
+    ProgressionApplicationService --> WorkoutSession
+    ProgressionApplicationService --> ProgressAnalysisService
+    ProgressionApplicationService --> GoalSettingService
+    ProgressionApplicationService --> RecordValidationService
+    ProgressionApplicationService --> LoadCalculationService
+    ProgressionApplicationService --> MotivationService
+    
+    %% Policy Enforcement Integration
+    ProgressionApplicationService --> ProgressionPolicyEnforcementPoint
+    ProgressionPolicyEnforcementPoint --> RecordValidationPolicyService
+    ProgressionPolicyEnforcementPoint --> PrivacyPolicyService
     
     %% Domain to Ports (Dependency Inversion)
     ProgressionTracking -->|uses| IProgressionRepo
@@ -163,15 +223,8 @@ graph TB
     WorkoutSession -->|uses| ISessionRepo
     WorkoutSession -->|uses| IWorkoutService
     ProgressAnalysisService -->|uses| IAnalyticsService
-    
-    %% Application to Domain
-    ProgressionCommands -->|orchestrates| ProgressionTracking
-    ProgressionCommands -->|orchestrates| PersonalRecord
-    ProgressionCommands -->|orchestrates| GoalTracking
-    ProgressionCommands -->|orchestrates| WorkoutSession
-    ProgressionQueries -->|reads| ProgressionTracking
-    ProgressionQueries -->|reads| PersonalRecord
-    ProgressionQueries -->|reads| GoalTracking
+    RecordValidationService -->|uses| IUserService
+    RecordValidationService -->|uses| IIdentityService
     
     %% Ports to Adapters (Implementation)
     IProgressionRepo -.->|implements| MongoProgressionRepo
@@ -184,6 +237,8 @@ graph TB
     INotificationService -.->|implements| FCMNotificationAdapter
     IAIInsightsService -.->|implements| OpenAIInsightsAdapter
     IWorkoutService -.->|implements| WorkoutContextAdapter
+    IUserService -.->|implements| UserContextAdapter
+    IIdentityService -.->|implements| IdentityContextAdapter
     
     %% Adapters to External Systems
     MongoProgressionRepo -->|connects| MongoDB
@@ -202,6 +257,9 @@ graph TB
     
     %% Cross-Context Communication
     WorkoutContextAdapter -.->|async calls| WorkoutContext
+    UserContextAdapter -.->|async calls| UserContext
+    IdentityContextAdapter -.->|async calls| IdentityContext
+    FCMNotificationAdapter -.->|async calls| NotificationContext
     
     %% Domain Events
     ProgressionTracking -.->|publishes| PerformanceRecordedEvent
@@ -212,24 +270,38 @@ graph TB
     GoalTracking -.->|publishes| GoalAchievedEvent
     Milestone -.->|publishes| MilestoneAchievedEvent
     ProgressAnalysisService -.->|publishes| PlateauDetectedEvent
+    RecordValidationService -.->|publishes| RecordValidatedEvent
     
-    %% Event to Read Models
-    PerformanceRecordedEvent -.->|projects to| ProgressionDashboardRM
-    PersonalRecordAchievedEvent -.->|projects to| PersonalRecordsRM
-    SessionCompletedEvent -.->|projects to| SessionHistoryRM
-    GoalSetEvent -.->|projects to| GoalProgressRM
-    GoalAchievedEvent -.->|projects to| GoalProgressRM
-    PersonalRecordAchievedEvent -.->|projects to| LeaderboardRM
-    PlateauDetectedEvent -.->|projects to| ProgressInsightsRM
+    %% Event to Read Models (via Event Bus)
+    ProgressionEventBus -.->|projects to| ProgressionDashboardRM
+    ProgressionEventBus -.->|projects to| PersonalRecordsRM
+    ProgressionEventBus -.->|projects to| GoalProgressRM
+    ProgressionEventBus -.->|projects to| SessionHistoryRM
+    ProgressionEventBus -.->|projects to| LeaderboardRM
+    ProgressionEventBus -.->|projects to| ProgressInsightsRM
+    ProgressionEventBus -.->|projects to| TrainingLoadRM
+    ProgressionEventBus -.->|projects to| TrendsAnalysisRM
     
-    %% Sagas
+    %% Events to Event Bus
+    PerformanceRecordedEvent -.->|publishes to| ProgressionEventBus
+    PersonalRecordAchievedEvent -.->|publishes to| ProgressionEventBus
+    SessionStartedEvent -.->|publishes to| ProgressionEventBus
+    SessionCompletedEvent -.->|publishes to| ProgressionEventBus
+    GoalSetEvent -.->|publishes to| ProgressionEventBus
+    GoalAchievedEvent -.->|publishes to| ProgressionEventBus
+    MilestoneAchievedEvent -.->|publishes to| ProgressionEventBus
+    PlateauDetectedEvent -.->|publishes to| ProgressionEventBus
+    RecordValidatedEvent -.->|publishes to| ProgressionEventBus
+    
+    %% Sagas listen to events
     SessionCompletionSaga -.->|listens to| SessionCompletedEvent
     RecordAchievementSaga -.->|listens to| PersonalRecordAchievedEvent
     GoalProgressSaga -.->|listens to| GoalAchievedEvent
     ProgressAnalysisSaga -.->|listens to| PerformanceRecordedEvent
+    MotivationSaga -.->|listens to| PlateauDetectedEvent
     
-    %% External References
-    WorkoutContext["💪 Workout Context<br/><<ExternalContext>>"]
+    %% Context Bus to External Event Bus
+    ProgressionEventBus -.->|integrates with| ExternalContexts
     
     %% ===== STYLING =====
     classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
@@ -243,15 +315,21 @@ graph TB
     classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
     classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
     classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
+    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
+    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
     
     class ProgressionTracking,PersonalRecord,GoalTracking,WorkoutSession aggregate
     class DailyPerformance,Milestone,SetData,WorkoutSessionExercise entity
     class MetricValue,ProgressPercentage,ImprovementRate,TrainingLoad valueObject
-    class IProgressionRepo,IPersonalRecordRepo,IGoalRepo,ISessionRepo,IPerformanceRepo,IMetricsCalculator,IAnalyticsService,INotificationService,IAIInsightsService,IWorkoutService port
-    class MongoProgressionRepo,MongoRecordRepo,MongoGoalRepo,MongoSessionRepo,TimeSeriesPerformanceRepo,DataAnalyticsAdapter,WorkoutContextAdapter,OpenAIInsightsAdapter,FCMNotificationAdapter,TensorFlowMLAdapter,ProgressionCache,RecordsCache,LeaderboardCache,InsightsCache adapter
-    class MongoDB,InfluxDB,RedisCache,DataWarehouse,OpenAIAPI,TensorFlowServing,FCMService external
-    class RecordPerformanceCmd,StartSessionCmd,CompleteSessionCmd,RecordSetCmd,SetGoalCmd,UpdateGoalCmd,AchieveMilestoneCmd command
-    class GetProgressionQuery,GetPersonalRecordsQuery,GetGoalsQuery,GetSessionHistoryQuery,GetProgressStatsQuery,GetInsightsQuery,GetLeaderboardQuery query
-    class PerformanceRecordedEvent,PersonalRecordAchievedEvent,SessionStartedEvent,SessionCompletedEvent,GoalSetEvent,GoalAchievedEvent,MilestoneAchievedEvent,PlateauDetectedEvent event
-    class ProgressionDashboardRM,PersonalRecordsRM,GoalProgressRM,SessionHistoryRM,LeaderboardRM,ProgressInsightsRM,TrainingLoadRM readModel
-    class WorkoutContext externalContext
+    class IProgressionRepo,IPersonalRecordRepo,IGoalRepo,ISessionRepo,IPerformanceRepo,IMetricsCalculator,IAnalyticsService,INotificationService,IAIInsightsService,IWorkoutService,IUserService,IIdentityService port
+    class MongoProgressionRepo,MongoRecordRepo,MongoGoalRepo,MongoSessionRepo,TimeSeriesPerformanceRepo,DataAnalyticsAdapter,WorkoutContextAdapter,OpenAIInsightsAdapter,FCMNotificationAdapter,TensorFlowMLAdapter,UserContextAdapter,IdentityContextAdapter,ProgressionCache,RecordsCache,LeaderboardCache,InsightsCache adapter
+    class MongoDB,InfluxDB,RedisCache,DataWarehouse,OpenAIAPI,TensorFlowServing,FCMService,ElasticsearchCluster external
+    class RecordPerformanceCmd,StartSessionCmd,CompleteSessionCmd,RecordSetCmd,SetGoalCmd,UpdateGoalCmd,AchieveMilestoneCmd,ValidateRecordCmd command
+    class GetProgressionQuery,GetPersonalRecordsQuery,GetGoalsQuery,GetSessionHistoryQuery,GetProgressStatsQuery,GetInsightsQuery,GetLeaderboardQuery,GetTrendsQuery query
+    class PerformanceRecordedEvent,PersonalRecordAchievedEvent,SessionStartedEvent,SessionCompletedEvent,GoalSetEvent,GoalAchievedEvent,MilestoneAchievedEvent,PlateauDetectedEvent,RecordValidatedEvent event
+    class ProgressionDashboardRM,PersonalRecordsRM,GoalProgressRM,SessionHistoryRM,LeaderboardRM,ProgressInsightsRM,TrainingLoadRM,TrendsAnalysisRM readModel
+    class WorkoutContext,UserContext,IdentityContext,NotificationContext,TrainerContext externalContext
+    class ProgressionApplicationService applicationService
+    class ProgressionCommandBus,ProgressionQueryBus,ProgressionEventBus contextBus
+    class ProgressionPolicyEnforcementPoint,RecordValidationPolicyService,PrivacyPolicyService policy

@@ -2,6 +2,47 @@ graph TB
     %% ===== TRAINER MANAGEMENT CONTEXT =====
     subgraph TrainerContext ["👨‍🏫 Trainer Management Context"]
         
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph TrainerApplicationLayer ["Application Service Layer <<Application>>"]
+            TrainerApplicationService["👨‍🏫 Trainer Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph TrainerCommands ["Commands"]
+                CreateTrainerProfileCmd["➕ Create Trainer Profile<br/><<Command>>"]
+                UpdateTrainerProfileCmd["✏️ Update Profile<br/><<Command>>"]
+                EstablishRelationshipCmd["🤝 Establish Relationship<br/><<Command>>"]
+                ScheduleSessionCmd["📅 Schedule Session<br/><<Command>>"]
+                ProvideTrainingFeedbackCmd["💬 Provide Feedback<br/><<Command>>"]
+                AssignProgramCmd["📋 Assign Program<br/><<Command>>"]
+                ModifyProgramCmd["🔧 Modify Program<br/><<Command>>"]
+                CreateClientAlertCmd["🚨 Create Alert<br/><<Command>>"]
+                ProcessPaymentCmd["💳 Process Payment<br/><<Command>>"]
+                CertifyTrainerCmd["🏅 Certify Trainer<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph TrainerQueries ["Queries"]
+                GetTrainerProfileQuery["👨‍🏫 Get Trainer Profile<br/><<Query>>"]
+                GetClientListQuery["👥 Get Client List<br/><<Query>>"]
+                GetUpcomingSessionsQuery["📅 Get Upcoming Sessions<br/><<Query>>"]
+                GetTrainerDashboardQuery["📊 Get Dashboard<br/><<Query>>"]
+                GetClientProgressQuery["📈 Get Client Progress<br/><<Query>>"]
+                GetFeedbackHistoryQuery["💬 Get Feedback History<br/><<Query>>"]
+                GetActiveAlertsQuery["🚨 Get Active Alerts<br/><<Query>>"]
+                GetEarningsReportQuery["💰 Get Earnings Report<br/><<Query>>"]
+                SearchTrainersQuery["🔍 Search Trainers<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph TrainerSagas ["Sagas"]
+                ClientOnboardingSaga["🎯 Client Onboarding<br/><<Saga>>"]
+                SessionCompletionSaga["📅 Session Completion<br/><<Saga>>"]
+                PaymentProcessingSaga["💳 Payment Processing<br/><<Saga>>"]
+                ProgressReviewSaga["📊 Progress Review<br/><<Saga>>"]
+                CertificationSaga["🏅 Certification<br/><<Saga>>"]
+            end
+        end
+        
         %% ===== DOMAIN LAYER (HEXAGON CORE) =====
         subgraph TrainerDomain ["Domain Layer <<DomainCore>>"]
             direction TB
@@ -33,6 +74,7 @@ graph TB
             SessionSchedulingService["📅 Session Scheduling<br/><<DomainService>>"]
             FeedbackAnalysisService["💬 Feedback Analysis<br/><<DomainService>>"]
             ProgressMonitoringService["📊 Progress Monitoring<br/><<DomainService>>"]
+            CertificationService["🏅 Certification<br/><<DomainService>>"]
         end
         
         %% ===== PORTS (DOMAIN INTERFACES) =====
@@ -55,44 +97,8 @@ graph TB
             IUserService["👤 IUserService<br/><<Port>>"]
             IProgramService["📋 IProgramService<br/><<Port>>"]
             IProgressionService["📈 IProgressionService<br/><<Port>>"]
-        end
-        
-        %% ===== APPLICATION LAYER =====
-        subgraph TrainerApplication ["Application Layer <<Application>>"]
-            direction TB
-            
-            %% Commands
-            subgraph TrainerCommands ["Commands"]
-                CreateTrainerProfileCmd["➕ Create Trainer Profile<br/><<Command>>"]
-                UpdateTrainerProfileCmd["✏️ Update Profile<br/><<Command>>"]
-                EstablishRelationshipCmd["🤝 Establish Relationship<br/><<Command>>"]
-                ScheduleSessionCmd["📅 Schedule Session<br/><<Command>>"]
-                ProvideTrainingFeedbackCmd["💬 Provide Feedback<br/><<Command>>"]
-                AssignProgramCmd["📋 Assign Program<br/><<Command>>"]
-                ModifyProgramCmd["🔧 Modify Program<br/><<Command>>"]
-                CreateClientAlertCmd["🚨 Create Alert<br/><<Command>>"]
-                ProcessPaymentCmd["💳 Process Payment<br/><<Command>>"]
-            end
-            
-            %% Queries
-            subgraph TrainerQueries ["Queries"]
-                GetTrainerProfileQuery["👨‍🏫 Get Trainer Profile<br/><<Query>>"]
-                GetClientListQuery["👥 Get Client List<br/><<Query>>"]
-                GetUpcomingSessionsQuery["📅 Get Upcoming Sessions<br/><<Query>>"]
-                GetTrainerDashboardQuery["📊 Get Dashboard<br/><<Query>>"]
-                GetClientProgressQuery["📈 Get Client Progress<br/><<Query>>"]
-                GetFeedbackHistoryQuery["💬 Get Feedback History<br/><<Query>>"]
-                GetActiveAlertsQuery["🚨 Get Active Alerts<br/><<Query>>"]
-                GetEarningsReportQuery["💰 Get Earnings Report<br/><<Query>>"]
-            end
-            
-            %% Sagas
-            subgraph TrainerSagas ["Sagas"]
-                ClientOnboardingSaga["🎯 Client Onboarding<br/><<Saga>>"]
-                SessionCompletionSaga["📅 Session Completion<br/><<Saga>>"]
-                PaymentProcessingSaga["💳 Payment Processing<br/><<Saga>>"]
-                ProgressReviewSaga["📊 Progress Review<br/><<Saga>>"]
-            end
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
+            ICertificationService["🏅 ICertificationService<br/><<Port>>"]
         end
         
         %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
@@ -118,6 +124,8 @@ graph TB
                 UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
                 ProgramContextAdapter["📋 Program Context<br/><<ContextAdapter>>"]
                 ProgressionContextAdapter["📈 Progression Context<br/><<ContextAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
+                CertificationAuthorityAdapter["🏅 Certification Authority<br/><<CertificationAdapter>>"]
             end
             
             %% Cache Adapters
@@ -127,6 +135,21 @@ graph TB
                 SessionCache["💾 Session Cache<br/><<CacheAdapter>>"]
                 DashboardCache["💾 Dashboard Cache<br/><<CacheAdapter>>"]
             end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph TrainerContextBus ["Context Bus Interfaces"]
+            TrainerCommandBus["⚡ Trainer Command Bus<br/><<CommandBus>>"]
+            TrainerQueryBus["❓ Trainer Query Bus<br/><<QueryBus>>"]
+            TrainerEventBus["📨 Trainer Event Bus<br/><<EventBus>>"]
+        end
+        
+        %% ===== POLICY ENFORCEMENT =====
+        subgraph TrainerPolicyLayer ["Policy Enforcement Layer"]
+            TrainerPolicyEnforcementPoint["🛡️ Trainer Policy Enforcement Point<br/><<PEP>>"]
+            CertificationPolicyService["🏅 Certification Policy<br/><<Policy>>"]
+            ClientPrivacyPolicyService["🔒 Client Privacy Policy<br/><<Policy>>"]
+            PaymentPolicyService["💳 Payment Policy<br/><<Policy>>"]
         end
     end
     
@@ -140,6 +163,7 @@ graph TB
         FCMService["📱 FCM Service<br/><<NotificationService>>"]
         EmailService["📧 Email Service<br/><<EmailService>>"]
         SMSService["📱 SMS Service<br/><<SMSService>>"]
+        CertificationAuthority["🏅 Certification Authority<br/><<CertificationService>>"]
     end
     
     %% ===== EVENTS =====
@@ -153,6 +177,7 @@ graph TB
         ProgramModifiedEvent["🔧 Program Modified<br/><<DomainEvent>>"]
         ClientAlertCreatedEvent["🚨 Client Alert Created<br/><<DomainEvent>>"]
         PaymentProcessedEvent["💳 Payment Processed<br/><<DomainEvent>>"]
+        TrainerCertifiedEvent["🏅 Trainer Certified<br/><<DomainEvent>>"]
     end
     
     %% ===== READ MODELS =====
@@ -165,9 +190,48 @@ graph TB
         EarningsReportRM["💰 Earnings Report<br/><<ReadModel>>"]
         ClientProgressRM["📈 Client Progress<br/><<ReadModel>>"]
         AlertSummaryRM["🚨 Alert Summary<br/><<ReadModel>>"]
+        TrainerSearchRM["🔍 Trainer Search<br/><<ReadModel>>"]
+    end
+    
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        UserContext["👤 User Context<br/><<ExternalContext>>"]
+        ProgramContext["📋 Program Context<br/><<ExternalContext>>"]
+        ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        NotificationContext["🔔 Notification Context<br/><<ExternalContext>>"]
+        OrganizationContext["🏢 Organization Context<br/><<ExternalContext>>"]
     end
     
     %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    TrainerApplicationService --> TrainerCommandBus
+    TrainerApplicationService --> TrainerQueryBus
+    TrainerApplicationService --> TrainerEventBus
+    
+    %% Commands and Queries through Application Service
+    TrainerCommands --> TrainerApplicationService
+    TrainerQueries --> TrainerApplicationService
+    TrainerSagas --> TrainerApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    TrainerApplicationService --> TrainerProfile
+    TrainerApplicationService --> ClientCoachRelationship
+    TrainerApplicationService --> CoachingSession
+    TrainerApplicationService --> ProgramAssignment
+    TrainerApplicationService --> TrainerDashboard
+    TrainerApplicationService --> RelationshipManagementService
+    TrainerApplicationService --> SessionSchedulingService
+    TrainerApplicationService --> FeedbackAnalysisService
+    TrainerApplicationService --> ProgressMonitoringService
+    TrainerApplicationService --> CertificationService
+    
+    %% Policy Enforcement Integration
+    TrainerApplicationService --> TrainerPolicyEnforcementPoint
+    TrainerPolicyEnforcementPoint --> CertificationPolicyService
+    TrainerPolicyEnforcementPoint --> ClientPrivacyPolicyService
+    TrainerPolicyEnforcementPoint --> PaymentPolicyService
     
     %% Domain to Ports (Dependency Inversion)
     TrainerProfile -->|uses| ITrainerRepo
@@ -181,16 +245,8 @@ graph TB
     ProgramAssignment -->|uses| IProgramService
     SessionSchedulingService -->|uses| INotificationService
     ProgressMonitoringService -->|uses| IProgressionService
-    
-    %% Application to Domain
-    TrainerCommands -->|orchestrates| TrainerProfile
-    TrainerCommands -->|orchestrates| ClientCoachRelationship
-    TrainerCommands -->|orchestrates| CoachingSession
-    TrainerCommands -->|orchestrates| ProgramAssignment
-    TrainerQueries -->|reads| TrainerProfile
-    TrainerQueries -->|reads| ClientCoachRelationship
-    TrainerQueries -->|reads| CoachingSession
-    TrainerQueries -->|reads| TrainerDashboard
+    CertificationService -->|uses| ICertificationService
+    RelationshipManagementService -->|uses| IIdentityService
     
     %% Ports to Adapters (Implementation)
     ITrainerRepo -.->|implements| MongoTrainerRepo
@@ -206,6 +262,8 @@ graph TB
     IUserService -.->|implements| UserContextAdapter
     IProgramService -.->|implements| ProgramContextAdapter
     IProgressionService -.->|implements| ProgressionContextAdapter
+    IIdentityService -.->|implements| IdentityContextAdapter
+    ICertificationService -.->|implements| CertificationAuthorityAdapter
     
     %% Adapters to External Systems
     MongoTrainerRepo -->|connects| MongoDB
@@ -224,14 +282,18 @@ graph TB
     FCMNotificationAdapter -->|connects| FCMService
     FCMNotificationAdapter -->|also uses| EmailService
     FCMNotificationAdapter -->|also uses| SMSService
+    CertificationAuthorityAdapter -->|connects| CertificationAuthority
     
     %% Cross-Context Communication
     UserContextAdapter -.->|async calls| UserContext
     ProgramContextAdapter -.->|async calls| ProgramContext
     ProgressionContextAdapter -.->|async calls| ProgressionContext
+    IdentityContextAdapter -.->|async calls| IdentityContext
+    FCMNotificationAdapter -.->|async calls| NotificationContext
     
     %% Domain Events
     TrainerProfile -.->|publishes| TrainerProfileCreatedEvent
+    TrainerProfile -.->|publishes| TrainerCertifiedEvent
     ClientCoachRelationship -.->|publishes| RelationshipEstablishedEvent
     CoachingSession -.->|publishes| SessionScheduledEvent
     CoachingSession -.->|publishes| SessionCompletedEvent
@@ -241,25 +303,38 @@ graph TB
     ClientAlert -.->|publishes| ClientAlertCreatedEvent
     TrainerProfile -.->|publishes| PaymentProcessedEvent
     
-    %% Event to Read Models
-    TrainerProfileCreatedEvent -.->|projects to| TrainerProfileRM
-    RelationshipEstablishedEvent -.->|projects to| ClientListRM
-    SessionScheduledEvent -.->|projects to| SessionScheduleRM
-    SessionCompletedEvent -.->|projects to| TrainerDashboardRM
-    FeedbackProvidedEvent -.->|projects to| FeedbackSummaryRM
-    PaymentProcessedEvent -.->|projects to| EarningsReportRM
-    ClientAlertCreatedEvent -.->|projects to| AlertSummaryRM
+    %% Event to Read Models (via Event Bus)
+    TrainerEventBus -.->|projects to| TrainerProfileRM
+    TrainerEventBus -.->|projects to| TrainerDashboardRM
+    TrainerEventBus -.->|projects to| ClientListRM
+    TrainerEventBus -.->|projects to| SessionScheduleRM
+    TrainerEventBus -.->|projects to| FeedbackSummaryRM
+    TrainerEventBus -.->|projects to| EarningsReportRM
+    TrainerEventBus -.->|projects to| ClientProgressRM
+    TrainerEventBus -.->|projects to| AlertSummaryRM
+    TrainerEventBus -.->|projects to| TrainerSearchRM
     
-    %% Sagas
+    %% Events to Event Bus
+    TrainerProfileCreatedEvent -.->|publishes to| TrainerEventBus
+    RelationshipEstablishedEvent -.->|publishes to| TrainerEventBus
+    SessionScheduledEvent -.->|publishes to| TrainerEventBus
+    SessionCompletedEvent -.->|publishes to| TrainerEventBus
+    FeedbackProvidedEvent -.->|publishes to| TrainerEventBus
+    ProgramAssignedEvent -.->|publishes to| TrainerEventBus
+    ProgramModifiedEvent -.->|publishes to| TrainerEventBus
+    ClientAlertCreatedEvent -.->|publishes to| TrainerEventBus
+    PaymentProcessedEvent -.->|publishes to| TrainerEventBus
+    TrainerCertifiedEvent -.->|publishes to| TrainerEventBus
+    
+    %% Sagas listen to events
     ClientOnboardingSaga -.->|listens to| RelationshipEstablishedEvent
     SessionCompletionSaga -.->|listens to| SessionCompletedEvent
     PaymentProcessingSaga -.->|listens to| SessionCompletedEvent
     ProgressReviewSaga -.->|listens to| FeedbackProvidedEvent
+    CertificationSaga -.->|listens to| TrainerProfileCreatedEvent
     
-    %% External References
-    UserContext["👤 User Context<br/><<ExternalContext>>"]
-    ProgramContext["📋 Program Context<br/><<ExternalContext>>"]
-    ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+    %% Context Bus to External Event Bus
+    TrainerEventBus -.->|integrates with| ExternalContexts
     
     %% ===== STYLING =====
     classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
@@ -273,15 +348,21 @@ graph TB
     classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
     classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
     classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
+    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
+    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
     
     class TrainerProfile,ClientCoachRelationship,CoachingSession,ProgramAssignment,TrainerDashboard aggregate
     class Certificate,ClientAlert,TrainingFeedback,MediaNote,PermissionSet,ProgramModification entity
     class TrainerId,ClientId,SessionDuration,FeedbackRating,HourlyRate valueObject
-    class ITrainerRepo,IRelationshipRepo,ISessionRepo,IAssignmentRepo,IFeedbackRepo,IAlertRepo,IPaymentService,ICalendarService,IVideoCallService,INotificationService,IUserService,IProgramService,IProgressionService port
-    class MongoTrainerRepo,MongoRelationshipRepo,MongoSessionRepo,MongoAssignmentRepo,MongoFeedbackRepo,MongoAlertRepo,StripePaymentAdapter,GoogleCalendarAdapter,ZoomVideoAdapter,FCMNotificationAdapter,UserContextAdapter,ProgramContextAdapter,ProgressionContextAdapter,TrainerProfileCache,ClientListCache,SessionCache,DashboardCache adapter
-    class MongoDB,RedisCache,StripeAPI,GoogleCalendarAPI,ZoomAPI,FCMService,EmailService,SMSService external
-    class CreateTrainerProfileCmd,UpdateTrainerProfileCmd,EstablishRelationshipCmd,ScheduleSessionCmd,ProvideTrainingFeedbackCmd,AssignProgramCmd,ModifyProgramCmd,CreateClientAlertCmd,ProcessPaymentCmd command
-    class GetTrainerProfileQuery,GetClientListQuery,GetUpcomingSessionsQuery,GetTrainerDashboardQuery,GetClientProgressQuery,GetFeedbackHistoryQuery,GetActiveAlertsQuery,GetEarningsReportQuery query
-    class TrainerProfileCreatedEvent,RelationshipEstablishedEvent,SessionScheduledEvent,SessionCompletedEvent,FeedbackProvidedEvent,ProgramAssignedEvent,ProgramModifiedEvent,ClientAlertCreatedEvent,PaymentProcessedEvent event
-    class TrainerProfileRM,TrainerDashboardRM,ClientListRM,SessionScheduleRM,FeedbackSummaryRM,EarningsReportRM,ClientProgressRM,AlertSummaryRM readModel
-    class UserContext,ProgramContext,ProgressionContext externalContext
+    class ITrainerRepo,IRelationshipRepo,ISessionRepo,IAssignmentRepo,IFeedbackRepo,IAlertRepo,IPaymentService,ICalendarService,IVideoCallService,INotificationService,IUserService,IProgramService,IProgressionService,IIdentityService,ICertificationService port
+    class MongoTrainerRepo,MongoRelationshipRepo,MongoSessionRepo,MongoAssignmentRepo,MongoFeedbackRepo,MongoAlertRepo,StripePaymentAdapter,GoogleCalendarAdapter,ZoomVideoAdapter,FCMNotificationAdapter,UserContextAdapter,ProgramContextAdapter,ProgressionContextAdapter,IdentityContextAdapter,CertificationAuthorityAdapter,TrainerProfileCache,ClientListCache,SessionCache,DashboardCache adapter
+    class MongoDB,RedisCache,StripeAPI,GoogleCalendarAPI,ZoomAPI,FCMService,EmailService,SMSService,CertificationAuthority external
+    class CreateTrainerProfileCmd,UpdateTrainerProfileCmd,EstablishRelationshipCmd,ScheduleSessionCmd,ProvideTrainingFeedbackCmd,AssignProgramCmd,ModifyProgramCmd,CreateClientAlertCmd,ProcessPaymentCmd,CertifyTrainerCmd command
+    class GetTrainerProfileQuery,GetClientListQuery,GetUpcomingSessionsQuery,GetTrainerDashboardQuery,GetClientProgressQuery,GetFeedbackHistoryQuery,GetActiveAlertsQuery,GetEarningsReportQuery,SearchTrainersQuery query
+    class TrainerProfileCreatedEvent,RelationshipEstablishedEvent,SessionScheduledEvent,SessionCompletedEvent,FeedbackProvidedEvent,ProgramAssignedEvent,ProgramModifiedEvent,ClientAlertCreatedEvent,PaymentProcessedEvent,TrainerCertifiedEvent event
+    class TrainerProfileRM,TrainerDashboardRM,ClientListRM,SessionScheduleRM,FeedbackSummaryRM,EarningsReportRM,ClientProgressRM,AlertSummaryRM,TrainerSearchRM readModel
+    class UserContext,ProgramContext,ProgressionContext,IdentityContext,NotificationContext,OrganizationContext externalContext
+    class TrainerApplicationService applicationService
+    class TrainerCommandBus,TrainerQueryBus,TrainerEventBus contextBus
+    class TrainerPolicyEnforcementPoint,CertificationPolicyService,ClientPrivacyPolicyService,PaymentPolicyService policy

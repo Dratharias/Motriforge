@@ -2,6 +2,47 @@ graph TB
     %% ===== NOTIFICATION CONTEXT =====
     subgraph NotificationContext ["🔔 Notification Context"]
         
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph NotificationApplicationLayer ["Application Service Layer <<Application>>"]
+            NotificationApplicationService["🔔 Notification Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph NotificationCommands ["Commands"]
+                SendNotificationCmd["📤 Send Notification<br/><<Command>>"]
+                ScheduleNotificationCmd["📅 Schedule Notification<br/><<Command>>"]
+                UpdateNotificationCmd["✏️ Update Notification<br/><<Command>>"]
+                CancelNotificationCmd["❌ Cancel Notification<br/><<Command>>"]
+                MarkAsReadCmd["👁️ Mark as Read<br/><<Command>>"]
+                UpdateSettingsCmd["⚙️ Update Settings<br/><<Command>>"]
+                RegisterDeviceCmd["📱 Register Device<br/><<Command>>"]
+                CreateCampaignCmd["📢 Create Campaign<br/><<Command>>"]
+                ExecuteActionCmd["🎯 Execute Action<br/><<Command>>"]
+                OptInCmd["✅ Opt In<br/><<Command>>"]
+                OptOutCmd["❌ Opt Out<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph NotificationQueries ["Queries"]
+                GetNotificationsQuery["🔔 Get Notifications<br/><<Query>>"]
+                GetUnreadNotificationsQuery["📬 Get Unread<br/><<Query>>"]
+                GetNotificationSettingsQuery["⚙️ Get Settings<br/><<Query>>"]
+                GetNotificationHistoryQuery["📅 Get History<br/><<Query>>"]
+                GetCampaignsQuery["📢 Get Campaigns<br/><<Query>>"]
+                GetDeliveryStatsQuery["📊 Get Delivery Stats<br/><<Query>>"]
+                GetDeviceTokensQuery["📱 Get Device Tokens<br/><<Query>>"]
+                GetEngagementMetricsQuery["📈 Get Engagement Metrics<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph NotificationSagas ["Sagas"]
+                NotificationDeliverySaga["📤 Notification Delivery<br/><<Saga>>"]
+                CampaignExecutionSaga["📢 Campaign Execution<br/><<Saga>>"]
+                DeliveryRetrySaga["🔄 Delivery Retry<br/><<Saga>>"]
+                EngagementTrackingSaga["📊 Engagement Tracking<br/><<Saga>>"]
+                PreferenceUpdateSaga["⚙️ Preference Update<br/><<Saga>>"]
+            end
+        end
+        
         %% ===== DOMAIN LAYER (HEXAGON CORE) =====
         subgraph NotificationDomain ["Domain Layer <<DomainCore>>"]
             direction TB
@@ -28,6 +69,7 @@ graph TB
             SchedulingService["📅 Scheduling<br/><<DomainService>>"]
             PersonalizationService["🎨 Personalization<br/><<DomainService>>"]
             DeliveryOptimizationService["⚡ Delivery Optimization<br/><<DomainService>>"]
+            EngagementAnalysisService["📊 Engagement Analysis<br/><<DomainService>>"]
         end
         
         %% ===== PORTS (DOMAIN INTERFACES) =====
@@ -50,43 +92,7 @@ graph TB
             IScheduler["📅 IScheduler<br/><<Port>>"]
             IAnalyticsService["📊 IAnalyticsService<br/><<Port>>"]
             IUserService["👤 IUserService<br/><<Port>>"]
-        end
-        
-        %% ===== APPLICATION LAYER =====
-        subgraph NotificationApplication ["Application Layer <<Application>>"]
-            direction TB
-            
-            %% Commands
-            subgraph NotificationCommands ["Commands"]
-                SendNotificationCmd["📤 Send Notification<br/><<Command>>"]
-                ScheduleNotificationCmd["📅 Schedule Notification<br/><<Command>>"]
-                UpdateNotificationCmd["✏️ Update Notification<br/><<Command>>"]
-                CancelNotificationCmd["❌ Cancel Notification<br/><<Command>>"]
-                MarkAsReadCmd["👁️ Mark as Read<br/><<Command>>"]
-                UpdateSettingsCmd["⚙️ Update Settings<br/><<Command>>"]
-                RegisterDeviceCmd["📱 Register Device<br/><<Command>>"]
-                CreateCampaignCmd["📢 Create Campaign<br/><<Command>>"]
-                ExecuteActionCmd["🎯 Execute Action<br/><<Command>>"]
-            end
-            
-            %% Queries
-            subgraph NotificationQueries ["Queries"]
-                GetNotificationsQuery["🔔 Get Notifications<br/><<Query>>"]
-                GetUnreadNotificationsQuery["📬 Get Unread<br/><<Query>>"]
-                GetNotificationSettingsQuery["⚙️ Get Settings<br/><<Query>>"]
-                GetNotificationHistoryQuery["📅 Get History<br/><<Query>>"]
-                GetCampaignsQuery["📢 Get Campaigns<br/><<Query>>"]
-                GetDeliveryStatsQuery["📊 Get Delivery Stats<br/><<Query>>"]
-                GetDeviceTokensQuery["📱 Get Device Tokens<br/><<Query>>"]
-            end
-            
-            %% Sagas
-            subgraph NotificationSagas ["Sagas"]
-                NotificationDeliverySaga["📤 Notification Delivery<br/><<Saga>>"]
-                CampaignExecutionSaga["📢 Campaign Execution<br/><<Saga>>"]
-                DeliveryRetrieSaga["🔄 Delivery Retry<br/><<Saga>>"]
-                EngagementTrackingSaga["📊 Engagement Tracking<br/><<Saga>>"]
-            end
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
         end
         
         %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
@@ -112,6 +118,7 @@ graph TB
                 CronSchedulerAdapter["📅 Cron Scheduler<br/><<SchedulerAdapter>>"]
                 MixpanelAnalyticsAdapter["📊 Mixpanel Analytics<br/><<AnalyticsAdapter>>"]
                 UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
             end
             
             %% Cache Adapters
@@ -121,6 +128,21 @@ graph TB
                 DeviceTokenCache["💾 Device Token Cache<br/><<CacheAdapter>>"]
                 TemplateCache["💾 Template Cache<br/><<CacheAdapter>>"]
             end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph NotificationContextBus ["Context Bus Interfaces"]
+            NotificationCommandBus["⚡ Notification Command Bus<br/><<CommandBus>>"]
+            NotificationQueryBus["❓ Notification Query Bus<br/><<QueryBus>>"]
+            NotificationEventBus["📨 Notification Event Bus<br/><<EventBus>>"]
+        end
+        
+        %% ===== POLICY ENFORCEMENT =====
+        subgraph NotificationPolicyLayer ["Policy Enforcement Layer"]
+            NotificationPolicyEnforcementPoint["🛡️ Notification Policy Enforcement Point<br/><<PEP>>"]
+            ConsentPolicyService["✅ Consent Policy<br/><<Policy>>"]
+            FrequencyPolicyService["⏰ Frequency Policy<br/><<Policy>>"]
+            ContentPolicyService["📝 Content Policy<br/><<Policy>>"]
         end
     end
     
@@ -134,6 +156,7 @@ graph TB
         WebSocketServer["📲 WebSocket Server<br/><<RealtimeService>>"]
         MixpanelAPI["📊 Mixpanel API<br/><<AnalyticsService>>"]
         CronService["📅 Cron Service<br/><<SchedulerService>>"]
+        ElasticsearchCluster["🔍 Elasticsearch<br/><<SearchEngine>>"]
     end
     
     %% ===== EVENTS =====
@@ -160,9 +183,47 @@ graph TB
         CampaignReportsRM["📢 Campaign Reports<br/><<ReadModel>>"]
         DeviceRegistryRM["📱 Device Registry<br/><<ReadModel>>"]
         SettingsSummaryRM["⚙️ Settings Summary<br/><<ReadModel>>"]
+        UserPreferencesRM["👤 User Preferences<br/><<ReadModel>>"]
+    end
+    
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        UserContext["👤 User Context<br/><<ExternalContext>>"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        WorkoutContext["💪 Workout Context<br/><<ExternalContext>>"]
+        ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+        TrainerContext["👨‍🏫 Trainer Context<br/><<ExternalContext>>"]
+        ProgramContext["📋 Program Context<br/><<ExternalContext>>"]
     end
     
     %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    NotificationApplicationService --> NotificationCommandBus
+    NotificationApplicationService --> NotificationQueryBus
+    NotificationApplicationService --> NotificationEventBus
+    
+    %% Commands and Queries through Application Service
+    NotificationCommands --> NotificationApplicationService
+    NotificationQueries --> NotificationApplicationService
+    NotificationSagas --> NotificationApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    NotificationApplicationService --> Notification
+    NotificationApplicationService --> NotificationSettings
+    NotificationApplicationService --> NotificationCampaign
+    NotificationApplicationService --> NotificationDeliveryService
+    NotificationApplicationService --> TemplateService
+    NotificationApplicationService --> SchedulingService
+    NotificationApplicationService --> PersonalizationService
+    NotificationApplicationService --> DeliveryOptimizationService
+    NotificationApplicationService --> EngagementAnalysisService
+    
+    %% Policy Enforcement Integration
+    NotificationApplicationService --> NotificationPolicyEnforcementPoint
+    NotificationPolicyEnforcementPoint --> ConsentPolicyService
+    NotificationPolicyEnforcementPoint --> FrequencyPolicyService
+    NotificationPolicyEnforcementPoint --> ContentPolicyService
     
     %% Domain to Ports (Dependency Inversion)
     Notification -->|uses| INotificationRepo
@@ -175,14 +236,7 @@ graph TB
     SchedulingService -->|uses| IScheduler
     PersonalizationService -->|uses| IUserService
     DeliveryOptimizationService -->|uses| IAnalyticsService
-    
-    %% Application to Domain
-    NotificationCommands -->|orchestrates| Notification
-    NotificationCommands -->|orchestrates| NotificationSettings
-    NotificationCommands -->|orchestrates| NotificationCampaign
-    NotificationQueries -->|reads| Notification
-    NotificationQueries -->|reads| NotificationSettings
-    NotificationQueries -->|reads| NotificationCampaign
+    EngagementAnalysisService -->|uses| IIdentityService
     
     %% Ports to Adapters (Implementation)
     INotificationRepo -.->|implements| MongoNotificationRepo
@@ -198,6 +252,7 @@ graph TB
     IScheduler -.->|implements| CronSchedulerAdapter
     IAnalyticsService -.->|implements| MixpanelAnalyticsAdapter
     IUserService -.->|implements| UserContextAdapter
+    IIdentityService -.->|implements| IdentityContextAdapter
     
     %% Adapters to External Systems
     MongoNotificationRepo -->|connects| MongoDB
@@ -218,6 +273,7 @@ graph TB
     
     %% Cross-Context Communication
     UserContextAdapter -.->|async calls| UserContext
+    IdentityContextAdapter -.->|async calls| IdentityContext
     
     %% Domain Events
     Notification -.->|publishes| NotificationSentEvent
@@ -231,23 +287,38 @@ graph TB
     NotificationCampaign -.->|publishes| CampaignStartedEvent
     NotificationCampaign -.->|publishes| CampaignCompletedEvent
     
-    %% Event to Read Models
-    NotificationSentEvent -.->|projects to| NotificationFeedRM
-    NotificationReadEvent -.->|projects to| UnreadCountRM
-    NotificationDeliveredEvent -.->|projects to| DeliveryStatsRM
-    NotificationClickedEvent -.->|projects to| EngagementMetricsRM
-    CampaignCompletedEvent -.->|projects to| CampaignReportsRM
-    DeviceRegisteredEvent -.->|projects to| DeviceRegistryRM
-    SettingsUpdatedEvent -.->|projects to| SettingsSummaryRM
+    %% Event to Read Models (via Event Bus)
+    NotificationEventBus -.->|projects to| NotificationFeedRM
+    NotificationEventBus -.->|projects to| UnreadCountRM
+    NotificationEventBus -.->|projects to| NotificationHistoryRM
+    NotificationEventBus -.->|projects to| DeliveryStatsRM
+    NotificationEventBus -.->|projects to| EngagementMetricsRM
+    NotificationEventBus -.->|projects to| CampaignReportsRM
+    NotificationEventBus -.->|projects to| DeviceRegistryRM
+    NotificationEventBus -.->|projects to| SettingsSummaryRM
+    NotificationEventBus -.->|projects to| UserPreferencesRM
     
-    %% Sagas
+    %% Events to Event Bus
+    NotificationSentEvent -.->|publishes to| NotificationEventBus
+    NotificationDeliveredEvent -.->|publishes to| NotificationEventBus
+    NotificationFailedEvent -.->|publishes to| NotificationEventBus
+    NotificationReadEvent -.->|publishes to| NotificationEventBus
+    NotificationClickedEvent -.->|publishes to| NotificationEventBus
+    SettingsUpdatedEvent -.->|publishes to| NotificationEventBus
+    DeviceRegisteredEvent -.->|publishes to| NotificationEventBus
+    CampaignStartedEvent -.->|publishes to| NotificationEventBus
+    CampaignCompletedEvent -.->|publishes to| NotificationEventBus
+    ActionExecutedEvent -.->|publishes to| NotificationEventBus
+    
+    %% Sagas listen to events
     NotificationDeliverySaga -.->|listens to| NotificationSentEvent
     CampaignExecutionSaga -.->|listens to| CampaignStartedEvent
-    DeliveryRetrieSaga -.->|listens to| NotificationFailedEvent
+    DeliveryRetrySaga -.->|listens to| NotificationFailedEvent
     EngagementTrackingSaga -.->|listens to| NotificationClickedEvent
+    PreferenceUpdateSaga -.->|listens to| SettingsUpdatedEvent
     
-    %% External References
-    UserContext["👤 User Context<br/><<ExternalContext>>"]
+    %% Context Bus to External Event Bus
+    NotificationEventBus -.->|integrates with| ExternalContexts
     
     %% External Event Listeners (from other contexts)
     WorkoutCompletedEvent["💪 Workout Completed<br/><<ExternalEvent>>"]
@@ -274,16 +345,22 @@ graph TB
     classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
     classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
     classDef externalEvent fill:#fff9c4,stroke:#f9a825,stroke-width:2px,stroke-dasharray: 3 3
+    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
+    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
+    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
     
     class Notification,NotificationSettings,NotificationCampaign aggregate
     class NotificationAction,DeviceToken entity
     class NotificationId,NotificationTitle,NotificationMessage,Priority,DeliveryChannel valueObject
-    class INotificationRepo,ISettingsRepo,ICampaignRepo,IDeviceTokenRepo,IActionRepo,IEmailProvider,IPushProvider,ISMSProvider,IInAppProvider,ITemplateEngine,IScheduler,IAnalyticsService,IUserService port
-    class MongoNotificationRepo,MongoSettingsRepo,MongoCampaignRepo,MongoDeviceTokenRepo,MongoActionRepo,SendGridEmailAdapter,FCMPushAdapter,TwilioSMSAdapter,WebSocketInAppAdapter,HandlebarTemplateAdapter,CronSchedulerAdapter,MixpanelAnalyticsAdapter,UserContextAdapter,NotificationCache,SettingsCache,DeviceTokenCache,TemplateCache adapter
-    class MongoDB,RedisCache,SendGridAPI,FCMService,TwilioAPI,WebSocketServer,MixpanelAPI,CronService external
-    class SendNotificationCmd,ScheduleNotificationCmd,UpdateNotificationCmd,CancelNotificationCmd,MarkAsReadCmd,UpdateSettingsCmd,RegisterDeviceCmd,CreateCampaignCmd,ExecuteActionCmd command
-    class GetNotificationsQuery,GetUnreadNotificationsQuery,GetNotificationSettingsQuery,GetNotificationHistoryQuery,GetCampaignsQuery,GetDeliveryStatsQuery,GetDeviceTokensQuery query
+    class INotificationRepo,ISettingsRepo,ICampaignRepo,IDeviceTokenRepo,IActionRepo,IEmailProvider,IPushProvider,ISMSProvider,IInAppProvider,ITemplateEngine,IScheduler,IAnalyticsService,IUserService,IIdentityService port
+    class MongoNotificationRepo,MongoSettingsRepo,MongoCampaignRepo,MongoDeviceTokenRepo,MongoActionRepo,SendGridEmailAdapter,FCMPushAdapter,TwilioSMSAdapter,WebSocketInAppAdapter,HandlebarTemplateAdapter,CronSchedulerAdapter,MixpanelAnalyticsAdapter,UserContextAdapter,IdentityContextAdapter,NotificationCache,SettingsCache,DeviceTokenCache,TemplateCache adapter
+    class MongoDB,RedisCache,SendGridAPI,FCMService,TwilioAPI,WebSocketServer,MixpanelAPI,CronService,ElasticsearchCluster external
+    class SendNotificationCmd,ScheduleNotificationCmd,UpdateNotificationCmd,CancelNotificationCmd,MarkAsReadCmd,UpdateSettingsCmd,RegisterDeviceCmd,CreateCampaignCmd,ExecuteActionCmd,OptInCmd,OptOutCmd command
+    class GetNotificationsQuery,GetUnreadNotificationsQuery,GetNotificationSettingsQuery,GetNotificationHistoryQuery,GetCampaignsQuery,GetDeliveryStatsQuery,GetDeviceTokensQuery,GetEngagementMetricsQuery query
     class NotificationSentEvent,NotificationDeliveredEvent,NotificationFailedEvent,NotificationReadEvent,NotificationClickedEvent,SettingsUpdatedEvent,DeviceRegisteredEvent,CampaignStartedEvent,CampaignCompletedEvent,ActionExecutedEvent event
-    class NotificationFeedRM,UnreadCountRM,NotificationHistoryRM,DeliveryStatsRM,EngagementMetricsRM,CampaignReportsRM,DeviceRegistryRM,SettingsSummaryRM readModel
-    class UserContext externalContext
+    class NotificationFeedRM,UnreadCountRM,NotificationHistoryRM,DeliveryStatsRM,EngagementMetricsRM,CampaignReportsRM,DeviceRegistryRM,SettingsSummaryRM,UserPreferencesRM readModel
+    class UserContext,IdentityContext,WorkoutContext,ProgressionContext,TrainerContext,ProgramContext externalContext
     class WorkoutCompletedEvent,PersonalRecordEvent,GoalAchievedEvent,SessionScheduledEvent externalEvent
+    class NotificationApplicationService applicationService
+    class NotificationCommandBus,NotificationQueryBus,NotificationEventBus contextBus
+    class NotificationPolicyEnforcementPoint,ConsentPolicyService,FrequencyPolicyService,ContentPolicyService policy

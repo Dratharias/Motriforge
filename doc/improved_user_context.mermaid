@@ -2,6 +2,35 @@ graph TB
     %% ===== USER MANAGEMENT CONTEXT =====
     subgraph UserContext ["👤 User Management Context"]
         
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph UserApplicationLayer ["Application Service Layer <<Application>>"]
+            UserApplicationService["👤 User Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph UserCommands ["Commands"]
+                CreateUserCmd["➕ Create User<br/><<Command>>"]
+                UpdateUserCmd["✏️ Update User<br/><<Command>>"]
+                DeactivateUserCmd["🚫 Deactivate User<br/><<Command>>"]
+                ChangePasswordCmd["🔒 Change Password<br/><<Command>>"]
+                AddFavoriteCmd["❤️ Add Favorite<br/><<Command>>"]
+                RecordActivityCmd["📊 Record Activity<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph UserQueries ["Queries"]
+                GetUserQuery["👤 Get User<br/><<Query>>"]
+                GetUserActivityQuery["📊 Get Activity<br/><<Query>>"]
+                GetUserFavoritesQuery["❤️ Get Favorites<br/><<Query>>"]
+                GetUserStatsQuery["📈 Get Stats<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph UserSagas ["Sagas"]
+                UserOnboardingSaga["🎯 User Onboarding<br/><<Saga>>"]
+                UserDeactivationSaga["🚫 User Deactivation<br/><<Saga>>"]
+            end
+        end
+        
         %% ===== DOMAIN LAYER (HEXAGON CORE) =====
         subgraph UserDomain ["Domain Layer <<DomainCore>>"]
             direction TB
@@ -32,7 +61,7 @@ graph TB
             direction TB
             
             %% Repository Ports
-            IUserRepo["📊 IUserRepository<br/><<Port>>"]
+            IUserRepo["👤 IUserRepository<br/><<Port>>"]
             IActivityRepo["📊 IActivityRepository<br/><<Port>>"]
             IFavoriteRepo["❤️ IFavoriteRepository<br/><<Port>>"]
             ITokenRepo["🎫 ITokenRepository<br/><<Port>>"]
@@ -43,35 +72,7 @@ graph TB
             IEmailService["📧 IEmailService<br/><<Port>>"]
             IStorageService["💾 IStorageService<br/><<Port>>"]
             INotificationService["🔔 INotificationService<br/><<Port>>"]
-        end
-        
-        %% ===== APPLICATION LAYER =====
-        subgraph UserApplication ["Application Layer <<Application>>"]
-            direction TB
-            
-            %% Commands
-            subgraph UserCommands ["Commands"]
-                CreateUserCmd["➕ Create User<br/><<Command>>"]
-                UpdateUserCmd["✏️ Update User<br/><<Command>>"]
-                DeactivateUserCmd["🚫 Deactivate User<br/><<Command>>"]
-                ChangePasswordCmd["🔒 Change Password<br/><<Command>>"]
-                AddFavoriteCmd["❤️ Add Favorite<br/><<Command>>"]
-                RecordActivityCmd["📊 Record Activity<br/><<Command>>"]
-            end
-            
-            %% Queries
-            subgraph UserQueries ["Queries"]
-                GetUserQuery["👤 Get User<br/><<Query>>"]
-                GetUserActivityQuery["📊 Get Activity<br/><<Query>>"]
-                GetUserFavoritesQuery["❤️ Get Favorites<br/><<Query>>"]
-                GetUserStatsQuery["📈 Get Stats<br/><<Query>>"]
-            end
-            
-            %% Sagas
-            subgraph UserSagas ["Sagas"]
-                UserOnboardingSaga["🎯 User Onboarding<br/><<Saga>>"]
-                UserDeactivationSaga["🚫 User Deactivation<br/><<Saga>>"]
-            end
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
         end
         
         %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
@@ -79,7 +80,7 @@ graph TB
             direction TB
             
             %% Repository Adapters
-            subgraph RepositoryAdapters ["Repository Adapters"]
+            subgraph UserRepositoryAdapters ["Repository Adapters"]
                 MongoUserRepo["🗄️ Mongo User Repository<br/><<RepositoryAdapter>>"]
                 MongoActivityRepo["🗄️ Mongo Activity Repository<br/><<RepositoryAdapter>>"]
                 MongoFavoriteRepo["🗄️ Mongo Favorite Repository<br/><<RepositoryAdapter>>"]
@@ -88,18 +89,26 @@ graph TB
             end
             
             %% Service Adapters
-            subgraph ServiceAdapters ["Service Adapters"]
+            subgraph UserServiceAdapters ["Service Adapters"]
                 BcryptHasher["🔐 Bcrypt Hasher<br/><<SecurityAdapter>>"]
                 SendGridEmail["📧 SendGrid Email<br/><<EmailAdapter>>"]
                 S3Storage["☁️ S3 Storage<br/><<StorageAdapter>>"]
                 FirebasePush["📱 Firebase Push<br/><<NotificationAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
             end
             
             %% Cache Adapters
-            subgraph CacheAdapters ["Cache Adapters"]
+            subgraph UserCacheAdapters ["Cache Adapters"]
                 UserProfileCache["💾 User Profile Cache<br/><<CacheAdapter>>"]
                 ActivityCache["💾 Activity Cache<br/><<CacheAdapter>>"]
             end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph UserContextBus ["Context Bus Interfaces"]
+            UserCommandBus["⚡ User Command Bus<br/><<CommandBus>>"]
+            UserQueryBus["❓ User Query Bus<br/><<QueryBus>>"]
+            UserEventBus["📨 User Event Bus<br/><<EventBus>>"]
         end
     end
     
@@ -129,20 +138,40 @@ graph TB
         UserStatsRM["📊 User Stats<br/><<ReadModel>>"]
     end
     
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        NotificationContext["🔔 Notification Context<br/><<ExternalContext>>"]
+        OrganizationContext["🏢 Organization Context<br/><<ExternalContext>>"]
+    end
+    
     %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    UserApplicationService --> UserCommandBus
+    UserApplicationService --> UserQueryBus
+    UserApplicationService --> UserEventBus
+    
+    %% Commands and Queries through Application Service
+    UserCommands --> UserApplicationService
+    UserQueries --> UserApplicationService
+    UserSagas --> UserApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    UserApplicationService --> User
+    UserApplicationService --> UserActivity
+    UserApplicationService --> UserFavorites
+    UserApplicationService --> UserValidationService
+    UserApplicationService --> ActivityTrackingService
     
     %% Domain to Ports (Dependency Inversion)
     User -->|uses| IUserRepo
     User -->|uses| IPasswordHasher
     User -->|uses| IEmailService
+    User -->|uses| IIdentityService
     UserActivity -->|uses| IActivityRepo
     UserFavorites -->|uses| IFavoriteRepo
-    
-    %% Application to Domain
-    UserCommands -->|orchestrates| User
-    UserCommands -->|orchestrates| UserActivity
-    UserQueries -->|reads| User
-    UserQueries -->|reads| UserActivity
+    ActivityTrackingService -->|uses| INotificationService
     
     %% Ports to Adapters (Implementation)
     IUserRepo -.->|implements| MongoUserRepo
@@ -154,6 +183,7 @@ graph TB
     IEmailService -.->|implements| SendGridEmail
     IStorageService -.->|implements| S3Storage
     INotificationService -.->|implements| FirebasePush
+    IIdentityService -.->|implements| IdentityContextAdapter
     
     %% Adapters to External Systems
     MongoUserRepo -->|connects| MongoDB
@@ -167,6 +197,10 @@ graph TB
     SendGridEmail -->|connects| SendGridAPI
     FirebasePush -->|connects| FirebaseAPI
     
+    %% Cross-Context Communication
+    IdentityContextAdapter -.->|async calls| IdentityContext
+    FirebasePush -.->|async calls| NotificationContext
+    
     %% Domain Events
     User -.->|publishes| UserRegisteredEvent
     User -.->|publishes| UserUpdatedEvent
@@ -174,15 +208,25 @@ graph TB
     UserActivity -.->|publishes| ActivityRecordedEvent
     UserFavorites -.->|publishes| FavoriteAddedEvent
     
-    %% Event to Read Models
-    UserRegisteredEvent -.->|projects to| UserProfileRM
-    UserUpdatedEvent -.->|projects to| UserProfileRM
-    ActivityRecordedEvent -.->|projects to| UserActivityRM
-    ActivityRecordedEvent -.->|projects to| UserDashboardRM
+    %% Event to Read Models (via Event Bus)
+    UserEventBus -.->|projects to| UserProfileRM
+    UserEventBus -.->|projects to| UserDashboardRM
+    UserEventBus -.->|projects to| UserActivityRM
+    UserEventBus -.->|projects to| UserStatsRM
     
-    %% Sagas
+    %% Events to Event Bus
+    UserRegisteredEvent -.->|publishes to| UserEventBus
+    UserUpdatedEvent -.->|publishes to| UserEventBus
+    UserDeactivatedEvent -.->|publishes to| UserEventBus
+    ActivityRecordedEvent -.->|publishes to| UserEventBus
+    FavoriteAddedEvent -.->|publishes to| UserEventBus
+    
+    %% Sagas listen to events
     UserOnboardingSaga -.->|listens to| UserRegisteredEvent
     UserDeactivationSaga -.->|listens to| UserDeactivatedEvent
+    
+    %% Context Bus to External Event Bus
+    UserEventBus -.->|integrates with| ExternalContexts
     
     %% ===== STYLING =====
     classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
@@ -195,14 +239,20 @@ graph TB
     classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
     classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
     classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
+    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
     
     class User,UserActivity,UserFavorites aggregate
     class RefreshToken,DeviceToken,ActivityEntry,Role entity
     class UserId,Email,UserName valueObject
-    class IUserRepo,IActivityRepo,IFavoriteRepo,ITokenRepo,IRoleRepo,IPasswordHasher,IEmailService,IStorageService,INotificationService port
-    class MongoUserRepo,MongoActivityRepo,MongoFavoriteRepo,RedisTokenRepo,MongoRoleRepo,BcryptHasher,SendGridEmail,S3Storage,FirebasePush,UserProfileCache,ActivityCache adapter
+    class IUserRepo,IActivityRepo,IFavoriteRepo,ITokenRepo,IRoleRepo,IPasswordHasher,IEmailService,IStorageService,INotificationService,IIdentityService port
+    class MongoUserRepo,MongoActivityRepo,MongoFavoriteRepo,RedisTokenRepo,MongoRoleRepo,BcryptHasher,SendGridEmail,S3Storage,FirebasePush,IdentityContextAdapter,UserProfileCache,ActivityCache adapter
     class MongoDB,RedisCache,S3Bucket,SendGridAPI,FirebaseAPI external
     class CreateUserCmd,UpdateUserCmd,DeactivateUserCmd,ChangePasswordCmd,AddFavoriteCmd,RecordActivityCmd command
     class GetUserQuery,GetUserActivityQuery,GetUserFavoritesQuery,GetUserStatsQuery query
     class UserRegisteredEvent,UserUpdatedEvent,UserDeactivatedEvent,ActivityRecordedEvent,FavoriteAddedEvent event
     class UserProfileRM,UserDashboardRM,UserActivityRM,UserStatsRM readModel
+    class IdentityContext,NotificationContext,OrganizationContext externalContext
+    class UserApplicationService applicationService
+    class UserCommandBus,UserQueryBus,UserEventBus contextBus

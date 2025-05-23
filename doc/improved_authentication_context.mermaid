@@ -2,6 +2,45 @@ graph TB
     %% ===== AUTHENTICATION CONTEXT =====
     subgraph AuthContext ["🔐 Authentication Context"]
         
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph AuthApplicationLayer ["Application Service Layer <<Application>>"]
+            AuthApplicationService["🔐 Authentication Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph AuthCommands ["Commands"]
+                LoginCmd["🔑 Login<br/><<Command>>"]
+                LogoutCmd["🚪 Logout<br/><<Command>>"]
+                RefreshTokenCmd["🔄 Refresh Token<br/><<Command>>"]
+                ChangePasswordCmd["🔒 Change Password<br/><<Command>>"]
+                ResetPasswordCmd["🔄 Reset Password<br/><<Command>>"]
+                EnableMFACmd["📱 Enable MFA<br/><<Command>>"]
+                DisableMFACmd["📵 Disable MFA<br/><<Command>>"]
+                RegisterDeviceCmd["📱 Register Device<br/><<Command>>"]
+                RevokeTokenCmd["❌ Revoke Token<br/><<Command>>"]
+                OAuth2LoginCmd["🔗 OAuth2 Login<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph AuthQueries ["Queries"]
+                ValidateTokenQuery["✅ Validate Token<br/><<Query>>"]
+                GetSessionQuery["🔑 Get Session<br/><<Query>>"]
+                GetActiveSessionsQuery["📋 Get Active Sessions<br/><<Query>>"]
+                GetLoginHistoryQuery["📅 Get Login History<br/><<Query>>"]
+                CheckPermissionQuery["🛡️ Check Permission<br/><<Query>>"]
+                GetMFAStatusQuery["📱 Get MFA Status<br/><<Query>>"]
+                GetDeviceTokensQuery["📱 Get Device Tokens<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph AuthSagas ["Sagas"]
+                LoginSaga["🔑 Login<br/><<Saga>>"]
+                PasswordResetSaga["🔄 Password Reset<br/><<Saga>>"]
+                AccountLockoutSaga["🔒 Account Lockout<br/><<Saga>>"]
+                SessionTimeoutSaga["⏰ Session Timeout<br/><<Saga>>"]
+                SecurityAlertSaga["🚨 Security Alert<br/><<Saga>>"]
+            end
+        end
+        
         %% ===== DOMAIN LAYER (HEXAGON CORE) =====
         subgraph AuthDomain ["Domain Layer <<DomainCore>>"]
             direction TB
@@ -50,45 +89,7 @@ graph TB
             ISecurityLogger["📋 ISecurityLogger<br/><<Port>>"]
             IUserService["👤 IUserService<br/><<Port>>"]
             INotificationService["🔔 INotificationService<br/><<Port>>"]
-        end
-        
-        %% ===== APPLICATION LAYER =====
-        subgraph AuthApplication ["Application Layer <<Application>>"]
-            direction TB
-            
-            %% Commands
-            subgraph AuthCommands ["Commands"]
-                LoginCmd["🔑 Login<br/><<Command>>"]
-                LogoutCmd["🚪 Logout<br/><<Command>>"]
-                RefreshTokenCmd["🔄 Refresh Token<br/><<Command>>"]
-                ChangePasswordCmd["🔒 Change Password<br/><<Command>>"]
-                ResetPasswordCmd["🔄 Reset Password<br/><<Command>>"]
-                EnableMFACmd["📱 Enable MFA<br/><<Command>>"]
-                DisableMFACmd["📵 Disable MFA<br/><<Command>>"]
-                RegisterDeviceCmd["📱 Register Device<br/><<Command>>"]
-                RevokeTokenCmd["❌ Revoke Token<br/><<Command>>"]
-                OAuth2LoginCmd["🔗 OAuth2 Login<br/><<Command>>"]
-            end
-            
-            %% Queries
-            subgraph AuthQueries ["Queries"]
-                ValidateTokenQuery["✅ Validate Token<br/><<Query>>"]
-                GetSessionQuery["🔑 Get Session<br/><<Query>>"]
-                GetActiveSessionsQuery["📋 Get Active Sessions<br/><<Query>>"]
-                GetLoginHistoryQuery["📅 Get Login History<br/><<Query>>"]
-                CheckPermissionQuery["🛡️ Check Permission<br/><<Query>>"]
-                GetMFAStatusQuery["📱 Get MFA Status<br/><<Query>>"]
-                GetDeviceTokensQuery["📱 Get Device Tokens<br/><<Query>>"]
-            end
-            
-            %% Sagas
-            subgraph AuthSagas ["Sagas"]
-                LoginSaga["🔑 Login<br/><<Saga>>"]
-                PasswordResetSaga["🔄 Password Reset<br/><<Saga>>"]
-                AccountLockoutSaga["🔒 Account Lockout<br/><<Saga>>"]
-                SessionTimeoutSaga["⏰ Session Timeout<br/><<Saga>>"]
-                SecurityAlertSaga["🚨 Security Alert<br/><<Saga>>"]
-            end
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
         end
         
         %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
@@ -113,6 +114,7 @@ graph TB
                 AuditSecurityLogger["📋 Audit Security Logger<br/><<LoggingAdapter>>"]
                 UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
                 FCMNotificationAdapter["📱 FCM Notification<br/><<NotificationAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
             end
             
             %% Cache Adapters
@@ -121,6 +123,19 @@ graph TB
                 PermissionCache["💾 Permission Cache<br/><<CacheAdapter>>"]
                 RateLimitCache["💾 Rate Limit Cache<br/><<CacheAdapter>>"]
             end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph AuthContextBus ["Context Bus Interfaces"]
+            AuthCommandBus["⚡ Auth Command Bus<br/><<CommandBus>>"]
+            AuthQueryBus["❓ Auth Query Bus<br/><<QueryBus>>"]
+            AuthEventBus["📨 Auth Event Bus<br/><<EventBus>>"]
+        end
+        
+        %% ===== POLICY ENFORCEMENT =====
+        subgraph AuthPolicyLayer ["Policy Enforcement Layer"]
+            AuthPolicyEnforcementPoint["🛡️ Auth Policy Enforcement Point<br/><<PEP>>"]
+            SecurityPolicyDecisionPoint["🎯 Security Policy Decision Point<br/><<PDP>>"]
         end
     end
     
@@ -163,7 +178,36 @@ graph TB
         SecurityAlertsRM["🚨 Security Alerts<br/><<ReadModel>>"]
     end
     
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        UserContext["👤 User Context<br/><<ExternalContext>>"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        NotificationContext["🔔 Notification Context<br/><<ExternalContext>>"]
+        OrganizationContext["🏢 Organization Context<br/><<ExternalContext>>"]
+    end
+    
     %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    AuthApplicationService --> AuthCommandBus
+    AuthApplicationService --> AuthQueryBus
+    AuthApplicationService --> AuthEventBus
+    
+    %% Commands and Queries through Application Service
+    AuthCommands --> AuthApplicationService
+    AuthQueries --> AuthApplicationService
+    AuthSagas --> AuthApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    AuthApplicationService --> AuthSession
+    AuthApplicationService --> UserCredentials
+    AuthApplicationService --> AuthenticationService
+    AuthApplicationService --> AuthorizationService
+    AuthApplicationService --> SecurityService
+    
+    %% Policy Enforcement Integration
+    AuthApplicationService --> AuthPolicyEnforcementPoint
+    AuthPolicyEnforcementPoint --> SecurityPolicyDecisionPoint
     
     %% Domain to Ports (Dependency Inversion)
     AuthSession -->|uses| ISessionRepo
@@ -176,12 +220,7 @@ graph TB
     AuthenticationService -->|uses| IMFAProvider
     SecurityService -->|uses| IUserService
     SecurityService -->|uses| INotificationService
-    
-    %% Application to Domain
-    AuthCommands -->|orchestrates| AuthSession
-    AuthCommands -->|orchestrates| UserCredentials
-    AuthQueries -->|reads| AuthSession
-    AuthQueries -->|reads| UserCredentials
+    SecurityService -->|uses| IIdentityService
     
     %% Ports to Adapters (Implementation)
     ISessionRepo -.->|implements| RedisSessionRepo
@@ -196,6 +235,7 @@ graph TB
     ISecurityLogger -.->|implements| AuditSecurityLogger
     IUserService -.->|implements| UserContextAdapter
     INotificationService -.->|implements| FCMNotificationAdapter
+    IIdentityService -.->|implements| IdentityContextAdapter
     
     %% Adapters to External Systems
     RedisSessionRepo -->|connects| RedisCache
@@ -215,6 +255,8 @@ graph TB
     
     %% Cross-Context Communication
     UserContextAdapter -.->|async calls| UserContext
+    IdentityContextAdapter -.->|async calls| IdentityContext
+    FCMNotificationAdapter -.->|async calls| NotificationContext
     
     %% Domain Events
     AuthSession -.->|publishes| UserLoggedInEvent
@@ -230,17 +272,30 @@ graph TB
     SecurityService -.->|publishes| AccountLockedEvent
     SecurityService -.->|publishes| SuspiciousActivityEvent
     
-    %% Event to Read Models
-    UserLoggedInEvent -.->|projects to| ActiveSessionsRM
-    UserLoggedInEvent -.->|projects to| LoginHistoryRM
-    UserLoggedOutEvent -.->|projects to| ActiveSessionsRM
-    PasswordChangedEvent -.->|projects to| SecurityDashboardRM
-    DeviceRegisteredEvent -.->|projects to| DeviceListRM
-    LoginFailedEvent -.->|projects to| FailedAttemptsRM
-    AccountLockedEvent -.->|projects to| SecurityAlertsRM
-    SuspiciousActivityEvent -.->|projects to| SecurityAlertsRM
+    %% Event to Read Models (via Event Bus)
+    AuthEventBus -.->|projects to| ActiveSessionsRM
+    AuthEventBus -.->|projects to| LoginHistoryRM
+    AuthEventBus -.->|projects to| SecurityDashboardRM
+    AuthEventBus -.->|projects to| DeviceListRM
+    AuthEventBus -.->|projects to| AuthStatsRM
+    AuthEventBus -.->|projects to| FailedAttemptsRM
+    AuthEventBus -.->|projects to| SecurityAlertsRM
     
-    %% Sagas
+    %% Events to Event Bus
+    UserLoggedInEvent -.->|publishes to| AuthEventBus
+    UserLoggedOutEvent -.->|publishes to| AuthEventBus
+    PasswordChangedEvent -.->|publishes to| AuthEventBus
+    PasswordResetRequestedEvent -.->|publishes to| AuthEventBus
+    MFAEnabledEvent -.->|publishes to| AuthEventBus
+    MFADisabledEvent -.->|publishes to| AuthEventBus
+    DeviceRegisteredEvent -.->|publishes to| AuthEventBus
+    TokenRevokedEvent -.->|publishes to| AuthEventBus
+    LoginFailedEvent -.->|publishes to| AuthEventBus
+    AccountLockedEvent -.->|publishes to| AuthEventBus
+    SuspiciousActivityEvent -.->|publishes to| AuthEventBus
+    SessionExpiredEvent -.->|publishes to| AuthEventBus
+    
+    %% Sagas listen to events
     LoginSaga -.->|listens to| UserLoggedInEvent
     LoginSaga -.->|listens to| LoginFailedEvent
     PasswordResetSaga -.->|listens to| PasswordResetRequestedEvent
@@ -248,8 +303,8 @@ graph TB
     SessionTimeoutSaga -.->|listens to| SessionExpiredEvent
     SecurityAlertSaga -.->|listens to| SuspiciousActivityEvent
     
-    %% External References
-    UserContext["👤 User Context<br/><<ExternalContext>>"]
+    %% Context Bus to External Event Bus
+    AuthEventBus -.->|integrates with| ExternalContexts
     
     %% ===== STYLING =====
     classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
@@ -263,15 +318,21 @@ graph TB
     classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
     classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
     classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
+    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
+    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
     
     class AuthSession,UserCredentials aggregate
     class RefreshToken,DeviceToken,AuthAttempt,Contact entity
     class SessionId,Password,TokenClaims,DeviceFingerprint,IPAddress valueObject
-    class ISessionRepo,ITokenRepo,IDeviceTokenRepo,IAttemptRepo,IPasswordHasher,ITokenGenerator,IOAuth2Provider,IMFAProvider,IRateLimiter,ISecurityLogger,IUserService,INotificationService port
-    class RedisSessionRepo,RedisTokenRepo,MongoDeviceTokenRepo,MongoAttemptRepo,BcryptPasswordHasher,JwtTokenGenerator,GoogleOAuth2Adapter,Auth0MFAAdapter,RedisRateLimiter,AuditSecurityLogger,UserContextAdapter,FCMNotificationAdapter,SessionCache,PermissionCache,RateLimitCache adapter
+    class ISessionRepo,ITokenRepo,IDeviceTokenRepo,IAttemptRepo,IPasswordHasher,ITokenGenerator,IOAuth2Provider,IMFAProvider,IRateLimiter,ISecurityLogger,IUserService,INotificationService,IIdentityService port
+    class RedisSessionRepo,RedisTokenRepo,MongoDeviceTokenRepo,MongoAttemptRepo,BcryptPasswordHasher,JwtTokenGenerator,GoogleOAuth2Adapter,Auth0MFAAdapter,RedisRateLimiter,AuditSecurityLogger,UserContextAdapter,FCMNotificationAdapter,IdentityContextAdapter,SessionCache,PermissionCache,RateLimitCache adapter
     class RedisCache,MongoDB,GoogleOAuth2API,Auth0API,FCMService,AuditLogService,EmailService,SMSService external
     class LoginCmd,LogoutCmd,RefreshTokenCmd,ChangePasswordCmd,ResetPasswordCmd,EnableMFACmd,DisableMFACmd,RegisterDeviceCmd,RevokeTokenCmd,OAuth2LoginCmd command
     class ValidateTokenQuery,GetSessionQuery,GetActiveSessionsQuery,GetLoginHistoryQuery,CheckPermissionQuery,GetMFAStatusQuery,GetDeviceTokensQuery query
     class UserLoggedInEvent,UserLoggedOutEvent,PasswordChangedEvent,PasswordResetRequestedEvent,MFAEnabledEvent,MFADisabledEvent,DeviceRegisteredEvent,TokenRevokedEvent,LoginFailedEvent,AccountLockedEvent,SuspiciousActivityEvent,SessionExpiredEvent event
     class ActiveSessionsRM,LoginHistoryRM,SecurityDashboardRM,DeviceListRM,AuthStatsRM,FailedAttemptsRM,SecurityAlertsRM readModel
-    class UserContext externalContext
+    class UserContext,IdentityContext,NotificationContext,OrganizationContext externalContext
+    class AuthApplicationService applicationService
+    class AuthCommandBus,AuthQueryBus,AuthEventBus contextBus
+    class AuthPolicyEnforcementPoint,SecurityPolicyDecisionPoint policy

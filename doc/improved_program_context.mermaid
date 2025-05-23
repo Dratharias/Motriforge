@@ -2,6 +2,47 @@ graph TB
     %% ===== PROGRAM MANAGEMENT CONTEXT =====
     subgraph ProgramContext ["📋 Program Management Context"]
         
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph ProgramApplicationLayer ["Application Service Layer <<Application>>"]
+            ProgramApplicationService["📋 Program Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph ProgramCommands ["Commands"]
+                CreateProgramCmd["➕ Create Program<br/><<Command>>"]
+                UpdateProgramCmd["✏️ Update Program<br/><<Command>>"]
+                AssignProgramCmd["📌 Assign Program<br/><<Command>>"]
+                ModifyAssignmentCmd["🔧 Modify Assignment<br/><<Command>>"]
+                CompleteProgramCmd["✅ Complete Program<br/><<Command>>"]
+                SaveAsTemplateCmd["📄 Save as Template<br/><<Command>>"]
+                CloneProgramCmd["📋 Clone Program<br/><<Command>>"]
+                UpdateProgressCmd["📈 Update Progress<br/><<Command>>"]
+                CancelAssignmentCmd["❌ Cancel Assignment<br/><<Command>>"]
+                PublishProgramCmd["🌐 Publish Program<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph ProgramQueries ["Queries"]
+                GetProgramQuery["📋 Get Program<br/><<Query>>"]
+                GetProgramTemplatesQuery["📄 Get Templates<br/><<Query>>"]
+                GetAssignedProgramsQuery["📌 Get Assigned Programs<br/><<Query>>"]
+                GetProgramProgressQuery["📈 Get Progress<br/><<Query>>"]
+                GetProgramLibraryQuery["📚 Get Library<br/><<Query>>"]
+                GetPopularProgramsQuery["⭐ Get Popular<br/><<Query>>"]
+                GetProgramStatsQuery["📊 Get Stats<br/><<Query>>"]
+                RecommendProgramsQuery["🤖 Recommend Programs<br/><<Query>>"]
+                SearchProgramsQuery["🔍 Search Programs<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph ProgramSagas ["Sagas"]
+                ProgramAssignmentSaga["📌 Program Assignment<br/><<Saga>>"]
+                ProgramCompletionSaga["✅ Program Completion<br/><<Saga>>"]
+                ProgressTrackingSaga["📈 Progress Tracking<br/><<Saga>>"]
+                AdaptiveProgramSaga["🔄 Adaptive Program<br/><<Saga>>"]
+                ProgramRecommendationSaga["🤖 Program Recommendation<br/><<Saga>>"]
+            end
+        end
+        
         %% ===== DOMAIN LAYER (HEXAGON CORE) =====
         subgraph ProgramDomain ["Domain Layer <<DomainCore>>"]
             direction TB
@@ -27,6 +68,7 @@ graph TB
             AssignmentService["📌 Assignment<br/><<DomainService>>"]
             ProgressionService["📈 Progression<br/><<DomainService>>"]
             AdherenceCalculationService["📊 Adherence Calculation<br/><<DomainService>>"]
+            ProgramRecommendationService["🤖 Program Recommendation<br/><<DomainService>>"]
         end
         
         %% ===== PORTS (DOMAIN INTERFACES) =====
@@ -47,44 +89,8 @@ graph TB
             INotificationService["🔔 INotificationService<br/><<Port>>"]
             IAnalyticsService["📊 IAnalyticsService<br/><<Port>>"]
             IAIRecommendationService["🤖 IAIRecommendationService<br/><<Port>>"]
-        end
-        
-        %% ===== APPLICATION LAYER =====
-        subgraph ProgramApplication ["Application Layer <<Application>>"]
-            direction TB
-            
-            %% Commands
-            subgraph ProgramCommands ["Commands"]
-                CreateProgramCmd["➕ Create Program<br/><<Command>>"]
-                UpdateProgramCmd["✏️ Update Program<br/><<Command>>"]
-                AssignProgramCmd["📌 Assign Program<br/><<Command>>"]
-                ModifyAssignmentCmd["🔧 Modify Assignment<br/><<Command>>"]
-                CompleteProgramCmd["✅ Complete Program<br/><<Command>>"]
-                SaveAsTemplateCmd["📄 Save as Template<br/><<Command>>"]
-                CloneProgramCmd["📋 Clone Program<br/><<Command>>"]
-                UpdateProgressCmd["📈 Update Progress<br/><<Command>>"]
-                CancelAssignmentCmd["❌ Cancel Assignment<br/><<Command>>"]
-            end
-            
-            %% Queries
-            subgraph ProgramQueries ["Queries"]
-                GetProgramQuery["📋 Get Program<br/><<Query>>"]
-                GetProgramTemplatesQuery["📄 Get Templates<br/><<Query>>"]
-                GetAssignedProgramsQuery["📌 Get Assigned Programs<br/><<Query>>"]
-                GetProgramProgressQuery["📈 Get Progress<br/><<Query>>"]
-                GetProgramLibraryQuery["📚 Get Library<br/><<Query>>"]
-                GetPopularProgramsQuery["⭐ Get Popular<br/><<Query>>"]
-                GetProgramStatsQuery["📊 Get Stats<br/><<Query>>"]
-                RecommendProgramsQuery["🤖 Recommend Programs<br/><<Query>>"]
-            end
-            
-            %% Sagas
-            subgraph ProgramSagas ["Sagas"]
-                ProgramAssignmentSaga["📌 Program Assignment<br/><<Saga>>"]
-                ProgramCompletionSaga["✅ Program Completion<br/><<Saga>>"]
-                ProgressTrackingSaga["📈 Progress Tracking<br/><<Saga>>"]
-                AdaptiveProgramSaga["🔄 Adaptive Program<br/><<Saga>>"]
-            end
+            IUserService["👤 IUserService<br/><<Port>>"]
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
         end
         
         %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
@@ -108,6 +114,8 @@ graph TB
                 FCMNotificationAdapter["📱 FCM Notification<br/><<NotificationAdapter>>"]
                 MixpanelAnalyticsAdapter["📊 Mixpanel Analytics<br/><<AnalyticsAdapter>>"]
                 OpenAIRecommendationAdapter["🤖 OpenAI Recommendation<br/><<AIAdapter>>"]
+                UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
             end
             
             %% Cache Adapters
@@ -117,6 +125,20 @@ graph TB
                 AssignmentCache["💾 Assignment Cache<br/><<CacheAdapter>>"]
                 RecommendationCache["💾 Recommendation Cache<br/><<CacheAdapter>>"]
             end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph ProgramContextBus ["Context Bus Interfaces"]
+            ProgramCommandBus["⚡ Program Command Bus<br/><<CommandBus>>"]
+            ProgramQueryBus["❓ Program Query Bus<br/><<QueryBus>>"]
+            ProgramEventBus["📨 Program Event Bus<br/><<EventBus>>"]
+        end
+        
+        %% ===== POLICY ENFORCEMENT =====
+        subgraph ProgramPolicyLayer ["Policy Enforcement Layer"]
+            ProgramPolicyEnforcementPoint["🛡️ Program Policy Enforcement Point<br/><<PEP>>"]
+            ProgramAccessPolicyService["🔒 Program Access Policy<br/><<Policy>>"]
+            ProgramContentPolicyService["📋 Program Content Policy<br/><<Policy>>"]
         end
     end
     
@@ -128,6 +150,7 @@ graph TB
         MixpanelAPI["📊 Mixpanel API<br/><<AnalyticsService>>"]
         OpenAIAPI["🤖 OpenAI API<br/><<AIService>>"]
         ElasticsearchCluster["🔍 Elasticsearch<br/><<SearchEngine>>"]
+        DataWarehouse["🏛️ Data Warehouse<br/><<Analytics>>"]
     end
     
     %% ===== EVENTS =====
@@ -141,6 +164,7 @@ graph TB
         TemplateCreatedEvent["📄 Template Created<br/><<DomainEvent>>"]
         AssignmentCancelledEvent["❌ Assignment Cancelled<br/><<DomainEvent>>"]
         AdherenceCalculatedEvent["📊 Adherence Calculated<br/><<DomainEvent>>"]
+        ProgramPublishedEvent["🌐 Program Published<br/><<DomainEvent>>"]
     end
     
     %% ===== READ MODELS =====
@@ -153,9 +177,46 @@ graph TB
         PopularProgramsRM["⭐ Popular Programs<br/><<ReadModel>>"]
         ProgramStatsRM["📊 Program Stats<br/><<ReadModel>>"]
         RecommendationsRM["🤖 Program Recommendations<br/><<ReadModel>>"]
+        ProgramSearchRM["🔍 Program Search<br/><<ReadModel>>"]
+    end
+    
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        WorkoutContext["💪 Workout Context<br/><<ExternalContext>>"]
+        ExerciseContext["🎯 Exercise Context<br/><<ExternalContext>>"]
+        ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+        UserContext["👤 User Context<br/><<ExternalContext>>"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        NotificationContext["🔔 Notification Context<br/><<ExternalContext>>"]
+        TrainerContext["👨‍🏫 Trainer Context<br/><<ExternalContext>>"]
     end
     
     %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    ProgramApplicationService --> ProgramCommandBus
+    ProgramApplicationService --> ProgramQueryBus
+    ProgramApplicationService --> ProgramEventBus
+    
+    %% Commands and Queries through Application Service
+    ProgramCommands --> ProgramApplicationService
+    ProgramQueries --> ProgramApplicationService
+    ProgramSagas --> ProgramApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    ProgramApplicationService --> Program
+    ProgramApplicationService --> ProgramTemplate
+    ProgramApplicationService --> ProgramAssignment
+    ProgramApplicationService --> ProgramDesignService
+    ProgramApplicationService --> AssignmentService
+    ProgramApplicationService --> ProgressionService
+    ProgramApplicationService --> AdherenceCalculationService
+    ProgramApplicationService --> ProgramRecommendationService
+    
+    %% Policy Enforcement Integration
+    ProgramApplicationService --> ProgramPolicyEnforcementPoint
+    ProgramPolicyEnforcementPoint --> ProgramAccessPolicyService
+    ProgramPolicyEnforcementPoint --> ProgramContentPolicyService
     
     %% Domain to Ports (Dependency Inversion)
     Program -->|uses| IProgramRepo
@@ -166,12 +227,8 @@ graph TB
     ProgramAssignment -->|uses| INotificationService
     ProgramDesignService -->|uses| IAIRecommendationService
     AdherenceCalculationService -->|uses| IAnalyticsService
-    
-    %% Application to Domain
-    ProgramCommands -->|orchestrates| Program
-    ProgramCommands -->|orchestrates| ProgramAssignment
-    ProgramQueries -->|reads| Program
-    ProgramQueries -->|reads| ProgramAssignment
+    AssignmentService -->|uses| IUserService
+    AssignmentService -->|uses| IIdentityService
     
     %% Ports to Adapters (Implementation)
     IProgramRepo -.->|implements| MongoProgramRepo
@@ -185,6 +242,8 @@ graph TB
     INotificationService -.->|implements| FCMNotificationAdapter
     IAnalyticsService -.->|implements| MixpanelAnalyticsAdapter
     IAIRecommendationService -.->|implements| OpenAIRecommendationAdapter
+    IUserService -.->|implements| UserContextAdapter
+    IIdentityService -.->|implements| IdentityContextAdapter
     
     %% Adapters to External Systems
     MongoProgramRepo -->|connects| MongoDB
@@ -204,10 +263,14 @@ graph TB
     WorkoutContextAdapter -.->|async calls| WorkoutContext
     ExerciseContextAdapter -.->|async calls| ExerciseContext
     ProgressionContextAdapter -.->|async calls| ProgressionContext
+    UserContextAdapter -.->|async calls| UserContext
+    IdentityContextAdapter -.->|async calls| IdentityContext
+    FCMNotificationAdapter -.->|async calls| NotificationContext
     
     %% Domain Events
     Program -.->|publishes| ProgramCreatedEvent
     Program -.->|publishes| ProgramUpdatedEvent
+    Program -.->|publishes| ProgramPublishedEvent
     ProgramAssignment -.->|publishes| ProgramAssignedEvent
     ProgramAssignment -.->|publishes| ProgramCompletedEvent
     ProgramModification -.->|publishes| ProgramModifiedEvent
@@ -216,25 +279,38 @@ graph TB
     ProgramAssignment -.->|publishes| AssignmentCancelledEvent
     AdherenceCalculationService -.->|publishes| AdherenceCalculatedEvent
     
-    %% Event to Read Models
-    ProgramCreatedEvent -.->|projects to| ProgramLibraryRM
-    ProgramUpdatedEvent -.->|projects to| ProgramDetailsRM
-    TemplateCreatedEvent -.->|projects to| ProgramTemplatesRM
-    ProgramAssignedEvent -.->|projects to| AssignedProgramsRM
-    ProgressUpdatedEvent -.->|projects to| ProgramProgressRM
-    ProgramCompletedEvent -.->|projects to| PopularProgramsRM
-    AdherenceCalculatedEvent -.->|projects to| ProgramStatsRM
+    %% Event to Read Models (via Event Bus)
+    ProgramEventBus -.->|projects to| ProgramLibraryRM
+    ProgramEventBus -.->|projects to| ProgramDetailsRM
+    ProgramEventBus -.->|projects to| ProgramTemplatesRM
+    ProgramEventBus -.->|projects to| AssignedProgramsRM
+    ProgramEventBus -.->|projects to| ProgramProgressRM
+    ProgramEventBus -.->|projects to| PopularProgramsRM
+    ProgramEventBus -.->|projects to| ProgramStatsRM
+    ProgramEventBus -.->|projects to| RecommendationsRM
+    ProgramEventBus -.->|projects to| ProgramSearchRM
     
-    %% Sagas
+    %% Events to Event Bus
+    ProgramCreatedEvent -.->|publishes to| ProgramEventBus
+    ProgramUpdatedEvent -.->|publishes to| ProgramEventBus
+    ProgramAssignedEvent -.->|publishes to| ProgramEventBus
+    ProgramCompletedEvent -.->|publishes to| ProgramEventBus
+    ProgramModifiedEvent -.->|publishes to| ProgramEventBus
+    ProgressUpdatedEvent -.->|publishes to| ProgramEventBus
+    TemplateCreatedEvent -.->|publishes to| ProgramEventBus
+    AssignmentCancelledEvent -.->|publishes to| ProgramEventBus
+    AdherenceCalculatedEvent -.->|publishes to| ProgramEventBus
+    ProgramPublishedEvent -.->|publishes to| ProgramEventBus
+    
+    %% Sagas listen to events
     ProgramAssignmentSaga -.->|listens to| ProgramAssignedEvent
     ProgramCompletionSaga -.->|listens to| ProgramCompletedEvent
     ProgressTrackingSaga -.->|listens to| ProgressUpdatedEvent
     AdaptiveProgramSaga -.->|listens to| AdherenceCalculatedEvent
+    ProgramRecommendationSaga -.->|listens to| ProgramCompletedEvent
     
-    %% External References
-    WorkoutContext["💪 Workout Context<br/><<ExternalContext>>"]
-    ExerciseContext["🎯 Exercise Context<br/><<ExternalContext>>"]
-    ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+    %% Context Bus to External Event Bus
+    ProgramEventBus -.->|integrates with| ExternalContexts
     
     %% ===== STYLING =====
     classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
@@ -248,15 +324,21 @@ graph TB
     classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
     classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
     classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
+    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
+    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
     
     class Program,ProgramTemplate,ProgramAssignment aggregate
     class ProgramScheduleItem,ProgramModification entity
     class ProgramId,ProgramName,ProgramDuration,ProgressPercentage,AdherenceScore valueObject
-    class IProgramRepo,ITemplateRepo,IAssignmentRepo,IScheduleRepo,IModificationRepo,IWorkoutService,IExerciseService,IProgressTracker,INotificationService,IAnalyticsService,IAIRecommendationService port
-    class MongoProgramRepo,MongoTemplateRepo,MongoAssignmentRepo,MongoScheduleRepo,MongoModificationRepo,WorkoutContextAdapter,ExerciseContextAdapter,ProgressionContextAdapter,FCMNotificationAdapter,MixpanelAnalyticsAdapter,OpenAIRecommendationAdapter,ProgramCache,TemplateCache,AssignmentCache,RecommendationCache adapter
-    class MongoDB,RedisCache,FCMService,MixpanelAPI,OpenAIAPI,ElasticsearchCluster external
-    class CreateProgramCmd,UpdateProgramCmd,AssignProgramCmd,ModifyAssignmentCmd,CompleteProgramCmd,SaveAsTemplateCmd,CloneProgramCmd,UpdateProgressCmd,CancelAssignmentCmd command
-    class GetProgramQuery,GetProgramTemplatesQuery,GetAssignedProgramsQuery,GetProgramProgressQuery,GetProgramLibraryQuery,GetPopularProgramsQuery,GetProgramStatsQuery,RecommendProgramsQuery query
-    class ProgramCreatedEvent,ProgramUpdatedEvent,ProgramAssignedEvent,ProgramCompletedEvent,ProgramModifiedEvent,ProgressUpdatedEvent,TemplateCreatedEvent,AssignmentCancelledEvent,AdherenceCalculatedEvent event
-    class ProgramLibraryRM,ProgramDetailsRM,ProgramTemplatesRM,AssignedProgramsRM,ProgramProgressRM,PopularProgramsRM,ProgramStatsRM,RecommendationsRM readModel
-    class WorkoutContext,ExerciseContext,ProgressionContext externalContext
+    class IProgramRepo,ITemplateRepo,IAssignmentRepo,IScheduleRepo,IModificationRepo,IWorkoutService,IExerciseService,IProgressTracker,INotificationService,IAnalyticsService,IAIRecommendationService,IUserService,IIdentityService port
+    class MongoProgramRepo,MongoTemplateRepo,MongoAssignmentRepo,MongoScheduleRepo,MongoModificationRepo,WorkoutContextAdapter,ExerciseContextAdapter,ProgressionContextAdapter,FCMNotificationAdapter,MixpanelAnalyticsAdapter,OpenAIRecommendationAdapter,UserContextAdapter,IdentityContextAdapter,ProgramCache,TemplateCache,AssignmentCache,RecommendationCache adapter
+    class MongoDB,RedisCache,FCMService,MixpanelAPI,OpenAIAPI,ElasticsearchCluster,DataWarehouse external
+    class CreateProgramCmd,UpdateProgramCmd,AssignProgramCmd,ModifyAssignmentCmd,CompleteProgramCmd,SaveAsTemplateCmd,CloneProgramCmd,UpdateProgressCmd,CancelAssignmentCmd,PublishProgramCmd command
+    class GetProgramQuery,GetProgramTemplatesQuery,GetAssignedProgramsQuery,GetProgramProgressQuery,GetProgramLibraryQuery,GetPopularProgramsQuery,GetProgramStatsQuery,RecommendProgramsQuery,SearchProgramsQuery query
+    class ProgramCreatedEvent,ProgramUpdatedEvent,ProgramAssignedEvent,ProgramCompletedEvent,ProgramModifiedEvent,ProgressUpdatedEvent,TemplateCreatedEvent,AssignmentCancelledEvent,AdherenceCalculatedEvent,ProgramPublishedEvent event
+    class ProgramLibraryRM,ProgramDetailsRM,ProgramTemplatesRM,AssignedProgramsRM,ProgramProgressRM,PopularProgramsRM,ProgramStatsRM,RecommendationsRM,ProgramSearchRM readModel
+    class WorkoutContext,ExerciseContext,ProgressionContext,UserContext,IdentityContext,NotificationContext,TrainerContext externalContext
+    class ProgramApplicationService applicationService
+    class ProgramCommandBus,ProgramQueryBus,ProgramEventBus contextBus
+    class ProgramPolicyEnforcementPoint,ProgramAccessPolicyService,ProgramContentPolicyService policy

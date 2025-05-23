@@ -2,6 +2,43 @@ graph TB
     %% ===== WORKOUT MANAGEMENT CONTEXT =====
     subgraph WorkoutContext ["💪 Workout Management Context"]
         
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph WorkoutApplicationLayer ["Application Service Layer <<Application>>"]
+            WorkoutApplicationService["💪 Workout Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph WorkoutCommands ["Commands"]
+                CreateWorkoutCmd["➕ Create Workout<br/><<Command>>"]
+                UpdateWorkoutCmd["✏️ Update Workout<br/><<Command>>"]
+                AddBlockCmd["📦 Add Block<br/><<Command>>"]
+                AddExerciseCmd["🎯 Add Exercise<br/><<Command>>"]
+                ReorderExercisesCmd["🔄 Reorder Exercises<br/><<Command>>"]
+                SaveAsTemplateCmd["📋 Save as Template<br/><<Command>>"]
+                UploadWorkoutMediaCmd["📁 Upload Media<br/><<Command>>"]
+                DeleteWorkoutCmd["🗑️ Delete Workout<br/><<Command>>"]
+                PublishWorkoutCmd["🌐 Publish Workout<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph WorkoutQueries ["Queries"]
+                GetWorkoutQuery["💪 Get Workout<br/><<Query>>"]
+                GetWorkoutTemplatesQuery["📋 Get Templates<br/><<Query>>"]
+                GetWorkoutHistoryQuery["📅 Get History<br/><<Query>>"]
+                SearchWorkoutsQuery["🔍 Search Workouts<br/><<Query>>"]
+                GetPopularWorkoutsQuery["⭐ Get Popular<br/><<Query>>"]
+                GetWorkoutStatsQuery["📊 Get Stats<br/><<Query>>"]
+                GetUserWorkoutsQuery["👤 Get User Workouts<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph WorkoutSagas ["Sagas"]
+                WorkoutCreationSaga["💪 Workout Creation<br/><<Saga>>"]
+                MediaProcessingSaga["📁 Media Processing<br/><<Saga>>"]
+                WorkoutSharingSaga["🔗 Workout Sharing<br/><<Saga>>"]
+                WorkoutValidationSaga["✅ Workout Validation<br/><<Saga>>"]
+            end
+        end
+        
         %% ===== DOMAIN LAYER (HEXAGON CORE) =====
         subgraph WorkoutDomain ["Domain Layer <<DomainCore>>"]
             direction TB
@@ -27,6 +64,7 @@ graph TB
             WorkoutPlanningService["📝 Workout Planning<br/><<DomainService>>"]
             WorkoutValidationService["✅ Workout Validation<br/><<DomainService>>"]
             CalorieCalculationService["🔥 Calorie Calculation<br/><<DomainService>>"]
+            WorkoutSharingService["🔗 Workout Sharing<br/><<DomainService>>"]
         end
         
         %% ===== PORTS (DOMAIN INTERFACES) =====
@@ -44,40 +82,8 @@ graph TB
             IMediaProcessingService["🖼️ IMediaProcessingService<br/><<Port>>"]
             INotificationService["🔔 INotificationService<br/><<Port>>"]
             IAnalyticsService["📊 IAnalyticsService<br/><<Port>>"]
-        end
-        
-        %% ===== APPLICATION LAYER =====
-        subgraph WorkoutApplication ["Application Layer <<Application>>"]
-            direction TB
-            
-            %% Commands
-            subgraph WorkoutCommands ["Commands"]
-                CreateWorkoutCmd["➕ Create Workout<br/><<Command>>"]
-                UpdateWorkoutCmd["✏️ Update Workout<br/><<Command>>"]
-                AddBlockCmd["📦 Add Block<br/><<Command>>"]
-                AddExerciseCmd["🎯 Add Exercise<br/><<Command>>"]
-                ReorderExercisesCmd["🔄 Reorder Exercises<br/><<Command>>"]
-                SaveAsTemplateCmd["📋 Save as Template<br/><<Command>>"]
-                UploadWorkoutMediaCmd["📁 Upload Media<br/><<Command>>"]
-                DeleteWorkoutCmd["🗑️ Delete Workout<br/><<Command>>"]
-            end
-            
-            %% Queries
-            subgraph WorkoutQueries ["Queries"]
-                GetWorkoutQuery["💪 Get Workout<br/><<Query>>"]
-                GetWorkoutTemplatesQuery["📋 Get Templates<br/><<Query>>"]
-                GetWorkoutHistoryQuery["📅 Get History<br/><<Query>>"]
-                SearchWorkoutsQuery["🔍 Search Workouts<br/><<Query>>"]
-                GetPopularWorkoutsQuery["⭐ Get Popular<br/><<Query>>"]
-                GetWorkoutStatsQuery["📊 Get Stats<br/><<Query>>"]
-            end
-            
-            %% Sagas
-            subgraph WorkoutSagas ["Sagas"]
-                WorkoutCreationSaga["💪 Workout Creation<br/><<Saga>>"]
-                MediaProcessingSaga["📁 Media Processing<br/><<Saga>>"]
-                WorkoutSharingSaga["🔗 Workout Sharing<br/><<Saga>>"]
-            end
+            IUserService["👤 IUserService<br/><<Port>>"]
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
         end
         
         %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
@@ -98,6 +104,8 @@ graph TB
                 CloudinaryMediaAdapter["☁️ Cloudinary Media<br/><<MediaAdapter>>"]
                 FCMNotificationAdapter["📱 FCM Notification<br/><<NotificationAdapter>>"]
                 MixpanelAnalyticsAdapter["📊 Mixpanel Analytics<br/><<AnalyticsAdapter>>"]
+                UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
             end
             
             %% Cache Adapters
@@ -105,7 +113,21 @@ graph TB
                 WorkoutCache["💾 Workout Cache<br/><<CacheAdapter>>"]
                 TemplateCache["💾 Template Cache<br/><<CacheAdapter>>"]
                 PopularWorkoutsCache["💾 Popular Cache<br/><<CacheAdapter>>"]
+                MediaCache["💾 Media Cache<br/><<CacheAdapter>>"]
             end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph WorkoutContextBus ["Context Bus Interfaces"]
+            WorkoutCommandBus["⚡ Workout Command Bus<br/><<CommandBus>>"]
+            WorkoutQueryBus["❓ Workout Query Bus<br/><<QueryBus>>"]
+            WorkoutEventBus["📨 Workout Event Bus<br/><<EventBus>>"]
+        end
+        
+        %% ===== POLICY ENFORCEMENT =====
+        subgraph WorkoutPolicyLayer ["Policy Enforcement Layer"]
+            WorkoutPolicyEnforcementPoint["🛡️ Workout Policy Enforcement Point<br/><<PEP>>"]
+            ContentModerationService["🔍 Content Moderation Service<br/><<Moderation>>"]
         end
     end
     
@@ -117,6 +139,7 @@ graph TB
         FCMService["📱 FCM Service<br/><<NotificationService>>"]
         MixpanelAPI["📊 Mixpanel API<br/><<AnalyticsService>>"]
         CDN["🌐 CDN<br/><<ContentDelivery>>"]
+        ElasticsearchCluster["🔍 Elasticsearch<br/><<SearchEngine>>"]
     end
     
     %% ===== EVENTS =====
@@ -129,6 +152,7 @@ graph TB
         TemplateCreatedEvent["📋 Template Created<br/><<DomainEvent>>"]
         MediaUploadedEvent["📁 Media Uploaded<br/><<DomainEvent>>"]
         WorkoutSharedEvent["🔗 Workout Shared<br/><<DomainEvent>>"]
+        WorkoutPublishedEvent["🌐 Workout Published<br/><<DomainEvent>>"]
     end
     
     %% ===== READ MODELS =====
@@ -139,9 +163,41 @@ graph TB
         PopularWorkoutsRM["⭐ Popular Workouts<br/><<ReadModel>>"]
         WorkoutStatsRM["📊 Workout Stats<br/><<ReadModel>>"]
         UserWorkoutsRM["👤 User Workouts<br/><<ReadModel>>"]
+        WorkoutSearchRM["🔍 Workout Search<br/><<ReadModel>>"]
+    end
+    
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        ExerciseContext["🎯 Exercise Context<br/><<ExternalContext>>"]
+        ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+        UserContext["👤 User Context<br/><<ExternalContext>>"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        NotificationContext["🔔 Notification Context<br/><<ExternalContext>>"]
     end
     
     %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    WorkoutApplicationService --> WorkoutCommandBus
+    WorkoutApplicationService --> WorkoutQueryBus
+    WorkoutApplicationService --> WorkoutEventBus
+    
+    %% Commands and Queries through Application Service
+    WorkoutCommands --> WorkoutApplicationService
+    WorkoutQueries --> WorkoutApplicationService
+    WorkoutSagas --> WorkoutApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    WorkoutApplicationService --> Workout
+    WorkoutApplicationService --> WorkoutTemplate
+    WorkoutApplicationService --> WorkoutPlanningService
+    WorkoutApplicationService --> WorkoutValidationService
+    WorkoutApplicationService --> CalorieCalculationService
+    WorkoutApplicationService --> WorkoutSharingService
+    
+    %% Policy Enforcement Integration
+    WorkoutApplicationService --> WorkoutPolicyEnforcementPoint
+    WorkoutPolicyEnforcementPoint --> ContentModerationService
     
     %% Domain to Ports (Dependency Inversion)
     Workout -->|uses| IWorkoutRepo
@@ -150,12 +206,9 @@ graph TB
     WorkoutTemplate -->|uses| IWorkoutTemplateRepo
     WorkoutPlanningService -->|uses| IAnalyticsService
     CalorieCalculationService -->|uses| IExerciseService
-    
-    %% Application to Domain
-    WorkoutCommands -->|orchestrates| Workout
-    WorkoutCommands -->|orchestrates| WorkoutTemplate
-    WorkoutQueries -->|reads| Workout
-    WorkoutQueries -->|reads| WorkoutTemplate
+    WorkoutSharingService -->|uses| INotificationService
+    WorkoutValidationService -->|uses| IUserService
+    WorkoutValidationService -->|uses| IIdentityService
     
     %% Ports to Adapters (Implementation)
     IWorkoutRepo -.->|implements| MongoWorkoutRepo
@@ -166,6 +219,8 @@ graph TB
     IMediaProcessingService -.->|implements| CloudinaryMediaAdapter
     INotificationService -.->|implements| FCMNotificationAdapter
     IAnalyticsService -.->|implements| MixpanelAnalyticsAdapter
+    IUserService -.->|implements| UserContextAdapter
+    IIdentityService -.->|implements| IdentityContextAdapter
     
     %% Adapters to External Systems
     MongoWorkoutRepo -->|connects| MongoDB
@@ -174,6 +229,7 @@ graph TB
     WorkoutCache -->|connects| RedisCache
     TemplateCache -->|connects| RedisCache
     PopularWorkoutsCache -->|connects| RedisCache
+    MediaCache -->|connects| RedisCache
     CloudinaryMediaAdapter -->|connects| CloudinaryAPI
     CloudinaryMediaAdapter -->|serves via| CDN
     FCMNotificationAdapter -->|connects| FCMService
@@ -182,6 +238,9 @@ graph TB
     %% Cross-Context Communication
     ExerciseContextAdapter -.->|async calls| ExerciseContext
     ProgressionContextAdapter -.->|async calls| ProgressionContext
+    UserContextAdapter -.->|async calls| UserContext
+    IdentityContextAdapter -.->|async calls| IdentityContext
+    FCMNotificationAdapter -.->|async calls| NotificationContext
     
     %% Domain Events
     Workout -.->|publishes| WorkoutCreatedEvent
@@ -192,23 +251,36 @@ graph TB
     WorkoutTemplate -.->|publishes| TemplateCreatedEvent
     Media -.->|publishes| MediaUploadedEvent
     Workout -.->|publishes| WorkoutSharedEvent
+    Workout -.->|publishes| WorkoutPublishedEvent
     
-    %% Event to Read Models
-    WorkoutCreatedEvent -.->|projects to| WorkoutCatalogRM
-    WorkoutUpdatedEvent -.->|projects to| WorkoutDetailsRM
-    TemplateCreatedEvent -.->|projects to| WorkoutTemplatesRM
-    WorkoutCreatedEvent -.->|projects to| PopularWorkoutsRM
-    WorkoutSharedEvent -.->|projects to| PopularWorkoutsRM
-    ExerciseAddedEvent -.->|projects to| WorkoutStatsRM
+    %% Event to Read Models (via Event Bus)
+    WorkoutEventBus -.->|projects to| WorkoutCatalogRM
+    WorkoutEventBus -.->|projects to| WorkoutDetailsRM
+    WorkoutEventBus -.->|projects to| WorkoutTemplatesRM
+    WorkoutEventBus -.->|projects to| PopularWorkoutsRM
+    WorkoutEventBus -.->|projects to| WorkoutStatsRM
+    WorkoutEventBus -.->|projects to| UserWorkoutsRM
+    WorkoutEventBus -.->|projects to| WorkoutSearchRM
     
-    %% Sagas
+    %% Events to Event Bus
+    WorkoutCreatedEvent -.->|publishes to| WorkoutEventBus
+    WorkoutUpdatedEvent -.->|publishes to| WorkoutEventBus
+    WorkoutDeletedEvent -.->|publishes to| WorkoutEventBus
+    BlockAddedEvent -.->|publishes to| WorkoutEventBus
+    ExerciseAddedEvent -.->|publishes to| WorkoutEventBus
+    TemplateCreatedEvent -.->|publishes to| WorkoutEventBus
+    MediaUploadedEvent -.->|publishes to| WorkoutEventBus
+    WorkoutSharedEvent -.->|publishes to| WorkoutEventBus
+    WorkoutPublishedEvent -.->|publishes to| WorkoutEventBus
+    
+    %% Sagas listen to events
     WorkoutCreationSaga -.->|listens to| WorkoutCreatedEvent
     MediaProcessingSaga -.->|listens to| MediaUploadedEvent
     WorkoutSharingSaga -.->|listens to| WorkoutSharedEvent
+    WorkoutValidationSaga -.->|listens to| WorkoutPublishedEvent
     
-    %% External References
-    ExerciseContext["🎯 Exercise Context<br/><<ExternalContext>>"]
-    ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+    %% Context Bus to External Event Bus
+    WorkoutEventBus -.->|integrates with| ExternalContexts
     
     %% ===== STYLING =====
     classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
@@ -222,15 +294,21 @@ graph TB
     classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
     classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
     classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
+    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
+    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
     
     class Workout,WorkoutTemplate aggregate
     class WorkoutBlock,WorkoutExercise,Media,MediaVariant entity
     class WorkoutId,WorkoutName,Duration,IntensityLevel,RestPeriod valueObject
-    class IWorkoutRepo,IWorkoutTemplateRepo,IMediaRepo,IExerciseService,IProgressionService,IMediaProcessingService,INotificationService,IAnalyticsService port
-    class MongoWorkoutRepo,MongoTemplateRepo,MongoMediaRepo,ExerciseContextAdapter,ProgressionContextAdapter,CloudinaryMediaAdapter,FCMNotificationAdapter,MixpanelAnalyticsAdapter,WorkoutCache,TemplateCache,PopularWorkoutsCache adapter
-    class MongoDB,RedisCache,CloudinaryAPI,FCMService,MixpanelAPI,CDN external
-    class CreateWorkoutCmd,UpdateWorkoutCmd,AddBlockCmd,AddExerciseCmd,ReorderExercisesCmd,SaveAsTemplateCmd,UploadWorkoutMediaCmd,DeleteWorkoutCmd command
-    class GetWorkoutQuery,GetWorkoutTemplatesQuery,GetWorkoutHistoryQuery,SearchWorkoutsQuery,GetPopularWorkoutsQuery,GetWorkoutStatsQuery query
-    class WorkoutCreatedEvent,WorkoutUpdatedEvent,WorkoutDeletedEvent,BlockAddedEvent,ExerciseAddedEvent,TemplateCreatedEvent,MediaUploadedEvent,WorkoutSharedEvent event
-    class WorkoutCatalogRM,WorkoutDetailsRM,WorkoutTemplatesRM,PopularWorkoutsRM,WorkoutStatsRM,UserWorkoutsRM readModel
-    class ExerciseContext,ProgressionContext externalContext
+    class IWorkoutRepo,IWorkoutTemplateRepo,IMediaRepo,IExerciseService,IProgressionService,IMediaProcessingService,INotificationService,IAnalyticsService,IUserService,IIdentityService port
+    class MongoWorkoutRepo,MongoTemplateRepo,MongoMediaRepo,ExerciseContextAdapter,ProgressionContextAdapter,CloudinaryMediaAdapter,FCMNotificationAdapter,MixpanelAnalyticsAdapter,UserContextAdapter,IdentityContextAdapter,WorkoutCache,TemplateCache,PopularWorkoutsCache,MediaCache adapter
+    class MongoDB,RedisCache,CloudinaryAPI,FCMService,MixpanelAPI,CDN,ElasticsearchCluster external
+    class CreateWorkoutCmd,UpdateWorkoutCmd,AddBlockCmd,AddExerciseCmd,ReorderExercisesCmd,SaveAsTemplateCmd,UploadWorkoutMediaCmd,DeleteWorkoutCmd,PublishWorkoutCmd command
+    class GetWorkoutQuery,GetWorkoutTemplatesQuery,GetWorkoutHistoryQuery,SearchWorkoutsQuery,GetPopularWorkoutsQuery,GetWorkoutStatsQuery,GetUserWorkoutsQuery query
+    class WorkoutCreatedEvent,WorkoutUpdatedEvent,WorkoutDeletedEvent,BlockAddedEvent,ExerciseAddedEvent,TemplateCreatedEvent,MediaUploadedEvent,WorkoutSharedEvent,WorkoutPublishedEvent event
+    class WorkoutCatalogRM,WorkoutDetailsRM,WorkoutTemplatesRM,PopularWorkoutsRM,WorkoutStatsRM,UserWorkoutsRM,WorkoutSearchRM readModel
+    class ExerciseContext,ProgressionContext,UserContext,IdentityContext,NotificationContext externalContext
+    class WorkoutApplicationService applicationService
+    class WorkoutCommandBus,WorkoutQueryBus,WorkoutEventBus contextBus
+    class WorkoutPolicyEnforcementPoint,ContentModerationService policy

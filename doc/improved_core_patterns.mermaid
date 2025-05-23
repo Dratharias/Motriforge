@@ -1,0 +1,375 @@
+classDiagram
+    %% ===== PRESENTATION LAYER =====
+    class APIGateway {
+        <<Gateway>>
+        -routeResolver: RouteResolver
+        -contextRouter: ContextRouter
+        +route(request: HttpRequest): Promise~HttpResponse~
+        +routeToContext(context: string, request: HttpRequest): Promise~HttpResponse~
+        +authenticate(credentials: Credentials): Promise~SecurityContext~
+        +authorize(action: string, resource: string): Promise~boolean~
+    }
+    
+    %% ===== CROSS-CUTTING MIDDLEWARE FRAMEWORK =====
+    class MiddlewareFramework {
+        <<Cross-Cutting Framework>>
+        -middlewareChain: MiddlewareChain
+        -middlewareRegistry: MiddlewareRegistry
+        -policyEnforcementPoint: PolicyEnforcementPoint
+        +registerMiddleware(middleware: IMiddleware): void
+        +executeChain(context: RequestContext): Promise~RequestContext~
+        +enforcePolicy(policy: Policy, context: RequestContext): Promise~boolean~
+    }
+    
+    class MiddlewareChain {
+        <<Chain of Responsibility>>
+        -middlewares: IMiddleware[]
+        -registry: MiddlewareRegistry
+        +add(middleware: IMiddleware): MiddlewareChain
+        +execute(context: RequestContext): Promise~RequestContext~
+        +remove(middlewareName: string): boolean
+    }
+    
+    class PolicyEnforcementPoint {
+        <<Security Pattern>>
+        -policyDecisionPoint: PolicyDecisionPoint
+        -policyInformationPoint: PolicyInformationPoint
+        +enforcePolicy(policy: Policy, context: SecurityContext): Promise~boolean~
+        +evaluatePermissions(subject: Subject, resource: Resource): Promise~Decision~
+        +auditDecision(decision: Decision, context: SecurityContext): Promise~void~
+    }
+    
+    class IMiddleware {
+        <<Strategy Pattern>>
+        +execute(context: RequestContext, next: NextFunction): Promise~void~
+        +getName(): string
+        +isEnabled(): boolean
+        +getPriority(): number
+    }
+    
+    %% ===== APPLICATION LAYER - DECOMPOSED SERVICES =====
+    class ApplicationServiceRegistry {
+        <<Service Locator>>
+        -services: Map~string, IApplicationService~
+        -contextMapping: Map~string, string[]~
+        +getService~T~(contextName: string): T
+        +registerService(contextName: string, service: IApplicationService): void
+        +getServicesForContext(contextName: string): IApplicationService[]
+    }
+    
+    class IApplicationService {
+        <<Interface>>
+        +executeCommand~T~(command: ICommand~T~): Promise~T~
+        +executeQuery~T~(query: IQuery~T~): Promise~T~
+        +publishEvent(event: DomainEvent): Promise~void~
+        +getContextName(): string
+    }
+    
+    class UserApplicationService {
+        <<Application Service>>
+        -commandBus: ICommandBus
+        -queryBus: IQueryBus
+        -eventBus: IEventBus
+        -userContext: UserBoundedContext
+        +createUser(command: CreateUserCommand): Promise~User~
+        +updateUser(command: UpdateUserCommand): Promise~void~
+        +getUser(query: GetUserQuery): Promise~UserReadModel~
+        +handleUserEvent(event: UserDomainEvent): Promise~void~
+    }
+    
+    class WorkoutApplicationService {
+        <<Application Service>>
+        -commandBus: ICommandBus
+        -queryBus: IQueryBus
+        -eventBus: IEventBus
+        -workoutContext: WorkoutBoundedContext
+        +createWorkout(command: CreateWorkoutCommand): Promise~Workout~
+        +executeWorkout(command: ExecuteWorkoutCommand): Promise~WorkoutSession~
+        +getWorkouts(query: GetWorkoutsQuery): Promise~WorkoutReadModel[]~
+        +handleWorkoutEvent(event: WorkoutDomainEvent): Promise~void~
+    }
+    
+    class ProgressionApplicationService {
+        <<Application Service>>
+        -commandBus: ICommandBus
+        -queryBus: IQueryBus
+        -eventBus: IEventBus
+        -progressionContext: ProgressionBoundedContext
+        +recordProgress(command: RecordProgressCommand): Promise~ProgressRecord~
+        +setGoal(command: SetGoalCommand): Promise~Goal~
+        +getProgressInsights(query: GetProgressQuery): Promise~ProgressInsights~
+        +handleProgressEvent(event: ProgressDomainEvent): Promise~void~
+    }
+    
+    %% ===== IDENTITY & ACCESS MANAGEMENT =====
+    class IdentityContext {
+        <<Identity Management>>
+        -identityProvider: IIdentityProvider
+        -accessManager: IAccessManager
+        -sessionManager: ISessionManager
+        -credentialManager: ICredentialManager
+        +authenticate(credentials: Credentials): Promise~Identity~
+        +createSession(identity: Identity): Promise~Session~
+        +validateSession(sessionToken: string): Promise~Session~
+        +manageCredentials(identity: Identity): Promise~void~
+    }
+    
+    class AccessManagementService {
+        <<Access Control>>
+        -roleManager: IRoleManager
+        -permissionManager: IPermissionManager
+        -policyEvaluator: IPolicyEvaluator
+        +assignRole(subject: Subject, role: Role): Promise~void~
+        +grantPermission(subject: Subject, permission: Permission): Promise~void~
+        +evaluateAccess(subject: Subject, resource: Resource, action: Action): Promise~boolean~
+        +enforcePolicy(policy: Policy, context: AccessContext): Promise~Decision~
+    }
+    
+    class SessionManagementService {
+        <<Session Management>>
+        -sessionStore: ISessionStore
+        -tokenManager: ITokenManager
+        -securityMonitor: ISecurityMonitor
+        +createSession(identity: Identity, device: Device): Promise~Session~
+        +refreshSession(refreshToken: string): Promise~Session~
+        +terminateSession(sessionId: string): Promise~void~
+        +monitorSessions(): Promise~SecurityReport~
+    }
+    
+    %% ===== ENHANCED BOUNDED CONTEXT STRUCTURE =====
+    class BoundedContext {
+        <<Domain-Driven Design>>
+        -contextName: string
+        -applicationService: IApplicationService
+        -aggregateRoots: Map~string, AggregateRoot~
+        -domainServices: DomainService[]
+        -ports: Port[]
+        +getApplicationService(): IApplicationService
+        +getAggregate~T~(id: string): Promise~T~
+        +getDomainService~T~(serviceName: string): T
+    }
+    
+    class UserBoundedContext {
+        <<User Domain>>
+        -userApplicationService: UserApplicationService
+        -userAggregate: User
+        -userActivityAggregate: UserActivity
+        -userFavoritesAggregate: UserFavorites
+        +processUserCommand(command: IUserCommand): Promise~void~
+        +handleUserQuery(query: IUserQuery): Promise~any~
+        +manageUserLifecycle(): Promise~void~
+    }
+    
+    class WorkoutBoundedContext {
+        <<Workout Domain>>
+        -workoutApplicationService: WorkoutApplicationService
+        -workoutAggregate: Workout
+        -workoutTemplateAggregate: WorkoutTemplate
+        +processWorkoutCommand(command: IWorkoutCommand): Promise~void~
+        +handleWorkoutQuery(query: IWorkoutQuery): Promise~any~
+        +orchestrateWorkoutExecution(): Promise~void~
+    }
+    
+    class ProgressionBoundedContext {
+        <<Progression Domain>>
+        -progressionApplicationService: ProgressionApplicationService
+        -progressionAggregate: ProgressionTracking
+        -personalRecordAggregate: PersonalRecord
+        -goalAggregate: GoalTracking
+        +processProgressionCommand(command: IProgressionCommand): Promise~void~
+        +handleProgressionQuery(query: IProgressionQuery): Promise~any~
+        +analyzeProgressionTrends(): Promise~void~
+    }
+    
+    %% ===== ENHANCED CQRS WITH CONTEXT SEPARATION =====
+    class ContextualCommandBus {
+        <<CQRS Pattern>>
+        -contextHandlers: Map~string, HandlerRegistry~
+        -commandPipeline: CommandPipeline
+        -eventStore: IEventStore
+        +dispatch~T~(contextName: string, command: ICommand~T~): Promise~T~
+        +registerContextHandler(contextName: string, commandType: string, handler: ICommandHandler): void
+        +validateCommand(command: ICommand): ValidationResult
+        +auditCommand(command: ICommand, result: any): Promise~void~
+    }
+    
+    class ContextualQueryBus {
+        <<CQRS Pattern>>
+        -contextHandlers: Map~string, HandlerRegistry~
+        -cacheStrategy: QueryCacheStrategy
+        -readModelStore: IReadModelStore
+        +dispatch~T~(contextName: string, query: IQuery~T~): Promise~T~
+        +registerContextHandler(contextName: string, queryType: string, handler: IQueryHandler): void
+        +getCachedResult~T~(contextName: string, query: IQuery~T~): Promise~T | null~
+        +invalidateContext(contextName: string): Promise~void~
+    }
+    
+    class EventBus {
+        <<Event Sourcing Pattern>>
+        -eventStore: IEventStore
+        -contextSubscribers: Map~string, EventSubscriber[]~
+        -sagaOrchestrator: ISagaOrchestrator
+        -projectionEngine: IProjectionEngine
+        +publishToContext(contextName: string, event: DomainEvent): Promise~void~
+        +subscribeByContext(contextName: string, eventType: string, handler: IEventHandler): void
+        +publishCrossContext(event: IntegrationEvent): Promise~void~
+        +replay(contextName: string, aggregateId: string): Promise~DomainEvent[]~
+    }
+    
+    %% ===== ENHANCED PLUGIN SYSTEM WITH SECURITY =====
+    class PluginManager {
+        <<Plugin Pattern>>
+        -plugins: Map~string, Plugin~
+        -sandbox: PluginSandbox
+        -versionManager: IVersionManager
+        -securityGateway: PluginSecurityGateway
+        +loadPlugin(pluginId: string): Promise~void~
+        +executePlugin~T~(pluginId: string, method: string, args: any[]): Promise~T~
+        +validatePluginSecurity(plugin: Plugin): Promise~SecurityValidation~
+        +enforcePluginPolicy(plugin: Plugin, action: string): Promise~boolean~
+    }
+    
+    class PluginSecurityGateway {
+        <<Security Gateway>>
+        -policyEnforcementPoint: PolicyEnforcementPoint
+        -securityValidator: ISecurityValidator
+        -auditLogger: IAuditLogger
+        +validatePluginExecution(plugin: Plugin, action: string): Promise~boolean~
+        +enforceSecurityPolicy(plugin: Plugin, context: SecurityContext): Promise~Decision~
+        +auditPluginActivity(plugin: Plugin, activity: Activity): Promise~void~
+        +quarantinePlugin(pluginId: string, reason: string): Promise~void~
+    }
+    
+    %% ===== ENHANCED INFRASTRUCTURE COMPONENTS =====
+    class SecurityContext {
+        <<Security Pattern>>
+        -identity: Identity
+        -session: Session
+        -permissions: Permission[]
+        -roles: Role[]
+        -accessTokens: AccessToken[]
+        +getIdentity(): Identity
+        +getSession(): Session
+        +hasPermission(permission: string): boolean
+        +isInRole(role: string): boolean
+        +getAccessLevel(): AccessLevel
+    }
+    
+    class EventStore {
+        <<Event Sourcing>>
+        -persistence: IEventPersistence
+        -serializer: IEventSerializer
+        -snapshotStore: ISnapshotStore
+        -contextPartitioner: IContextPartitioner
+        +appendByContext(contextName: string, streamId: string, events: DomainEvent[]): Promise~void~
+        +getEventsByContext(contextName: string, streamId: string): Promise~DomainEvent[]~
+        +saveSnapshot(contextName: string, aggregateId: string, snapshot: Snapshot): Promise~void~
+        +getSnapshot(contextName: string, aggregateId: string): Promise~Snapshot | null~
+    }
+    
+    class ReadModelStore {
+        <<CQRS Pattern>>
+        -contextProjections: Map~string, ReadModel[]~
+        -cache: ICacheService
+        -database: IDatabase
+        +projectByContext(contextName: string, event: DomainEvent): Promise~void~
+        +queryByContext~T~(contextName: string, criteria: QueryCriteria): Promise~T[]~
+        +invalidateContext(contextName: string, modelType: string): Promise~void~
+        +getContextStats(contextName: string): Promise~ContextStats~
+    }
+    
+    %% ===== CROSS-CUTTING ENHANCED SERVICES =====
+    class ServiceRegistry {
+        <<Service Locator Pattern>>
+        -contextServices: Map~string, ServiceDescriptor[]~
+        -globalServices: Map~string, ServiceDescriptor~
+        -healthCheckers: Map~string, HealthChecker~
+        -dependencyGraph: DependencyGraph
+        +registerContextService~T~(contextName: string, key: string, factory: ServiceFactory~T~): void
+        +resolveContextService~T~(contextName: string, key: string): T
+        +resolveGlobalService~T~(key: string): T
+        +healthCheckContext(contextName: string): Promise~HealthStatus~
+    }
+    
+    class MetricsCollector {
+        <<Observer Pattern>>
+        -contextCollectors: Map~string, MetricCollector[]~
+        -aggregators: MetricsAggregator[]
+        -publishers: MetricsPublisher[]
+        +recordByContext(contextName: string, metric: Metric): Promise~void~
+        +incrementContext(contextName: string, counter: string): Promise~void~
+        +getContextMetrics(contextName: string): Promise~ContextMetrics~
+        +aggregateAcrossContexts(metricName: string): Promise~AggregatedMetric~
+    }
+    
+    class ConfigurationManager {
+        <<Strategy Pattern>>
+        -contextProviders: Map~string, ConfigProvider[]~
+        -globalProviders: ConfigProvider[]
+        -cache: IConfigCache
+        -watchers: Map~string, ConfigWatcher~
+        +getContextConfig~T~(contextName: string, key: string): T
+        +getGlobalConfig~T~(key: string): T
+        +watchContextConfig(contextName: string, key: string, callback: ConfigCallback): void
+        +reloadContext(contextName: string): Promise~void~
+    }
+    
+    %% ===== RELATIONSHIPS =====
+    
+    %% Presentation to Cross-Cutting Framework
+    APIGateway --> MiddlewareFramework : uses
+    MiddlewareFramework --> MiddlewareChain : manages
+    MiddlewareFramework --> PolicyEnforcementPoint : enforces policies
+    MiddlewareChain --> IMiddleware : executes chain
+    
+    %% Cross-Cutting to Application Services
+    MiddlewareFramework --> ApplicationServiceRegistry : routes to services
+    ApplicationServiceRegistry --> IApplicationService : manages services
+    
+    %% Application Service Implementations
+    IApplicationService <|-- UserApplicationService : implements
+    IApplicationService <|-- WorkoutApplicationService : implements
+    IApplicationService <|-- ProgressionApplicationService : implements
+    
+    %% Application Services to Bounded Contexts
+    UserApplicationService --> UserBoundedContext : orchestrates
+    WorkoutApplicationService --> WorkoutBoundedContext : orchestrates
+    ProgressionApplicationService --> ProgressionBoundedContext : orchestrates
+    
+    %% Bounded Context Structure
+    BoundedContext <|-- UserBoundedContext : extends
+    BoundedContext <|-- WorkoutBoundedContext : extends
+    BoundedContext <|-- ProgressionBoundedContext : extends
+    BoundedContext --> IApplicationService : contains
+    
+    %% Enhanced CQRS Relationships
+    IApplicationService --> ContextualCommandBus : uses
+    IApplicationService --> ContextualQueryBus : uses
+    IApplicationService --> EventBus : uses
+    
+    ContextualCommandBus --> EventStore : persists events
+    ContextualQueryBus --> ReadModelStore : queries projections
+    EventBus --> ReadModelStore : updates projections
+    
+    %% Identity & Access Management
+    MiddlewareFramework --> IdentityContext : authenticates
+    PolicyEnforcementPoint --> AccessManagementService : authorizes
+    IdentityContext --> SessionManagementService : manages sessions
+    IdentityContext --> AccessManagementService : manages access
+    
+    %% Enhanced Plugin System
+    PluginManager --> PluginSecurityGateway : validates security
+    PluginSecurityGateway --> PolicyEnforcementPoint : enforces policies
+    PluginSecurityGateway --> SecurityContext : uses context
+    
+    %% Cross-Cutting Service Dependencies
+    ApplicationServiceRegistry --> ServiceRegistry : registers services
+    EventStore --> ConfigurationManager : gets config
+    ReadModelStore --> MetricsCollector : records metrics
+    IdentityContext --> SecurityContext : creates context
+    
+    %% Enhanced Infrastructure Relationships
+    EventStore --> MetricsCollector : records metrics
+    ReadModelStore --> MetricsCollector : records metrics
+    PluginManager --> ServiceRegistry : registers plugins
+    PolicyEnforcementPoint --> MetricsCollector : records decisions

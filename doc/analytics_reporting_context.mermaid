@@ -1,0 +1,414 @@
+graph TB
+    %% ===== ANALYTICS & REPORTING CONTEXT =====
+    subgraph AnalyticsContext ["📊 Analytics & Reporting Context"]
+        
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph AnalyticsApplicationLayer ["Application Service Layer <<Application>>"]
+            AnalyticsApplicationService["📊 Analytics Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph AnalyticsCommands ["Commands"]
+                GenerateReportCmd["📄 Generate Report<br/><<Command>>"]
+                ScheduleReportCmd["📅 Schedule Report<br/><<Command>>"]
+                ExportDataCmd["📤 Export Data<br/><<Command>>"]
+                CreateDashboardCmd["📊 Create Dashboard<br/><<Command>>"]
+                UpdateDashboardCmd["✏️ Update Dashboard<br/><<Command>>"]
+                ShareReportCmd["🔗 Share Report<br/><<Command>>"]
+                CreateMetricCmd["📈 Create Metric<br/><<Command>>"]
+                ConfigureKPICmd["🎯 Configure KPI<br/><<Command>>"]
+                SetupDataPipelineCmd["🔄 Setup Data Pipeline<br/><<Command>>"]
+                TriggerETLProcessCmd["⚙️ Trigger ETL Process<br/><<Command>>"]
+                CreateAlertRuleCmd["🚨 Create Alert Rule<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph AnalyticsQueries ["Queries"]
+                GetUserBehaviorQuery["👤 Get User Behavior<br/><<Query>>"]
+                GetWorkoutTrendsQuery["💪 Get Workout Trends<br/><<Query>>"]
+                GetProgressionInsightsQuery["📈 Get Progression Insights<br/><<Query>>"]
+                GetBusinessMetricsQuery["💼 Get Business Metrics<br/><<Query>>"]
+                GetPredictiveAnalyticsQuery["🔮 Get Predictive Analytics<br/><<Query>>"]
+                GetRealtimeMetricsQuery["⚡ Get Realtime Metrics<br/><<Query>>"]
+                GetCustomReportQuery["📋 Get Custom Report<br/><<Query>>"]
+                GetDashboardDataQuery["📊 Get Dashboard Data<br/><<Query>>"]
+                GetEngagementMetricsQuery["🎯 Get Engagement Metrics<br/><<Query>>"]
+                GetPerformanceMetricsQuery["🚀 Get Performance Metrics<br/><<Query>>"]
+                GetRevenueAnalyticsQuery["💰 Get Revenue Analytics<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph AnalyticsSagas ["Sagas"]
+                DataIngestionSaga["📥 Data Ingestion<br/><<Saga>>"]
+                ReportGenerationSaga["📄 Report Generation<br/><<Saga>>"]
+                DataQualityValidationSaga["✅ Data Quality Validation<br/><<Saga>>"]
+                PredictiveModelTrainingSaga["🤖 Model Training<br/><<Saga>>"]
+                AlertProcessingSaga["🚨 Alert Processing<br/><<Saga>>"]
+                DataExportSaga["📤 Data Export<br/><<Saga>>"]
+            end
+        end
+        
+        %% ===== DOMAIN LAYER (HEXAGON CORE) =====
+        subgraph AnalyticsDomain ["Domain Layer <<DomainCore>>"]
+            direction TB
+            
+            %% Aggregates
+            UserBehaviorAnalytics["👤 User Behavior Analytics<br/><<AggregateRoot>>"]
+            WorkoutAnalytics["💪 Workout Analytics<br/><<AggregateRoot>>"]
+            ProgressionAnalytics["📈 Progression Analytics<br/><<AggregateRoot>>"]
+            OrganizationAnalytics["🏢 Organization Analytics<br/><<AggregateRoot>>"]
+            TrainerPerformanceAnalytics["👨‍🏫 Trainer Performance Analytics<br/><<AggregateRoot>>"]
+            BusinessIntelligence["💼 Business Intelligence<br/><<AggregateRoot>>"]
+            
+            %% Entities
+            Report["📄 Report<br/><<Entity>>"]
+            Dashboard["📊 Dashboard<br/><<Entity>>"]
+            Metric["📈 Metric<br/><<Entity>>"]
+            KPI["🎯 KPI<br/><<Entity>>"]
+            DataPipeline["🔄 Data Pipeline<br/><<Entity>>"]
+            AlertRule["🚨 Alert Rule<br/><<Entity>>"]
+            DataExport["📤 Data Export<br/><<Entity>>"]
+            PredictiveModel["🤖 Predictive Model<br/><<Entity>>"]
+            
+            %% Value Objects
+            ReportId["📄 Report ID<br/><<ValueObject>>"]
+            MetricValue["📊 Metric Value<br/><<ValueObject>>"]
+            TimeRange["📅 Time Range<br/><<ValueObject>>"]
+            Aggregation["📈 Aggregation<br/><<ValueObject>>"]
+            Dimension["📐 Dimension<br/><<ValueObject>>"]
+            Filter["🔍 Filter<br/><<ValueObject>>"]
+            Threshold["⚠️ Threshold<br/><<ValueObject>>"]
+            
+            %% Domain Services
+            DataAggregationService["📊 Data Aggregation<br/><<DomainService>>"]
+            ReportGenerationService["📄 Report Generation<br/><<DomainService>>"]
+            PredictiveAnalyticsService["🔮 Predictive Analytics<br/><<DomainService>>"]
+            DataQualityService["✅ Data Quality<br/><<DomainService>>"]
+            MetricsCalculationService["📈 Metrics Calculation<br/><<DomainService>>"]
+            AlertingService["🚨 Alerting<br/><<DomainService>>"]
+            DataVisualizationService["📊 Data Visualization<br/><<DomainService>>"]
+        end
+        
+        %% ===== PORTS (DOMAIN INTERFACES) =====
+        subgraph AnalyticsPorts ["Ports <<Port>>"]
+            direction TB
+            
+            %% Repository Ports
+            IAnalyticsRepo["📊 IAnalyticsRepository<br/><<Port>>"]
+            IDataWarehouse["🏛️ IDataWarehouse<br/><<Port>>"]
+            IReportRepo["📄 IReportRepository<br/><<Port>>"]
+            IDashboardRepo["📊 IDashboardRepository<br/><<Port>>"]
+            IMetricRepo["📈 IMetricRepository<br/><<Port>>"]
+            
+            %% Service Ports
+            IReportGenerator["📄 IReportGenerator<br/><<Port>>"]
+            IPredictiveAnalytics["🔮 IPredictiveAnalytics<br/><<Port>>"]
+            IDataPipeline["🔄 IDataPipeline<br/><<Port>>"]
+            IVisualizationEngine["📊 IVisualizationEngine<br/><<Port>>"]
+            INotificationService["🔔 INotificationService<br/><<Port>>"]
+            IUserService["👤 IUserService<br/><<Port>>"]
+            IWorkoutService["💪 IWorkoutService<br/><<Port>>"]
+            IProgressionService["📈 IProgressionService<br/><<Port>>"]
+            ITrainerService["👨‍🏫 ITrainerService<br/><<Port>>"]
+            IOrganizationService["🏢 IOrganizationService<br/><<Port>>"]
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
+        end
+        
+        %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
+        subgraph AnalyticsAdapters ["Infrastructure Layer <<Adapter>>"]
+            direction TB
+            
+            %% Repository Adapters
+            subgraph AnalyticsRepositoryAdapters ["Repository Adapters"]
+                BigQueryAnalyticsRepo["📊 BigQuery Analytics<br/><<RepositoryAdapter>>"]
+                SnowflakeDataWarehouse["🏛️ Snowflake Data Warehouse<br/><<RepositoryAdapter>>"]
+                MongoReportRepo["🗄️ Mongo Report Repository<br/><<RepositoryAdapter>>"]
+                MongoDashboardRepo["🗄️ Mongo Dashboard Repository<br/><<RepositoryAdapter>>"]
+                TimeSeriesMetricRepo["📈 TimeSeries Metric Repository<br/><<RepositoryAdapter>>"]
+            end
+            
+            %% Service Adapters
+            subgraph AnalyticsServiceAdapters ["Service Adapters"]
+                TableauReportAdapter["📊 Tableau Report<br/><<ReportAdapter>>"]
+                PowerBIReportAdapter["📊 Power BI Report<br/><<ReportAdapter>>"]
+                TensorFlowMLAdapter["🤖 TensorFlow ML<br/><<MLAdapter>>"]
+                ElasticsearchAnalyticsAdapter["🔍 Elasticsearch Analytics<br/><<SearchAdapter>>"]
+                KafkaDataPipelineAdapter["🔄 Kafka Data Pipeline<br/><<PipelineAdapter>>"]
+                D3VisualizationAdapter["📊 D3 Visualization<br/><<VisualizationAdapter>>"]
+                UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
+                WorkoutContextAdapter["💪 Workout Context<br/><<ContextAdapter>>"]
+                ProgressionContextAdapter["📈 Progression Context<br/><<ContextAdapter>>"]
+                TrainerContextAdapter["👨‍🏫 Trainer Context<br/><<ContextAdapter>>"]
+                OrganizationContextAdapter["🏢 Organization Context<br/><<ContextAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
+                FCMNotificationAdapter["📱 FCM Notification<br/><<NotificationAdapter>>"]
+            end
+            
+            %% Cache Adapters
+            subgraph AnalyticsCacheAdapters ["Cache Adapters"]
+                AnalyticsCache["💾 Analytics Cache<br/><<CacheAdapter>>"]
+                ReportCache["💾 Report Cache<br/><<CacheAdapter>>"]
+                DashboardCache["💾 Dashboard Cache<br/><<CacheAdapter>>"]
+                MetricsCache["💾 Metrics Cache<br/><<CacheAdapter>>"]
+            end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph AnalyticsContextBus ["Context Bus Interfaces"]
+            AnalyticsCommandBus["⚡ Analytics Command Bus<br/><<CommandBus>>"]
+            AnalyticsQueryBus["❓ Analytics Query Bus<br/><<QueryBus>>"]
+            AnalyticsEventBus["📨 Analytics Event Bus<br/><<EventBus>>"]
+        end
+        
+        %% ===== POLICY ENFORCEMENT =====
+        subgraph AnalyticsPolicyLayer ["Policy Enforcement Layer"]
+            AnalyticsPolicyEnforcementPoint["🛡️ Analytics Policy Enforcement Point<br/><<PEP>>"]
+            DataPrivacyPolicyService["🔒 Data Privacy Policy<br/><<Policy>>"]
+            DataRetentionPolicyService["🗂️ Data Retention Policy<br/><<Policy>>"]
+            ReportAccessPolicyService["📄 Report Access Policy<br/><<Policy>>"]
+        end
+        
+        %% ===== DATA PROCESSING LAYER =====
+        subgraph DataProcessingLayer ["🔄 Data Processing Layer"]
+            ETLEngine["⚙️ ETL Engine<br/><<Engine>>"]
+            DataExtractor["📥 Data Extractor<br/><<Extractor>>"]
+            DataTransformer["🔄 Data Transformer<br/><<Transformer>>"]
+            DataLoader["📤 Data Loader<br/><<Loader>>"]
+            DataQualityValidator["✅ Data Quality Validator<br/><<Validator>>"]
+            StreamProcessor["🌊 Stream Processor<br/><<Processor>>"]
+        end
+    end
+    
+    %% ===== EXTERNAL SYSTEMS =====
+    subgraph AnalyticsExternal ["🌐 External Systems"]
+        BigQuery["📊 BigQuery<br/><<DataWarehouse>>"]
+        Snowflake["🏛️ Snowflake<br/><<DataWarehouse>>"]
+        MongoDB["🗄️ MongoDB<br/><<Database>>"]
+        InfluxDB["📈 InfluxDB<br/><<TimeSeriesDB>>"]
+        ElasticsearchCluster["🔍 Elasticsearch<br/><<SearchEngine>>"]
+        RedisCache["🔴 Redis<br/><<Cache>>"]
+        KafkaCluster["🔄 Kafka<br/><<MessageBroker>>"]
+        TensorFlowServing["🤖 TensorFlow Serving<br/><<MLService>>"]
+        TableauServer["📊 Tableau Server<br/><<ReportingService>>"]
+        PowerBIService["📊 Power BI Service<br/><<ReportingService>>"]
+        FCMService["📱 FCM Service<br/><<NotificationService>>"]
+        CloudStorage["☁️ Cloud Storage<br/><<DataLake>>"]
+    end
+    
+    %% ===== EVENTS =====
+    subgraph AnalyticsEvents ["📨 Domain Events"]
+        ReportGeneratedEvent["📄 Report Generated<br/><<DomainEvent>>"]
+        DashboardCreatedEvent["📊 Dashboard Created<br/><<DomainEvent>>"]
+        MetricCalculatedEvent["📈 Metric Calculated<br/><<DomainEvent>>"]
+        AlertTriggeredEvent["🚨 Alert Triggered<br/><<DomainEvent>>"]
+        DataQualityIssueEvent["⚠️ Data Quality Issue<br/><<DomainEvent>>"]
+        PredictiveModelUpdatedEvent["🤖 Model Updated<br/><<DomainEvent>>"]
+        DataExportCompletedEvent["📤 Export Completed<br/><<DomainEvent>>"]
+        KPIThresholdBreachedEvent["🎯 KPI Threshold Breached<br/><<DomainEvent>>"]
+        UserBehaviorAnalyzedEvent["👤 User Behavior Analyzed<br/><<DomainEvent>>"]
+        BusinessInsightGeneratedEvent["💡 Insight Generated<br/><<DomainEvent>>"]
+        DataPipelineFailedEvent["❌ Pipeline Failed<br/><<DomainEvent>>"]
+        RealtimeMetricUpdatedEvent["⚡ Realtime Metric Updated<br/><<DomainEvent>>"]
+    end
+    
+    %% ===== READ MODELS =====
+    subgraph AnalyticsReadModels ["📊 Read Models"]
+        UserBehaviorDashboardRM["👤 User Behavior Dashboard<br/><<ReadModel>>"]
+        WorkoutTrendsDashboardRM["💪 Workout Trends Dashboard<br/><<ReadModel>>"]
+        ProgressionInsightsDashboardRM["📈 Progression Insights Dashboard<br/><<ReadModel>>"]
+        BusinessMetricsDashboardRM["💼 Business Metrics Dashboard<br/><<ReadModel>>"]
+        TrainerPerformanceDashboardRM["👨‍🏫 Trainer Performance Dashboard<br/><<ReadModel>>"]
+        RevenueAnalyticsDashboardRM["💰 Revenue Analytics Dashboard<br/><<ReadModel>>"]
+        EngagementMetricsDashboardRM["🎯 Engagement Metrics Dashboard<br/><<ReadModel>>"]
+        OperationalMetricsDashboardRM["⚙️ Operational Metrics Dashboard<br/><<ReadModel>>"]
+        PredictiveAnalyticsRM["🔮 Predictive Analytics<br/><<ReadModel>>"]
+        DataQualityReportRM["✅ Data Quality Report<br/><<ReadModel>>"]
+        CustomReportsRM["📋 Custom Reports<br/><<ReadModel>>"]
+    end
+    
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        UserContext["👤 User Context<br/><<ExternalContext>>"]
+        WorkoutContext["💪 Workout Context<br/><<ExternalContext>>"]
+        ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+        TrainerContext["👨‍🏫 Trainer Context<br/><<ExternalContext>>"]
+        OrganizationContext["🏢 Organization Context<br/><<ExternalContext>>"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        NotificationContext["🔔 Notification Context<br/><<ExternalContext>>"]
+        ExerciseContext["🎯 Exercise Context<br/><<ExternalContext>>"]
+        ProgramContext["📋 Program Context<br/><<ExternalContext>>"]
+        AuthenticationContext["🔐 Authentication Context<br/><<ExternalContext>>"]
+    end
+    
+    %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    AnalyticsApplicationService --> AnalyticsCommandBus
+    AnalyticsApplicationService --> AnalyticsQueryBus
+    AnalyticsApplicationService --> AnalyticsEventBus
+    
+    %% Commands and Queries through Application Service
+    AnalyticsCommands --> AnalyticsApplicationService
+    AnalyticsQueries --> AnalyticsApplicationService
+    AnalyticsSagas --> AnalyticsApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    AnalyticsApplicationService --> UserBehaviorAnalytics
+    AnalyticsApplicationService --> WorkoutAnalytics
+    AnalyticsApplicationService --> ProgressionAnalytics
+    AnalyticsApplicationService --> OrganizationAnalytics
+    AnalyticsApplicationService --> TrainerPerformanceAnalytics
+    AnalyticsApplicationService --> BusinessIntelligence
+    AnalyticsApplicationService --> DataAggregationService
+    AnalyticsApplicationService --> ReportGenerationService
+    AnalyticsApplicationService --> PredictiveAnalyticsService
+    AnalyticsApplicationService --> DataQualityService
+    AnalyticsApplicationService --> MetricsCalculationService
+    AnalyticsApplicationService --> AlertingService
+    AnalyticsApplicationService --> DataVisualizationService
+    
+    %% Policy Enforcement Integration
+    AnalyticsApplicationService --> AnalyticsPolicyEnforcementPoint
+    AnalyticsPolicyEnforcementPoint --> DataPrivacyPolicyService
+    AnalyticsPolicyEnforcementPoint --> DataRetentionPolicyService
+    AnalyticsPolicyEnforcementPoint --> ReportAccessPolicyService
+    
+    %% Data Processing Layer Integration
+    AnalyticsApplicationService --> DataProcessingLayer
+    ETLEngine --> DataExtractor
+    ETLEngine --> DataTransformer
+    ETLEngine --> DataLoader
+    DataQualityService --> DataQualityValidator
+    DataAggregationService --> StreamProcessor
+    
+    %% Domain to Ports (Dependency Inversion)
+    UserBehaviorAnalytics -->|uses| IAnalyticsRepo
+    UserBehaviorAnalytics -->|uses| IUserService
+    WorkoutAnalytics -->|uses| IDataWarehouse
+    WorkoutAnalytics -->|uses| IWorkoutService
+    ProgressionAnalytics -->|uses| IProgressionService
+    OrganizationAnalytics -->|uses| IOrganizationService
+    TrainerPerformanceAnalytics -->|uses| ITrainerService
+    BusinessIntelligence -->|uses| IReportGenerator
+    ReportGenerationService -->|uses| IReportRepo
+    ReportGenerationService -->|uses| IVisualizationEngine
+    PredictiveAnalyticsService -->|uses| IPredictiveAnalytics
+    DataAggregationService -->|uses| IDataPipeline
+    AlertingService -->|uses| INotificationService
+    DataVisualizationService -->|uses| IIdentityService
+    
+    %% Ports to Adapters (Implementation)
+    IAnalyticsRepo -.->|implements| BigQueryAnalyticsRepo
+    IDataWarehouse -.->|implements| SnowflakeDataWarehouse
+    IReportRepo -.->|implements| MongoReportRepo
+    IDashboardRepo -.->|implements| MongoDashboardRepo
+    IMetricRepo -.->|implements| TimeSeriesMetricRepo
+    IReportGenerator -.->|implements| TableauReportAdapter
+    IReportGenerator -.->|implements| PowerBIReportAdapter
+    IPredictiveAnalytics -.->|implements| TensorFlowMLAdapter
+    IDataPipeline -.->|implements| KafkaDataPipelineAdapter
+    IVisualizationEngine -.->|implements| D3VisualizationAdapter
+    INotificationService -.->|implements| FCMNotificationAdapter
+    IUserService -.->|implements| UserContextAdapter
+    IWorkoutService -.->|implements| WorkoutContextAdapter
+    IProgressionService -.->|implements| ProgressionContextAdapter
+    ITrainerService -.->|implements| TrainerContextAdapter
+    IOrganizationService -.->|implements| OrganizationContextAdapter
+    IIdentityService -.->|implements| IdentityContextAdapter
+    
+    %% Adapters to External Systems
+    BigQueryAnalyticsRepo -->|connects| BigQuery
+    SnowflakeDataWarehouse -->|connects| Snowflake
+    MongoReportRepo -->|connects| MongoDB
+    MongoDashboardRepo -->|connects| MongoDB
+    TimeSeriesMetricRepo -->|connects| InfluxDB
+    AnalyticsCache -->|connects| RedisCache
+    ReportCache -->|connects| RedisCache
+    DashboardCache -->|connects| RedisCache
+    MetricsCache -->|connects| RedisCache
+    TableauReportAdapter -->|connects| TableauServer
+    PowerBIReportAdapter -->|connects| PowerBIService
+    TensorFlowMLAdapter -->|connects| TensorFlowServing
+    ElasticsearchAnalyticsAdapter -->|connects| ElasticsearchCluster
+    KafkaDataPipelineAdapter -->|connects| KafkaCluster
+    FCMNotificationAdapter -->|connects| FCMService
+    
+    %% Data Processing to External Systems
+    DataExtractor -->|extracts from| CloudStorage
+    DataLoader -->|loads to| BigQuery
+    DataLoader -->|loads to| Snowflake
+    StreamProcessor -->|processes| KafkaCluster
+    
+    %% Cross-Context Communication
+    UserContextAdapter -.->|async calls| UserContext
+    WorkoutContextAdapter -.->|async calls| WorkoutContext
+    ProgressionContextAdapter -.->|async calls| ProgressionContext
+    TrainerContextAdapter -.->|async calls| TrainerContext
+    OrganizationContextAdapter -.->|async calls| OrganizationContext
+    IdentityContextAdapter -.->|async calls| IdentityContext
+    FCMNotificationAdapter -.->|async calls| NotificationContext
+    
+    %% Domain Events
+    Report -.->|publishes| ReportGeneratedEvent
+    Dashboard -.->|publishes| DashboardCreatedEvent
+    Metric -.->|publishes| MetricCalculatedEvent
+    AlertRule -.->|publishes| AlertTriggeredEvent
+    DataQualityValidator -.->|publishes| DataQualityIssueEvent
+    PredictiveModel -.->|publishes| PredictiveModelUpdatedEvent
+    DataExport -.->|publishes| DataExportCompletedEvent
+    KPI -.->|publishes| KPIThresholdBreachedEvent
+    UserBehaviorAnalytics -.->|publishes| UserBehaviorAnalyzedEvent
+    BusinessIntelligence -.->|publishes| BusinessInsightGeneratedEvent
+    DataPipeline -.->|publishes| DataPipelineFailedEvent
+    Metric -.->|publishes| RealtimeMetricUpdatedEvent
+    
+    %% Event to Read Models (via Event Bus)
+    AnalyticsEventBus -.->|projects to| UserBehaviorDashboardRM
+    AnalyticsEventBus -.->|projects to| WorkoutTrendsDashboardRM
+    AnalyticsEventBus -.->|projects to| ProgressionInsightsDashboardRM
+    AnalyticsEventBus -.->|projects to| BusinessMetricsDashboardRM
+    AnalyticsEventBus -.->|projects to| TrainerPerformanceDashboardRM
+    AnalyticsEventBus -.->|projects to| RevenueAnalyticsDashboardRM
+    AnalyticsEventBus -.->|projects to| EngagementMetricsDashboardRM
+    AnalyticsEventBus -.->|projects to| OperationalMetricsDashboardRM
+    AnalyticsEventBus -.->|projects to| PredictiveAnalyticsRM
+    AnalyticsEventBus -.->|projects to| DataQualityReportRM
+    AnalyticsEventBus -.->|projects to| CustomReportsRM
+    
+    %% Events to Event Bus
+    ReportGeneratedEvent -.->|publishes to| AnalyticsEventBus
+    DashboardCreatedEvent -.->|publishes to| AnalyticsEventBus
+    MetricCalculatedEvent -.->|publishes to| AnalyticsEventBus
+    AlertTriggeredEvent -.->|publishes to| AnalyticsEventBus
+    DataQualityIssueEvent -.->|publishes to| AnalyticsEventBus
+    PredictiveModelUpdatedEvent -.->|publishes to| AnalyticsEventBus
+    DataExportCompletedEvent -.->|publishes to| AnalyticsEventBus
+    KPIThresholdBreachedEvent -.->|publishes to| AnalyticsEventBus
+    UserBehaviorAnalyzedEvent -.->|publishes to| AnalyticsEventBus
+    BusinessInsightGeneratedEvent -.->|publishes to| AnalyticsEventBus
+    DataPipelineFailedEvent -.->|publishes to| AnalyticsEventBus
+    RealtimeMetricUpdatedEvent -.->|publishes to| AnalyticsEventBus
+    
+    %% Sagas listen to events
+    DataIngestionSaga -.->|listens to| UserBehaviorAnalyzedEvent
+    ReportGenerationSaga -.->|listens to| ReportGeneratedEvent
+    DataQualityValidationSaga -.->|listens to| DataQualityIssueEvent
+    PredictiveModelTrainingSaga -.->|listens to| PredictiveModelUpdatedEvent
+    AlertProcessingSaga -.->|listens to| AlertTriggeredEvent
+    DataExportSaga -.->|listens to| DataExportCompletedEvent
+    
+    %% Context Bus to External Event Bus
+    AnalyticsEventBus -.->|integrates with| ExternalContexts
+    
+    %% External Events Integration (listening to other contexts)
+    WorkoutCompleted["💪 Workout Completed<br/><<ExternalEvent>>"]
+    UserRegistered["👤 User Registered<br/><<ExternalEvent>>"]
+    ProgressRecorded["📈 Progress Recorded<br/><<ExternalEvent>>"]
+    TrainerSessionCompleted["👨‍🏫 Session Completed<br/><<ExternalEvent>>"]
+    PaymentProcessed["💳 Payment Processed<br/><<ExternalEvent>>"]
+    
+    %% External Events to Analytics Commands
+    WorkoutCompleted -.->|triggers| GenerateReportCmd
+    UserRegistered -.->|triggers| CreateMetricCmd
+    ProgressRecorded -.->|triggers| TriggerETLProcessCmd
+    TrainerSessionCompleted -.->|triggers| ConfigureKPICmd
+    PaymentProcessed -.->|triggers| GenerateReportCmd
