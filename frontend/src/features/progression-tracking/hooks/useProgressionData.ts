@@ -1,2 +1,0 @@
-// useProgressionData.ts
-// TODO: Implement

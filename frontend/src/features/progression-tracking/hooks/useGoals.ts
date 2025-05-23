@@ -1,2 +1,0 @@
-// useGoals.ts
-// TODO: Implement

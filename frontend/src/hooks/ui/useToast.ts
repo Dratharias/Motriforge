@@ -1,2 +1,0 @@
-// useToast.ts
-// TODO: Implement

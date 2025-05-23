@@ -1,2 +1,0 @@
-// ThemeManager.ts
-// TODO: Implement

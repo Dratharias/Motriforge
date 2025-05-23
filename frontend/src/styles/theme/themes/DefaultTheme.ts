@@ -1,2 +1,0 @@
-// DefaultTheme.ts
-// TODO: Implement

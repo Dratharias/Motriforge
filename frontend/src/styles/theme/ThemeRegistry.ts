@@ -1,2 +1,0 @@
-// ThemeRegistry.ts
-// TODO: Implement

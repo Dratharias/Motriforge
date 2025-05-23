@@ -1,2 +1,0 @@
-// organization.ts
-// TODO: Implement

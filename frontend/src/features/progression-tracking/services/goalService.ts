@@ -1,2 +1,0 @@
-// goalService.ts
-// TODO: Implement

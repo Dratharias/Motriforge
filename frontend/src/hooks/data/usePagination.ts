@@ -1,2 +1,0 @@
-// usePagination.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// trainerService.ts
-// TODO: Implement

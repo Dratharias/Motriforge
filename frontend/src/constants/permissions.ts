@@ -1,2 +1,0 @@
-// permissions.ts
-// TODO: Implement

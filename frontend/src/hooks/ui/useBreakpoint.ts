@@ -1,2 +1,0 @@
-// useBreakpoint.ts
-// TODO: Implement

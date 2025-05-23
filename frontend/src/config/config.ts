@@ -1,2 +1,0 @@
-// config.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// useTrainerData.ts
-// TODO: Implement

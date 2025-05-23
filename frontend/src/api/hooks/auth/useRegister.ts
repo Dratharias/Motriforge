@@ -1,2 +1,0 @@
-// useRegister.ts
-// TODO: Implement

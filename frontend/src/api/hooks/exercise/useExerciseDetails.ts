@@ -1,2 +1,0 @@
-// useExerciseDetails.ts
-// TODO: Implement

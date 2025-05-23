@@ -1,2 +1,0 @@
-// useModal.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// useProfile.ts
-// TODO: Implement
