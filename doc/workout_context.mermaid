@@ -280,35 +280,4 @@ graph TB
     WorkoutValidationSaga -.->|listens to| WorkoutPublishedEvent
     
     %% Context Bus to External Event Bus
-    WorkoutEventBus -.->|integrates with| ExternalContexts
-    
-    %% ===== STYLING =====
-    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
-    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
-    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
-    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
-    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
-    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
-    
-    class Workout,WorkoutTemplate aggregate
-    class WorkoutBlock,WorkoutExercise,Media,MediaVariant entity
-    class WorkoutId,WorkoutName,Duration,IntensityLevel,RestPeriod valueObject
-    class IWorkoutRepo,IWorkoutTemplateRepo,IMediaRepo,IExerciseService,IProgressionService,IMediaProcessingService,INotificationService,IAnalyticsService,IUserService,IIdentityService port
-    class MongoWorkoutRepo,MongoTemplateRepo,MongoMediaRepo,ExerciseContextAdapter,ProgressionContextAdapter,CloudinaryMediaAdapter,FCMNotificationAdapter,MixpanelAnalyticsAdapter,UserContextAdapter,IdentityContextAdapter,WorkoutCache,TemplateCache,PopularWorkoutsCache,MediaCache adapter
-    class MongoDB,RedisCache,CloudinaryAPI,FCMService,MixpanelAPI,CDN,ElasticsearchCluster external
-    class CreateWorkoutCmd,UpdateWorkoutCmd,AddBlockCmd,AddExerciseCmd,ReorderExercisesCmd,SaveAsTemplateCmd,UploadWorkoutMediaCmd,DeleteWorkoutCmd,PublishWorkoutCmd command
-    class GetWorkoutQuery,GetWorkoutTemplatesQuery,GetWorkoutHistoryQuery,SearchWorkoutsQuery,GetPopularWorkoutsQuery,GetWorkoutStatsQuery,GetUserWorkoutsQuery query
-    class WorkoutCreatedEvent,WorkoutUpdatedEvent,WorkoutDeletedEvent,BlockAddedEvent,ExerciseAddedEvent,TemplateCreatedEvent,MediaUploadedEvent,WorkoutSharedEvent,WorkoutPublishedEvent event
-    class WorkoutCatalogRM,WorkoutDetailsRM,WorkoutTemplatesRM,PopularWorkoutsRM,WorkoutStatsRM,UserWorkoutsRM,WorkoutSearchRM readModel
-    class ExerciseContext,ProgressionContext,UserContext,IdentityContext,NotificationContext externalContext
-    class WorkoutApplicationService applicationService
-    class WorkoutCommandBus,WorkoutQueryBus,WorkoutEventBus contextBus
-    class WorkoutPolicyEnforcementPoint,ContentModerationService policy
+    WorkoutEventBus -.->|integrates with| ExternalContexts   

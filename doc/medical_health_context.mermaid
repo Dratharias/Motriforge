@@ -398,38 +398,3 @@ graph TB
     ExerciseContraindicatedEvent -.->|integrates to| ExerciseContext
     MedicalClearanceIssuedEvent -.->|integrates to| ProgressionContext
     PatientTransferCompletedEvent -.->|integrates to| TrainerContext
-    
-    %% ===== STYLING =====
-    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
-    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
-    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
-    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
-    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
-    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
-    classDef security fill:#ffebee,stroke:#c62828,stroke-width:3px
-    classDef vault fill:#e8f5e8,stroke:#1b5e20,stroke-width:4px
-    
-    class PatientMedicalRecord,MedicalProfessional,PatientTransfer,MedicalAccessControl aggregate
-    class InjuryRecord,PhysicalAssessment,MedicalClearance,RehabilitationPlan,MedicalNote,MedicalAccess,MedicalAuditEntry,EncryptedMedicalData,WorkoutRestriction,ExerciseContraindication entity
-    class PatientId,MedicalProfessionalId,MedicalRecordId,EncryptionKey,MedicalLicense,InjuryDescription,PhysicalLimitation,RecoveryStatus,ClearanceLevel valueObject
-    class IPatientMedicalRepo,IMedicalProfessionalRepo,IPatientTransferRepo,IMedicalAccessRepo,IMedicalAuditRepo,IMedicalEncryptionService,IMedicalAccessControlService,IMedicalComplianceService,IPatientConsentService,IMedicalNotificationService,IIdentityService,IUserService,IWorkoutService,ITrainerService,IOrganizationService port
-    class EncryptedPatientMedicalRepo,MongoMedicalProfessionalRepo,MongoPatientTransferRepo,MongoMedicalAccessRepo,MongoMedicalAuditRepo,AESMedicalEncryptionAdapter,MedicalRBACAdapter,HIPAAComplianceAdapter,ConsentManagementAdapter,SecureMedicalNotificationAdapter,IdentityContextAdapter,UserContextAdapter,WorkoutContextAdapter,TrainerContextAdapter,OrganizationContextAdapter,HSMEncryptionAdapter,FieldLevelEncryptionAdapter,KeyRotationAdapter,MedicalAuditAdapter,BreakGlassAccessAdapter adapter
-    class MongoDB,EncryptedDatabase,RedisCache,HSM,KeyVault,ComplianceDB,AuditLogService,ConsentManagementPlatform,EncryptionService external
-    class CreatePatientRecordCmd,AddInjuryRecordCmd,UpdateInjuryStatusCmd,CreatePhysicalAssessmentCmd,IssueMedicalClearanceCmd,CreateRehabPlanCmd,AddMedicalNoteCmd,GrantMedicalAccessCmd,RevokeMedicalAccessCmd,InitiatePatientTransferCmd,ApprovePatientTransferCmd,RegisterMedicalProfessionalCmd,EncryptMedicalDataCmd command
-    class GetPatientMedicalRecordQuery,GetInjuryHistoryQuery,GetPhysicalAssessmentsQuery,GetMedicalClearancesQuery,GetRehabilitationPlanQuery,GetMedicalNotesQuery,GetMedicalAccessPermissionsQuery,GetPatientTransfersQuery,GetMedicalAuditLogQuery,CheckMedicalAccessQuery,GetWorkoutRestrictionsQuery,GetExerciseContraindicationsQuery query
-    class PatientRecordCreatedEvent,InjuryRecordedEvent,MedicalClearanceIssuedEvent,PatientTransferInitiatedEvent,PatientTransferCompletedEvent,MedicalAccessGrantedEvent,MedicalAccessRevokedEvent,UnauthorizedMedicalAccessAttemptEvent,MedicalDataViewedEvent,MedicalDataModifiedEvent,MedicalComplianceViolationEvent,WorkoutRestrictedEvent,ExerciseContraindicatedEvent,EmergencyAccessActivatedEvent event
-    class PatientMedicalSummaryRM,InjuryDashboardRM,RehabilitationProgressRM,MedicalClearanceStatusRM,MedicalAccessLogRM,MedicalComplianceReportRM,WorkoutSafetyRM,MedicalProfessionalDirectoryRM,PatientTransferStatusRM readModel
-    class UserContext,IdentityContext,WorkoutContext,TrainerContext,OrganizationContext,NotificationContext,ExerciseContext,ProgressionContext,AuditContext externalContext
-    class MedicalApplicationService applicationService
-    class MedicalCommandBus,MedicalQueryBus,MedicalEventBus contextBus
-    class MedicalPolicyEnforcementPoint,HIPAACompliancePolicyService,DataRetentionPolicyService,ConsentPolicyService,EmergencyAccessPolicyService,WorkoutSafetyPolicyService policy
-    class HSMEncryptionAdapter,FieldLevelEncryptionAdapter,KeyRotationAdapter,MedicalAuditAdapter,BreakGlassAccessAdapter security
-    class MedicalDataVault,KeyManagementService,TokenizationService,DataClassificationService vault

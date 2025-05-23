@@ -244,25 +244,3 @@ graph TB
     MedicalContext --> MedicalSystems
     IdentityLayer --> IdentityProviders
     
-    %% ===== STYLING =====
-    classDef context fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    classDef applicationService fill:#e8f5e8,stroke:#1b5e20,stroke-width:3px
-    classDef acl fill:#fff8e1,stroke:#f57f17,stroke-width:3px
-    classDef infra fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
-    classDef crosscutting fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef middleware fill:#fff3e0,stroke:#e65100,stroke-width:3px
-    classDef identity fill:#fce4ec,stroke:#880e4f,stroke-width:3px
-    classDef plugin fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef presentation fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    
-    class UserContext,OrgContext,AuthContext,WorkoutContext,ExerciseContext,ProgramContext,ProgressionContext,TrainerContext,NotificationContext,MedicalContext context
-    class UserAppService,OrgAppService,AuthAppService,WorkoutAppService,ExerciseAppService,ProgramAppService,ProgressionAppService,TrainerAppService,NotificationAppService,MedicalAppService applicationService
-    class UserACL,OrgACL,AuthACL,WorkoutACL,ExerciseACL,ProgramACL,ProgressionACL,TrainerACL,NotificationACL,MedicalACL acl
-    class ContextualEventBus,ContextualEventStore,ContextualCommandBus,ContextualQueryBus,ReadModelStore,CacheCluster,Database,FileStorage,SearchEngine infra
-    class PaymentGateways,EmailProviders,PushServices,CloudStorage,AnalyticsPlatforms,MedicalSystems,IdentityProviders external
-    class ContextualServiceDiscovery,ConfigManager,ContextualMetrics,DistributedLogging,ComplianceSecurity,ObservabilityStack crosscutting
-    class MiddlewareChain,PolicyEnforcementPoint,MiddlewareRegistry middleware
-    class IdentityContext,AccessManagementService,SessionManagementService,CredentialManagementService identity
-    class PluginManager,PluginSecurityGateway,PluginSandbox,PluginRegistry plugin
-    class Gateway,ContextRouter presentation

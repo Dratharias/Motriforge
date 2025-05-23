@@ -305,34 +305,3 @@ graph TB
     
     %% Context Bus to External Event Bus
     AuthEventBus -.->|integrates with| ExternalContexts
-    
-    %% ===== STYLING =====
-    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
-    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
-    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
-    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
-    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
-    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
-    
-    class AuthSession,UserCredentials aggregate
-    class RefreshToken,DeviceToken,AuthAttempt,Contact entity
-    class SessionId,Password,TokenClaims,DeviceFingerprint,IPAddress valueObject
-    class ISessionRepo,ITokenRepo,IDeviceTokenRepo,IAttemptRepo,IPasswordHasher,ITokenGenerator,IOAuth2Provider,IMFAProvider,IRateLimiter,ISecurityLogger,IUserService,INotificationService,IIdentityService port
-    class RedisSessionRepo,RedisTokenRepo,MongoDeviceTokenRepo,MongoAttemptRepo,BcryptPasswordHasher,JwtTokenGenerator,GoogleOAuth2Adapter,Auth0MFAAdapter,RedisRateLimiter,AuditSecurityLogger,UserContextAdapter,FCMNotificationAdapter,IdentityContextAdapter,SessionCache,PermissionCache,RateLimitCache adapter
-    class RedisCache,MongoDB,GoogleOAuth2API,Auth0API,FCMService,AuditLogService,EmailService,SMSService external
-    class LoginCmd,LogoutCmd,RefreshTokenCmd,ChangePasswordCmd,ResetPasswordCmd,EnableMFACmd,DisableMFACmd,RegisterDeviceCmd,RevokeTokenCmd,OAuth2LoginCmd command
-    class ValidateTokenQuery,GetSessionQuery,GetActiveSessionsQuery,GetLoginHistoryQuery,CheckPermissionQuery,GetMFAStatusQuery,GetDeviceTokensQuery query
-    class UserLoggedInEvent,UserLoggedOutEvent,PasswordChangedEvent,PasswordResetRequestedEvent,MFAEnabledEvent,MFADisabledEvent,DeviceRegisteredEvent,TokenRevokedEvent,LoginFailedEvent,AccountLockedEvent,SuspiciousActivityEvent,SessionExpiredEvent event
-    class ActiveSessionsRM,LoginHistoryRM,SecurityDashboardRM,DeviceListRM,AuthStatsRM,FailedAttemptsRM,SecurityAlertsRM readModel
-    class UserContext,IdentityContext,NotificationContext,OrganizationContext externalContext
-    class AuthApplicationService applicationService
-    class AuthCommandBus,AuthQueryBus,AuthEventBus contextBus
-    class AuthPolicyEnforcementPoint,SecurityPolicyDecisionPoint policy

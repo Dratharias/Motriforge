@@ -373,34 +373,3 @@ graph TB
     
     %% Context Bus to External Event Bus
     OrgEventBus -.->|integrates with| ExternalContexts
-    
-    %% ===== STYLING =====
-    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
-    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
-    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
-    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
-    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
-    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
-    
-    class Organization,OrganizationMembership,OrgPermissionMatrix,OrganizationSubscription aggregate
-    class OrganizationMember,Invitation,OrgSettings,Contact,Department,OrgRole,Permission,SubscriptionPlan,BillingInfo entity
-    class OrgId,OrgName,MemberRole,InvitationToken,PermissionScope,SubscriptionStatus,TrustLevel valueObject
-    class IOrganizationRepo,IMemberRepo,IInvitationRepo,ISettingsRepo,IPermissionRepo,IDepartmentRepo,ISubscriptionRepo,IEmailService,IPermissionService,IBillingService,IAnalyticsService,IIdentityService,IUserService,INotificationService,IAuditService,IComplianceService port
-    class MongoOrgRepo,MongoMemberRepo,MongoInvitationRepo,MongoSettingsRepo,MongoPermissionRepo,MongoDepartmentRepo,MongoSubscriptionRepo,SendGridEmailAdapter,Auth0PermissionAdapter,StripeBillingAdapter,MixpanelAnalyticsAdapter,IdentityContextAdapter,UserContextAdapter,FCMNotificationAdapter,ComplianceAuditAdapter,OrgCache,MemberCache,PermissionCache,HierarchyCache,SubscriptionCache adapter
-    class MongoDB,RedisCache,SendGridAPI,Auth0API,StripeAPI,MixpanelAPI,FCMService,ComplianceDB,AuditLogService external
-    class CreateOrgCmd,UpdateOrgCmd,DeactivateOrgCmd,AddMemberCmd,RemoveMemberCmd,UpdateMemberRoleCmd,InviteMemberCmd,AcceptInvitationCmd,RevokeInvitationCmd,UpdateSettingsCmd,ManagePermissionsCmd,CreateDepartmentCmd,AssignToSubscriptionCmd command
-    class GetOrgQuery,GetMembersQuery,GetInvitationsQuery,GetOrgStatsQuery,GetUserOrgsQuery,GetPermissionsQuery,GetDepartmentsQuery,GetOrgHierarchyQuery,GetSubscriptionStatusQuery,SearchOrganizationsQuery query
-    class OrgCreatedEvent,OrgUpdatedEvent,OrgDeactivatedEvent,MemberAddedEvent,MemberRemovedEvent,RoleChangedEvent,InvitationSentEvent,InvitationAcceptedEvent,InvitationRevokedEvent,SettingsUpdatedEvent,PermissionsChangedEvent,DepartmentCreatedEvent,SubscriptionChangedEvent,ComplianceViolationEvent event
-    class OrgDashboardRM,MemberListRM,OrgStatsRM,InvitationListRM,UserOrgsRM,PermissionMatrixRM,OrgHierarchyRM,DepartmentListRM,SubscriptionDashboardRM,ComplianceReportRM,OrgSearchRM readModel
-    class UserContext,IdentityContext,NotificationContext,AuthenticationContext,AuditContext,BillingContext externalContext
-    class OrgApplicationService applicationService
-    class OrgCommandBus,OrgQueryBus,OrgEventBus contextBus
-    class OrgPolicyEnforcementPoint,OrganizationAccessPolicyService,MembershipPolicyService,DataGovernancePolicyService,CompliancePolicyService policy

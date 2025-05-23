@@ -169,26 +169,3 @@ graph TB
     PluginSecurityGateway -.->|logs activity| PluginAuditLogger
     PolicyEnforcementPoint -.->|logs decisions| PluginAuditLogger
     PluginExecutor -.->|logs execution| PluginAuditLogger
-    
-    %% ===== STYLING =====
-    classDef manager fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    classDef security fill:#ffebee,stroke:#c62828,stroke-width:3px
-    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
-    classDef execution fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
-    classDef sandbox fill:#fff3e0,stroke:#ef6c00,stroke-width:3px
-    classDef plugin fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    classDef context fill:#fce4ec,stroke:#ad1457,stroke-width:2px
-    classDef integration fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef lifecycle fill:#f1f8e9,stroke:#558b2f,stroke-width:2px
-    classDef monitoring fill:#fff8e1,stroke:#f9a825,stroke-width:2px
-    
-    class PluginManager,PluginRegistry,PluginLoader,VersionManager manager
-    class PluginSecurityGateway,SecurityValidator,PluginAuditLogger,ThreatDetector security
-    class PolicyEnforcementPoint,PolicyDecisionPoint,PolicyInformationPoint,PolicyAdministrationPoint policy
-    class PluginExecutor,SandboxManager,ResourceMonitor,ExecutionContext execution
-    class WasmSandbox,V8Sandbox,WorkerSandbox,ContainerSandbox sandbox
-    class PaymentPlugin,AnalyticsPlugin,NotificationPlugin,AIPlugin,CustomPlugin plugin
-    class Identity,Session,Permissions,Roles,AccessTokens context
-    class ApplicationServiceRegistry,ContextualEventBus,SharedInfrastructure,ExternalAPIs integration
-    class PluginDiscovery,PluginValidation,PluginInstallation,PluginActivation,PluginDeactivation,PluginUninstallation lifecycle
-    class PerformanceMonitor,SecurityMonitor,ComplianceMonitor,HealthChecker monitoring

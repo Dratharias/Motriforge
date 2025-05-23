@@ -325,34 +325,3 @@ graph TB
     %% Policy Engine Integration
     AuthorizationService --> PolicyDecisionPoint
     PolicyDecisionPoint --> AccessControlService
-    
-    %% ===== STYLING =====
-    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
-    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
-    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
-    classDef applicationService fill:#e3f2fd,stroke:#0277bd,stroke-width:4px
-    classDef contextBus fill:#fff9c4,stroke:#f9a825,stroke-width:2px
-    classDef policy fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
-    
-    class Identity,AccessControl,Session aggregate
-    class Role,Permission,AccessToken,RefreshToken,Device,AccessAttempt entity
-    class IdentityId,Username,RoleName,PermissionName,SessionId,DeviceFingerprint,IPAddress valueObject
-    class IIdentityRepo,IAccessControlRepo,ISessionRepo,IRoleRepo,IPermissionRepo,IDeviceRepo,IAccessAttemptRepo,ITokenGenerator,ITokenValidator,IPasswordHasher,IBiometricService,IOAuth2Provider,ISAMLProvider,ILDAPProvider,IAuditLogger,INotificationService,IRiskAssessmentService port
-    class MongoIdentityRepo,MongoAccessControlRepo,RedisSessionRepo,MongoRoleRepo,MongoPermissionRepo,MongoDeviceRepo,MongoAccessAttemptRepo,JWTTokenAdapter,BcryptPasswordAdapter,BiometricAdapter,GoogleOAuth2Adapter,SAMLAdapter,LDAPAdapter,SecurityAuditAdapter,FCMNotificationAdapter,RiskAssessmentAdapter,IdentityCache,PermissionCache,SessionCache,RoleCache adapter
-    class MongoDB,RedisCache,GoogleAPI,Auth0API,LDAPADS,FCMService,HSM,BiometricService external
-    class CreateIdentityCmd,UpdateIdentityCmd,AssignRoleCmd,GrantPermissionCmd,CreateSessionCmd,RefreshSessionCmd,RevokeSessionCmd,ValidateAccessCmd command
-    class GetIdentityQuery,GetPermissionsQuery,GetRolesQuery,GetActiveSessionsQuery,CheckAccessQuery,GetAccessHistoryQuery query
-    class IdentityCreatedEvent,IdentityUpdatedEvent,RoleAssignedEvent,PermissionGrantedEvent,SessionCreatedEvent,SessionExpiredEvent,AccessGrantedEvent,AccessDeniedEvent,SuspiciousActivityEvent,LoginAttemptEvent event
-    class IdentityProfileRM,AccessControlDashboardRM,ActiveSessionsRM,PermissionMatrixRM,RoleHierarchyRM,SecurityAuditRM,AccessHistoryRM,RiskAssessmentRM readModel
-    class UserContext,AuthenticationContext,OrganizationContext,NotificationContext externalContext
-    class IdentityApplicationService,AccessApplicationService,SessionApplicationService applicationService
-    class IAMCommandBus,IAMQueryBus,IAMEventBus contextBus
-    class PolicyDecisionPoint,PolicyInformationPoint,PolicyAdministrationPoint,PolicyRepository,RuleEngine policy
