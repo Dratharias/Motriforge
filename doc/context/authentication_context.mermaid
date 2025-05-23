@@ -1,0 +1,277 @@
+graph TB
+    %% ===== AUTHENTICATION CONTEXT =====
+    subgraph AuthContext ["🔐 Authentication Context"]
+        
+        %% ===== DOMAIN LAYER (HEXAGON CORE) =====
+        subgraph AuthDomain ["Domain Layer <<DomainCore>>"]
+            direction TB
+            
+            %% Aggregates
+            AuthSession["🔑 Authentication Session<br/><<AggregateRoot>>"]
+            UserCredentials["🔒 User Credentials<br/><<AggregateRoot>>"]
+            
+            %% Entities
+            RefreshToken["🎫 Refresh Token<br/><<Entity>>"]
+            DeviceToken["📱 Device Token<br/><<Entity>>"]
+            AuthAttempt["🔍 Authentication Attempt<br/><<Entity>>"]
+            Contact["📞 Contact<br/><<Entity>>"]
+            
+            %% Value Objects
+            SessionId["🆔 Session ID<br/><<ValueObject>>"]
+            Password["🔒 Password<br/><<ValueObject>>"]
+            TokenClaims["📋 Token Claims<br/><<ValueObject>>"]
+            DeviceFingerprint["👆 Device Fingerprint<br/><<ValueObject>>"]
+            IPAddress["🌐 IP Address<br/><<ValueObject>>"]
+            
+            %% Domain Services
+            AuthenticationService["🔐 Authentication<br/><<DomainService>>"]
+            AuthorizationService["🛡️ Authorization<br/><<DomainService>>"]
+            TokenService["🎫 Token<br/><<DomainService>>"]
+            SessionService["🔑 Session<br/><<DomainService>>"]
+            SecurityService["🔒 Security<br/><<DomainService>>"]
+        end
+        
+        %% ===== PORTS (DOMAIN INTERFACES) =====
+        subgraph AuthPorts ["Ports <<Port>>"]
+            direction TB
+            
+            %% Repository Ports
+            ISessionRepo["🔑 ISessionRepository<br/><<Port>>"]
+            ITokenRepo["🎫 ITokenRepository<br/><<Port>>"]
+            IDeviceTokenRepo["📱 IDeviceTokenRepository<br/><<Port>>"]
+            IAttemptRepo["🔍 IAttemptRepository<br/><<Port>>"]
+            
+            %% Service Ports
+            IPasswordHasher["🔐 IPasswordHasher<br/><<Port>>"]
+            ITokenGenerator["🎫 ITokenGenerator<br/><<Port>>"]
+            IOAuth2Provider["🔗 IOAuth2Provider<br/><<Port>>"]
+            IMFAProvider["📱 IMFAProvider<br/><<Port>>"]
+            IRateLimiter["⏱️ IRateLimiter<br/><<Port>>"]
+            ISecurityLogger["📋 ISecurityLogger<br/><<Port>>"]
+            IUserService["👤 IUserService<br/><<Port>>"]
+            INotificationService["🔔 INotificationService<br/><<Port>>"]
+        end
+        
+        %% ===== APPLICATION LAYER =====
+        subgraph AuthApplication ["Application Layer <<Application>>"]
+            direction TB
+            
+            %% Commands
+            subgraph AuthCommands ["Commands"]
+                LoginCmd["🔑 Login<br/><<Command>>"]
+                LogoutCmd["🚪 Logout<br/><<Command>>"]
+                RefreshTokenCmd["🔄 Refresh Token<br/><<Command>>"]
+                ChangePasswordCmd["🔒 Change Password<br/><<Command>>"]
+                ResetPasswordCmd["🔄 Reset Password<br/><<Command>>"]
+                EnableMFACmd["📱 Enable MFA<br/><<Command>>"]
+                DisableMFACmd["📵 Disable MFA<br/><<Command>>"]
+                RegisterDeviceCmd["📱 Register Device<br/><<Command>>"]
+                RevokeTokenCmd["❌ Revoke Token<br/><<Command>>"]
+                OAuth2LoginCmd["🔗 OAuth2 Login<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph AuthQueries ["Queries"]
+                ValidateTokenQuery["✅ Validate Token<br/><<Query>>"]
+                GetSessionQuery["🔑 Get Session<br/><<Query>>"]
+                GetActiveSessionsQuery["📋 Get Active Sessions<br/><<Query>>"]
+                GetLoginHistoryQuery["📅 Get Login History<br/><<Query>>"]
+                CheckPermissionQuery["🛡️ Check Permission<br/><<Query>>"]
+                GetMFAStatusQuery["📱 Get MFA Status<br/><<Query>>"]
+                GetDeviceTokensQuery["📱 Get Device Tokens<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph AuthSagas ["Sagas"]
+                LoginSaga["🔑 Login<br/><<Saga>>"]
+                PasswordResetSaga["🔄 Password Reset<br/><<Saga>>"]
+                AccountLockoutSaga["🔒 Account Lockout<br/><<Saga>>"]
+                SessionTimeoutSaga["⏰ Session Timeout<br/><<Saga>>"]
+                SecurityAlertSaga["🚨 Security Alert<br/><<Saga>>"]
+            end
+        end
+        
+        %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
+        subgraph AuthAdapters ["Infrastructure Layer <<Adapter>>"]
+            direction TB
+            
+            %% Repository Adapters
+            subgraph AuthRepositoryAdapters ["Repository Adapters"]
+                RedisSessionRepo["🔴 Redis Session Repository<br/><<RepositoryAdapter>>"]
+                RedisTokenRepo["🔴 Redis Token Repository<br/><<RepositoryAdapter>>"]
+                MongoDeviceTokenRepo["🗄️ Mongo Device Token Repository<br/><<RepositoryAdapter>>"]
+                MongoAttemptRepo["🗄️ Mongo Attempt Repository<br/><<RepositoryAdapter>>"]
+            end
+            
+            %% Service Adapters
+            subgraph AuthServiceAdapters ["Service Adapters"]
+                BcryptPasswordHasher["🔐 Bcrypt Password Hasher<br/><<SecurityAdapter>>"]
+                JwtTokenGenerator["🎫 JWT Token Generator<br/><<SecurityAdapter>>"]
+                GoogleOAuth2Adapter["🔗 Google OAuth2<br/><<OAuth2Adapter>>"]
+                Auth0MFAAdapter["📱 Auth0 MFA<br/><<MFAAdapter>>"]
+                RedisRateLimiter["⏱️ Redis Rate Limiter<br/><<SecurityAdapter>>"]
+                AuditSecurityLogger["📋 Audit Security Logger<br/><<LoggingAdapter>>"]
+                UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
+                FCMNotificationAdapter["📱 FCM Notification<br/><<NotificationAdapter>>"]
+            end
+            
+            %% Cache Adapters
+            subgraph AuthCacheAdapters ["Cache Adapters"]
+                SessionCache["💾 Session Cache<br/><<CacheAdapter>>"]
+                PermissionCache["💾 Permission Cache<br/><<CacheAdapter>>"]
+                RateLimitCache["💾 Rate Limit Cache<br/><<CacheAdapter>>"]
+            end
+        end
+    end
+    
+    %% ===== EXTERNAL SYSTEMS =====
+    subgraph AuthExternal ["🌐 External Systems"]
+        RedisCache["🔴 Redis<br/><<Cache>>"]
+        MongoDB["🗄️ MongoDB<br/><<Database>>"]
+        GoogleOAuth2API["🔗 Google OAuth2 API<br/><<OAuth2Service>>"]
+        Auth0API["📱 Auth0 API<br/><<MFAService>>"]
+        FCMService["📱 FCM Service<br/><<NotificationService>>"]
+        AuditLogService["📋 Audit Log Service<br/><<LoggingService>>"]
+        EmailService["📧 Email Service<br/><<EmailService>>"]
+        SMSService["📱 SMS Service<br/><<SMSService>>"]
+    end
+    
+    %% ===== EVENTS =====
+    subgraph AuthEvents ["📨 Domain Events"]
+        UserLoggedInEvent["🔑 User Logged In<br/><<DomainEvent>>"]
+        UserLoggedOutEvent["🚪 User Logged Out<br/><<DomainEvent>>"]
+        PasswordChangedEvent["🔒 Password Changed<br/><<DomainEvent>>"]
+        PasswordResetRequestedEvent["🔄 Password Reset Requested<br/><<DomainEvent>>"]
+        MFAEnabledEvent["📱 MFA Enabled<br/><<DomainEvent>>"]
+        MFADisabledEvent["📵 MFA Disabled<br/><<DomainEvent>>"]
+        DeviceRegisteredEvent["📱 Device Registered<br/><<DomainEvent>>"]
+        TokenRevokedEvent["❌ Token Revoked<br/><<DomainEvent>>"]
+        LoginFailedEvent["❌ Login Failed<br/><<DomainEvent>>"]
+        AccountLockedEvent["🔒 Account Locked<br/><<DomainEvent>>"]
+        SuspiciousActivityEvent["🚨 Suspicious Activity<br/><<DomainEvent>>"]
+        SessionExpiredEvent["⏰ Session Expired<br/><<DomainEvent>>"]
+    end
+    
+    %% ===== READ MODELS =====
+    subgraph AuthReadModels ["📊 Read Models"]
+        ActiveSessionsRM["🔑 Active Sessions<br/><<ReadModel>>"]
+        LoginHistoryRM["📅 Login History<br/><<ReadModel>>"]
+        SecurityDashboardRM["🚨 Security Dashboard<br/><<ReadModel>>"]
+        DeviceListRM["📱 Device List<br/><<ReadModel>>"]
+        AuthStatsRM["📊 Authentication Stats<br/><<ReadModel>>"]
+        FailedAttemptsRM["❌ Failed Attempts<br/><<ReadModel>>"]
+        SecurityAlertsRM["🚨 Security Alerts<br/><<ReadModel>>"]
+    end
+    
+    %% ===== RELATIONSHIPS =====
+    
+    %% Domain to Ports (Dependency Inversion)
+    AuthSession -->|uses| ISessionRepo
+    AuthSession -->|uses| ITokenGenerator
+    AuthSession -->|uses| IRateLimiter
+    UserCredentials -->|uses| IPasswordHasher
+    UserCredentials -->|uses| ISecurityLogger
+    TokenService -->|uses| ITokenRepo
+    AuthenticationService -->|uses| IOAuth2Provider
+    AuthenticationService -->|uses| IMFAProvider
+    SecurityService -->|uses| IUserService
+    SecurityService -->|uses| INotificationService
+    
+    %% Application to Domain
+    AuthCommands -->|orchestrates| AuthSession
+    AuthCommands -->|orchestrates| UserCredentials
+    AuthQueries -->|reads| AuthSession
+    AuthQueries -->|reads| UserCredentials
+    
+    %% Ports to Adapters (Implementation)
+    ISessionRepo -.->|implements| RedisSessionRepo
+    ITokenRepo -.->|implements| RedisTokenRepo
+    IDeviceTokenRepo -.->|implements| MongoDeviceTokenRepo
+    IAttemptRepo -.->|implements| MongoAttemptRepo
+    IPasswordHasher -.->|implements| BcryptPasswordHasher
+    ITokenGenerator -.->|implements| JwtTokenGenerator
+    IOAuth2Provider -.->|implements| GoogleOAuth2Adapter
+    IMFAProvider -.->|implements| Auth0MFAAdapter
+    IRateLimiter -.->|implements| RedisRateLimiter
+    ISecurityLogger -.->|implements| AuditSecurityLogger
+    IUserService -.->|implements| UserContextAdapter
+    INotificationService -.->|implements| FCMNotificationAdapter
+    
+    %% Adapters to External Systems
+    RedisSessionRepo -->|connects| RedisCache
+    RedisTokenRepo -->|connects| RedisCache
+    MongoDeviceTokenRepo -->|connects| MongoDB
+    MongoAttemptRepo -->|connects| MongoDB
+    SessionCache -->|connects| RedisCache
+    PermissionCache -->|connects| RedisCache
+    RateLimitCache -->|connects| RedisCache
+    GoogleOAuth2Adapter -->|connects| GoogleOAuth2API
+    Auth0MFAAdapter -->|connects| Auth0API
+    RedisRateLimiter -->|connects| RedisCache
+    AuditSecurityLogger -->|connects| AuditLogService
+    FCMNotificationAdapter -->|connects| FCMService
+    FCMNotificationAdapter -->|also uses| EmailService
+    FCMNotificationAdapter -->|also uses| SMSService
+    
+    %% Cross-Context Communication
+    UserContextAdapter -.->|async calls| UserContext
+    
+    %% Domain Events
+    AuthSession -.->|publishes| UserLoggedInEvent
+    AuthSession -.->|publishes| UserLoggedOutEvent
+    AuthSession -.->|publishes| SessionExpiredEvent
+    UserCredentials -.->|publishes| PasswordChangedEvent
+    UserCredentials -.->|publishes| PasswordResetRequestedEvent
+    UserCredentials -.->|publishes| MFAEnabledEvent
+    UserCredentials -.->|publishes| MFADisabledEvent
+    DeviceToken -.->|publishes| DeviceRegisteredEvent
+    RefreshToken -.->|publishes| TokenRevokedEvent
+    AuthAttempt -.->|publishes| LoginFailedEvent
+    SecurityService -.->|publishes| AccountLockedEvent
+    SecurityService -.->|publishes| SuspiciousActivityEvent
+    
+    %% Event to Read Models
+    UserLoggedInEvent -.->|projects to| ActiveSessionsRM
+    UserLoggedInEvent -.->|projects to| LoginHistoryRM
+    UserLoggedOutEvent -.->|projects to| ActiveSessionsRM
+    PasswordChangedEvent -.->|projects to| SecurityDashboardRM
+    DeviceRegisteredEvent -.->|projects to| DeviceListRM
+    LoginFailedEvent -.->|projects to| FailedAttemptsRM
+    AccountLockedEvent -.->|projects to| SecurityAlertsRM
+    SuspiciousActivityEvent -.->|projects to| SecurityAlertsRM
+    
+    %% Sagas
+    LoginSaga -.->|listens to| UserLoggedInEvent
+    LoginSaga -.->|listens to| LoginFailedEvent
+    PasswordResetSaga -.->|listens to| PasswordResetRequestedEvent
+    AccountLockoutSaga -.->|listens to| LoginFailedEvent
+    SessionTimeoutSaga -.->|listens to| SessionExpiredEvent
+    SecurityAlertSaga -.->|listens to| SuspiciousActivityEvent
+    
+    %% External References
+    UserContext["👤 User Context<br/><<ExternalContext>>"]
+    
+    %% ===== STYLING =====
+    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
+    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    
+    class AuthSession,UserCredentials aggregate
+    class RefreshToken,DeviceToken,AuthAttempt,Contact entity
+    class SessionId,Password,TokenClaims,DeviceFingerprint,IPAddress valueObject
+    class ISessionRepo,ITokenRepo,IDeviceTokenRepo,IAttemptRepo,IPasswordHasher,ITokenGenerator,IOAuth2Provider,IMFAProvider,IRateLimiter,ISecurityLogger,IUserService,INotificationService port
+    class RedisSessionRepo,RedisTokenRepo,MongoDeviceTokenRepo,MongoAttemptRepo,BcryptPasswordHasher,JwtTokenGenerator,GoogleOAuth2Adapter,Auth0MFAAdapter,RedisRateLimiter,AuditSecurityLogger,UserContextAdapter,FCMNotificationAdapter,SessionCache,PermissionCache,RateLimitCache adapter
+    class RedisCache,MongoDB,GoogleOAuth2API,Auth0API,FCMService,AuditLogService,EmailService,SMSService external
+    class LoginCmd,LogoutCmd,RefreshTokenCmd,ChangePasswordCmd,ResetPasswordCmd,EnableMFACmd,DisableMFACmd,RegisterDeviceCmd,RevokeTokenCmd,OAuth2LoginCmd command
+    class ValidateTokenQuery,GetSessionQuery,GetActiveSessionsQuery,GetLoginHistoryQuery,CheckPermissionQuery,GetMFAStatusQuery,GetDeviceTokensQuery query
+    class UserLoggedInEvent,UserLoggedOutEvent,PasswordChangedEvent,PasswordResetRequestedEvent,MFAEnabledEvent,MFADisabledEvent,DeviceRegisteredEvent,TokenRevokedEvent,LoginFailedEvent,AccountLockedEvent,SuspiciousActivityEvent,SessionExpiredEvent event
+    class ActiveSessionsRM,LoginHistoryRM,SecurityDashboardRM,DeviceListRM,AuthStatsRM,FailedAttemptsRM,SecurityAlertsRM readModel
+    class UserContext externalContext

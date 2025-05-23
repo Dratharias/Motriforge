@@ -1,0 +1,257 @@
+graph TB
+    %% ===== PROGRESSION TRACKING CONTEXT =====
+    subgraph ProgressionContext ["📈 Progression Tracking Context"]
+        
+        %% ===== DOMAIN LAYER (HEXAGON CORE) =====
+        subgraph ProgressionDomain ["Domain Layer <<DomainCore>>"]
+            direction TB
+            
+            %% Aggregates
+            ProgressionTracking["📈 Progression Tracking<br/><<AggregateRoot>>"]
+            PersonalRecord["🏆 Personal Record<br/><<AggregateRoot>>"]
+            GoalTracking["🎯 Goal Tracking<br/><<AggregateRoot>>"]
+            WorkoutSession["📝 Workout Session<br/><<AggregateRoot>>"]
+            
+            %% Entities
+            DailyPerformance["📅 Daily Performance<br/><<Entity>>"]
+            Milestone["🎖️ Milestone<br/><<Entity>>"]
+            SetData["📊 Set Data<br/><<Entity>>"]
+            WorkoutSessionExercise["🎯 Session Exercise<br/><<Entity>>"]
+            
+            %% Value Objects
+            MetricValue["📊 Metric Value<br/><<ValueObject>>"]
+            ProgressPercentage["📈 Progress Percentage<br/><<ValueObject>>"]
+            ImprovementRate["⬆️ Improvement Rate<br/><<ValueObject>>"]
+            TrainingLoad["💪 Training Load<br/><<ValueObject>>"]
+            
+            %% Domain Services
+            ProgressAnalysisService["📊 Progress Analysis<br/><<DomainService>>"]
+            GoalSettingService["🎯 Goal Setting<br/><<DomainService>>"]
+            RecordValidationService["✅ Record Validation<br/><<DomainService>>"]
+            LoadCalculationService["⚖️ Load Calculation<br/><<DomainService>>"]
+        end
+        
+        %% ===== PORTS (DOMAIN INTERFACES) =====
+        subgraph ProgressionPorts ["Ports <<Port>>"]
+            direction TB
+            
+            %% Repository Ports
+            IProgressionRepo["📈 IProgressionRepository<br/><<Port>>"]
+            IPersonalRecordRepo["🏆 IPersonalRecordRepository<br/><<Port>>"]
+            IGoalRepo["🎯 IGoalRepository<br/><<Port>>"]
+            ISessionRepo["📝 ISessionRepository<br/><<Port>>"]
+            IPerformanceRepo["📅 IPerformanceRepository<br/><<Port>>"]
+            
+            %% Service Ports
+            IMetricsCalculator["📊 IMetricsCalculator<br/><<Port>>"]
+            IAnalyticsService["📈 IAnalyticsService<br/><<Port>>"]
+            INotificationService["🔔 INotificationService<br/><<Port>>"]
+            IAIInsightsService["🤖 IAIInsightsService<br/><<Port>>"]
+            IWorkoutService["💪 IWorkoutService<br/><<Port>>"]
+        end
+        
+        %% ===== APPLICATION LAYER =====
+        subgraph ProgressionApplication ["Application Layer <<Application>>"]
+            direction TB
+            
+            %% Commands
+            subgraph ProgressionCommands ["Commands"]
+                RecordPerformanceCmd["📊 Record Performance<br/><<Command>>"]
+                StartSessionCmd["▶️ Start Session<br/><<Command>>"]
+                CompleteSessionCmd["✅ Complete Session<br/><<Command>>"]
+                RecordSetCmd["📊 Record Set<br/><<Command>>"]
+                SetGoalCmd["🎯 Set Goal<br/><<Command>>"]
+                UpdateGoalCmd["✏️ Update Goal<br/><<Command>>"]
+                AchieveMilestoneCmd["🎖️ Achieve Milestone<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph ProgressionQueries ["Queries"]
+                GetProgressionQuery["📈 Get Progression<br/><<Query>>"]
+                GetPersonalRecordsQuery["🏆 Get Records<br/><<Query>>"]
+                GetGoalsQuery["🎯 Get Goals<br/><<Query>>"]
+                GetSessionHistoryQuery["📅 Get Session History<br/><<Query>>"]
+                GetProgressStatsQuery["📊 Get Progress Stats<br/><<Query>>"]
+                GetInsightsQuery["🤖 Get AI Insights<br/><<Query>>"]
+                GetLeaderboardQuery["🏅 Get Leaderboard<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph ProgressionSagas ["Sagas"]
+                SessionCompletionSaga["📝 Session Completion<br/><<Saga>>"]
+                RecordAchievementSaga["🏆 Record Achievement<br/><<Saga>>"]
+                GoalProgressSaga["🎯 Goal Progress<br/><<Saga>>"]
+                ProgressAnalysisSaga["📊 Progress Analysis<br/><<Saga>>"]
+            end
+        end
+        
+        %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
+        subgraph ProgressionAdapters ["Infrastructure Layer <<Adapter>>"]
+            direction TB
+            
+            %% Repository Adapters
+            subgraph ProgressionRepositoryAdapters ["Repository Adapters"]
+                MongoProgressionRepo["🗄️ Mongo Progression Repository<br/><<RepositoryAdapter>>"]
+                MongoRecordRepo["🗄️ Mongo Record Repository<br/><<RepositoryAdapter>>"]
+                MongoGoalRepo["🗄️ Mongo Goal Repository<br/><<RepositoryAdapter>>"]
+                MongoSessionRepo["🗄️ Mongo Session Repository<br/><<RepositoryAdapter>>"]
+                TimeSeriesPerformanceRepo["📈 TimeSeries Performance<br/><<RepositoryAdapter>>"]
+            end
+            
+            %% Service Adapters
+            subgraph ProgressionServiceAdapters ["Service Adapters"]
+                DataAnalyticsAdapter["📊 Data Analytics<br/><<AnalyticsAdapter>>"]
+                WorkoutContextAdapter["💪 Workout Context<br/><<ContextAdapter>>"]
+                OpenAIInsightsAdapter["🤖 OpenAI Insights<br/><<AIAdapter>>"]
+                FCMNotificationAdapter["📱 FCM Notification<br/><<NotificationAdapter>>"]
+                TensorFlowMLAdapter["🧠 TensorFlow ML<br/><<MLAdapter>>"]
+            end
+            
+            %% Cache Adapters
+            subgraph ProgressionCacheAdapters ["Cache Adapters"]
+                ProgressionCache["💾 Progression Cache<br/><<CacheAdapter>>"]
+                RecordsCache["💾 Records Cache<br/><<CacheAdapter>>"]
+                LeaderboardCache["💾 Leaderboard Cache<br/><<CacheAdapter>>"]
+                InsightsCache["💾 Insights Cache<br/><<CacheAdapter>>"]
+            end
+        end
+    end
+    
+    %% ===== EXTERNAL SYSTEMS =====
+    subgraph ProgressionExternal ["🌐 External Systems"]
+        MongoDB["🗄️ MongoDB<br/><<Database>>"]
+        InfluxDB["📈 InfluxDB<br/><<TimeSeriesDB>>"]
+        RedisCache["🔴 Redis<br/><<Cache>>"]
+        DataWarehouse["🏛️ Data Warehouse<br/><<Analytics>>"]
+        OpenAIAPI["🤖 OpenAI API<br/><<AIService>>"]
+        TensorFlowServing["🧠 TensorFlow Serving<br/><<MLService>>"]
+        FCMService["📱 FCM Service<br/><<NotificationService>>"]
+    end
+    
+    %% ===== EVENTS =====
+    subgraph ProgressionEvents ["📨 Domain Events"]
+        PerformanceRecordedEvent["📊 Performance Recorded<br/><<DomainEvent>>"]
+        PersonalRecordAchievedEvent["🏆 Personal Record Achieved<br/><<DomainEvent>>"]
+        SessionStartedEvent["▶️ Session Started<br/><<DomainEvent>>"]
+        SessionCompletedEvent["✅ Session Completed<br/><<DomainEvent>>"]
+        GoalSetEvent["🎯 Goal Set<br/><<DomainEvent>>"]
+        GoalAchievedEvent["🏅 Goal Achieved<br/><<DomainEvent>>"]
+        MilestoneAchievedEvent["🎖️ Milestone Achieved<br/><<DomainEvent>>"]
+        PlateauDetectedEvent["📉 Plateau Detected<br/><<DomainEvent>>"]
+    end
+    
+    %% ===== READ MODELS =====
+    subgraph ProgressionReadModels ["📊 Read Models"]
+        ProgressionDashboardRM["📈 Progression Dashboard<br/><<ReadModel>>"]
+        PersonalRecordsRM["🏆 Personal Records<br/><<ReadModel>>"]
+        GoalProgressRM["🎯 Goal Progress<br/><<ReadModel>>"]
+        SessionHistoryRM["📅 Session History<br/><<ReadModel>>"]
+        LeaderboardRM["🏅 Leaderboard<br/><<ReadModel>>"]
+        ProgressInsightsRM["🤖 Progress Insights<br/><<ReadModel>>"]
+        TrainingLoadRM["💪 Training Load<br/><<ReadModel>>"]
+    end
+    
+    %% ===== RELATIONSHIPS =====
+    
+    %% Domain to Ports (Dependency Inversion)
+    ProgressionTracking -->|uses| IProgressionRepo
+    ProgressionTracking -->|uses| IMetricsCalculator
+    PersonalRecord -->|uses| IPersonalRecordRepo
+    PersonalRecord -->|uses| INotificationService
+    GoalTracking -->|uses| IGoalRepo
+    GoalTracking -->|uses| IAIInsightsService
+    WorkoutSession -->|uses| ISessionRepo
+    WorkoutSession -->|uses| IWorkoutService
+    ProgressAnalysisService -->|uses| IAnalyticsService
+    
+    %% Application to Domain
+    ProgressionCommands -->|orchestrates| ProgressionTracking
+    ProgressionCommands -->|orchestrates| PersonalRecord
+    ProgressionCommands -->|orchestrates| GoalTracking
+    ProgressionCommands -->|orchestrates| WorkoutSession
+    ProgressionQueries -->|reads| ProgressionTracking
+    ProgressionQueries -->|reads| PersonalRecord
+    ProgressionQueries -->|reads| GoalTracking
+    
+    %% Ports to Adapters (Implementation)
+    IProgressionRepo -.->|implements| MongoProgressionRepo
+    IPersonalRecordRepo -.->|implements| MongoRecordRepo
+    IGoalRepo -.->|implements| MongoGoalRepo
+    ISessionRepo -.->|implements| MongoSessionRepo
+    IPerformanceRepo -.->|implements| TimeSeriesPerformanceRepo
+    IMetricsCalculator -.->|implements| DataAnalyticsAdapter
+    IAnalyticsService -.->|implements| DataAnalyticsAdapter
+    INotificationService -.->|implements| FCMNotificationAdapter
+    IAIInsightsService -.->|implements| OpenAIInsightsAdapter
+    IWorkoutService -.->|implements| WorkoutContextAdapter
+    
+    %% Adapters to External Systems
+    MongoProgressionRepo -->|connects| MongoDB
+    MongoRecordRepo -->|connects| MongoDB
+    MongoGoalRepo -->|connects| MongoDB
+    MongoSessionRepo -->|connects| MongoDB
+    TimeSeriesPerformanceRepo -->|connects| InfluxDB
+    ProgressionCache -->|connects| RedisCache
+    RecordsCache -->|connects| RedisCache
+    LeaderboardCache -->|connects| RedisCache
+    InsightsCache -->|connects| RedisCache
+    DataAnalyticsAdapter -->|connects| DataWarehouse
+    OpenAIInsightsAdapter -->|connects| OpenAIAPI
+    TensorFlowMLAdapter -->|connects| TensorFlowServing
+    FCMNotificationAdapter -->|connects| FCMService
+    
+    %% Cross-Context Communication
+    WorkoutContextAdapter -.->|async calls| WorkoutContext
+    
+    %% Domain Events
+    ProgressionTracking -.->|publishes| PerformanceRecordedEvent
+    PersonalRecord -.->|publishes| PersonalRecordAchievedEvent
+    WorkoutSession -.->|publishes| SessionStartedEvent
+    WorkoutSession -.->|publishes| SessionCompletedEvent
+    GoalTracking -.->|publishes| GoalSetEvent
+    GoalTracking -.->|publishes| GoalAchievedEvent
+    Milestone -.->|publishes| MilestoneAchievedEvent
+    ProgressAnalysisService -.->|publishes| PlateauDetectedEvent
+    
+    %% Event to Read Models
+    PerformanceRecordedEvent -.->|projects to| ProgressionDashboardRM
+    PersonalRecordAchievedEvent -.->|projects to| PersonalRecordsRM
+    SessionCompletedEvent -.->|projects to| SessionHistoryRM
+    GoalSetEvent -.->|projects to| GoalProgressRM
+    GoalAchievedEvent -.->|projects to| GoalProgressRM
+    PersonalRecordAchievedEvent -.->|projects to| LeaderboardRM
+    PlateauDetectedEvent -.->|projects to| ProgressInsightsRM
+    
+    %% Sagas
+    SessionCompletionSaga -.->|listens to| SessionCompletedEvent
+    RecordAchievementSaga -.->|listens to| PersonalRecordAchievedEvent
+    GoalProgressSaga -.->|listens to| GoalAchievedEvent
+    ProgressAnalysisSaga -.->|listens to| PerformanceRecordedEvent
+    
+    %% External References
+    WorkoutContext["💪 Workout Context<br/><<ExternalContext>>"]
+    
+    %% ===== STYLING =====
+    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
+    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    
+    class ProgressionTracking,PersonalRecord,GoalTracking,WorkoutSession aggregate
+    class DailyPerformance,Milestone,SetData,WorkoutSessionExercise entity
+    class MetricValue,ProgressPercentage,ImprovementRate,TrainingLoad valueObject
+    class IProgressionRepo,IPersonalRecordRepo,IGoalRepo,ISessionRepo,IPerformanceRepo,IMetricsCalculator,IAnalyticsService,INotificationService,IAIInsightsService,IWorkoutService port
+    class MongoProgressionRepo,MongoRecordRepo,MongoGoalRepo,MongoSessionRepo,TimeSeriesPerformanceRepo,DataAnalyticsAdapter,WorkoutContextAdapter,OpenAIInsightsAdapter,FCMNotificationAdapter,TensorFlowMLAdapter,ProgressionCache,RecordsCache,LeaderboardCache,InsightsCache adapter
+    class MongoDB,InfluxDB,RedisCache,DataWarehouse,OpenAIAPI,TensorFlowServing,FCMService external
+    class RecordPerformanceCmd,StartSessionCmd,CompleteSessionCmd,RecordSetCmd,SetGoalCmd,UpdateGoalCmd,AchieveMilestoneCmd command
+    class GetProgressionQuery,GetPersonalRecordsQuery,GetGoalsQuery,GetSessionHistoryQuery,GetProgressStatsQuery,GetInsightsQuery,GetLeaderboardQuery query
+    class PerformanceRecordedEvent,PersonalRecordAchievedEvent,SessionStartedEvent,SessionCompletedEvent,GoalSetEvent,GoalAchievedEvent,MilestoneAchievedEvent,PlateauDetectedEvent event
+    class ProgressionDashboardRM,PersonalRecordsRM,GoalProgressRM,SessionHistoryRM,LeaderboardRM,ProgressInsightsRM,TrainingLoadRM readModel
+    class WorkoutContext externalContext

@@ -1,0 +1,287 @@
+graph TB
+    %% ===== TRAINER MANAGEMENT CONTEXT =====
+    subgraph TrainerContext ["👨‍🏫 Trainer Management Context"]
+        
+        %% ===== DOMAIN LAYER (HEXAGON CORE) =====
+        subgraph TrainerDomain ["Domain Layer <<DomainCore>>"]
+            direction TB
+            
+            %% Aggregates
+            TrainerProfile["👨‍🏫 Trainer Profile<br/><<AggregateRoot>>"]
+            ClientCoachRelationship["🤝 Client-Coach Relationship<br/><<AggregateRoot>>"]
+            CoachingSession["📅 Coaching Session<br/><<AggregateRoot>>"]
+            ProgramAssignment["📋 Program Assignment<br/><<AggregateRoot>>"]
+            TrainerDashboard["📊 Trainer Dashboard<br/><<AggregateRoot>>"]
+            
+            %% Entities
+            Certificate["🏅 Certificate<br/><<Entity>>"]
+            ClientAlert["🚨 Client Alert<br/><<Entity>>"]
+            TrainingFeedback["💬 Training Feedback<br/><<Entity>>"]
+            MediaNote["📝 Media Note<br/><<Entity>>"]
+            PermissionSet["🔒 Permission Set<br/><<Entity>>"]
+            ProgramModification["🔧 Program Modification<br/><<Entity>>"]
+            
+            %% Value Objects
+            TrainerId["🆔 Trainer ID<br/><<ValueObject>>"]
+            ClientId["🆔 Client ID<br/><<ValueObject>>"]
+            SessionDuration["⏱️ Session Duration<br/><<ValueObject>>"]
+            FeedbackRating["⭐ Feedback Rating<br/><<ValueObject>>"]
+            HourlyRate["💰 Hourly Rate<br/><<ValueObject>>"]
+            
+            %% Domain Services
+            RelationshipManagementService["🤝 Relationship Management<br/><<DomainService>>"]
+            SessionSchedulingService["📅 Session Scheduling<br/><<DomainService>>"]
+            FeedbackAnalysisService["💬 Feedback Analysis<br/><<DomainService>>"]
+            ProgressMonitoringService["📊 Progress Monitoring<br/><<DomainService>>"]
+        end
+        
+        %% ===== PORTS (DOMAIN INTERFACES) =====
+        subgraph TrainerPorts ["Ports <<Port>>"]
+            direction TB
+            
+            %% Repository Ports
+            ITrainerRepo["👨‍🏫 ITrainerRepository<br/><<Port>>"]
+            IRelationshipRepo["🤝 IRelationshipRepository<br/><<Port>>"]
+            ISessionRepo["📅 ISessionRepository<br/><<Port>>"]
+            IAssignmentRepo["📋 IAssignmentRepository<br/><<Port>>"]
+            IFeedbackRepo["💬 IFeedbackRepository<br/><<Port>>"]
+            IAlertRepo["🚨 IAlertRepository<br/><<Port>>"]
+            
+            %% Service Ports
+            IPaymentService["💳 IPaymentService<br/><<Port>>"]
+            ICalendarService["📅 ICalendarService<br/><<Port>>"]
+            IVideoCallService["📹 IVideoCallService<br/><<Port>>"]
+            INotificationService["🔔 INotificationService<br/><<Port>>"]
+            IUserService["👤 IUserService<br/><<Port>>"]
+            IProgramService["📋 IProgramService<br/><<Port>>"]
+            IProgressionService["📈 IProgressionService<br/><<Port>>"]
+        end
+        
+        %% ===== APPLICATION LAYER =====
+        subgraph TrainerApplication ["Application Layer <<Application>>"]
+            direction TB
+            
+            %% Commands
+            subgraph TrainerCommands ["Commands"]
+                CreateTrainerProfileCmd["➕ Create Trainer Profile<br/><<Command>>"]
+                UpdateTrainerProfileCmd["✏️ Update Profile<br/><<Command>>"]
+                EstablishRelationshipCmd["🤝 Establish Relationship<br/><<Command>>"]
+                ScheduleSessionCmd["📅 Schedule Session<br/><<Command>>"]
+                ProvideTrainingFeedbackCmd["💬 Provide Feedback<br/><<Command>>"]
+                AssignProgramCmd["📋 Assign Program<br/><<Command>>"]
+                ModifyProgramCmd["🔧 Modify Program<br/><<Command>>"]
+                CreateClientAlertCmd["🚨 Create Alert<br/><<Command>>"]
+                ProcessPaymentCmd["💳 Process Payment<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph TrainerQueries ["Queries"]
+                GetTrainerProfileQuery["👨‍🏫 Get Trainer Profile<br/><<Query>>"]
+                GetClientListQuery["👥 Get Client List<br/><<Query>>"]
+                GetUpcomingSessionsQuery["📅 Get Upcoming Sessions<br/><<Query>>"]
+                GetTrainerDashboardQuery["📊 Get Dashboard<br/><<Query>>"]
+                GetClientProgressQuery["📈 Get Client Progress<br/><<Query>>"]
+                GetFeedbackHistoryQuery["💬 Get Feedback History<br/><<Query>>"]
+                GetActiveAlertsQuery["🚨 Get Active Alerts<br/><<Query>>"]
+                GetEarningsReportQuery["💰 Get Earnings Report<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph TrainerSagas ["Sagas"]
+                ClientOnboardingSaga["🎯 Client Onboarding<br/><<Saga>>"]
+                SessionCompletionSaga["📅 Session Completion<br/><<Saga>>"]
+                PaymentProcessingSaga["💳 Payment Processing<br/><<Saga>>"]
+                ProgressReviewSaga["📊 Progress Review<br/><<Saga>>"]
+            end
+        end
+        
+        %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
+        subgraph TrainerAdapters ["Infrastructure Layer <<Adapter>>"]
+            direction TB
+            
+            %% Repository Adapters
+            subgraph TrainerRepositoryAdapters ["Repository Adapters"]
+                MongoTrainerRepo["🗄️ Mongo Trainer Repository<br/><<RepositoryAdapter>>"]
+                MongoRelationshipRepo["🗄️ Mongo Relationship Repository<br/><<RepositoryAdapter>>"]
+                MongoSessionRepo["🗄️ Mongo Session Repository<br/><<RepositoryAdapter>>"]
+                MongoAssignmentRepo["🗄️ Mongo Assignment Repository<br/><<RepositoryAdapter>>"]
+                MongoFeedbackRepo["🗄️ Mongo Feedback Repository<br/><<RepositoryAdapter>>"]
+                MongoAlertRepo["🗄️ Mongo Alert Repository<br/><<RepositoryAdapter>>"]
+            end
+            
+            %% Service Adapters
+            subgraph TrainerServiceAdapters ["Service Adapters"]
+                StripePaymentAdapter["💳 Stripe Payment<br/><<PaymentAdapter>>"]
+                GoogleCalendarAdapter["📅 Google Calendar<br/><<CalendarAdapter>>"]
+                ZoomVideoAdapter["📹 Zoom Video<br/><<VideoAdapter>>"]
+                FCMNotificationAdapter["📱 FCM Notification<br/><<NotificationAdapter>>"]
+                UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
+                ProgramContextAdapter["📋 Program Context<br/><<ContextAdapter>>"]
+                ProgressionContextAdapter["📈 Progression Context<br/><<ContextAdapter>>"]
+            end
+            
+            %% Cache Adapters
+            subgraph TrainerCacheAdapters ["Cache Adapters"]
+                TrainerProfileCache["💾 Trainer Profile Cache<br/><<CacheAdapter>>"]
+                ClientListCache["💾 Client List Cache<br/><<CacheAdapter>>"]
+                SessionCache["💾 Session Cache<br/><<CacheAdapter>>"]
+                DashboardCache["💾 Dashboard Cache<br/><<CacheAdapter>>"]
+            end
+        end
+    end
+    
+    %% ===== EXTERNAL SYSTEMS =====
+    subgraph TrainerExternal ["🌐 External Systems"]
+        MongoDB["🗄️ MongoDB<br/><<Database>>"]
+        RedisCache["🔴 Redis<br/><<Cache>>"]
+        StripeAPI["💳 Stripe API<br/><<PaymentService>>"]
+        GoogleCalendarAPI["📅 Google Calendar API<br/><<CalendarService>>"]
+        ZoomAPI["📹 Zoom API<br/><<VideoService>>"]
+        FCMService["📱 FCM Service<br/><<NotificationService>>"]
+        EmailService["📧 Email Service<br/><<EmailService>>"]
+        SMSService["📱 SMS Service<br/><<SMSService>>"]
+    end
+    
+    %% ===== EVENTS =====
+    subgraph TrainerEvents ["📨 Domain Events"]
+        TrainerProfileCreatedEvent["👨‍🏫 Trainer Profile Created<br/><<DomainEvent>>"]
+        RelationshipEstablishedEvent["🤝 Relationship Established<br/><<DomainEvent>>"]
+        SessionScheduledEvent["📅 Session Scheduled<br/><<DomainEvent>>"]
+        SessionCompletedEvent["✅ Session Completed<br/><<DomainEvent>>"]
+        FeedbackProvidedEvent["💬 Feedback Provided<br/><<DomainEvent>>"]
+        ProgramAssignedEvent["📋 Program Assigned<br/><<DomainEvent>>"]
+        ProgramModifiedEvent["🔧 Program Modified<br/><<DomainEvent>>"]
+        ClientAlertCreatedEvent["🚨 Client Alert Created<br/><<DomainEvent>>"]
+        PaymentProcessedEvent["💳 Payment Processed<br/><<DomainEvent>>"]
+    end
+    
+    %% ===== READ MODELS =====
+    subgraph TrainerReadModels ["📊 Read Models"]
+        TrainerProfileRM["👨‍🏫 Trainer Profile<br/><<ReadModel>>"]
+        TrainerDashboardRM["📊 Trainer Dashboard<br/><<ReadModel>>"]
+        ClientListRM["👥 Client List<br/><<ReadModel>>"]
+        SessionScheduleRM["📅 Session Schedule<br/><<ReadModel>>"]
+        FeedbackSummaryRM["💬 Feedback Summary<br/><<ReadModel>>"]
+        EarningsReportRM["💰 Earnings Report<br/><<ReadModel>>"]
+        ClientProgressRM["📈 Client Progress<br/><<ReadModel>>"]
+        AlertSummaryRM["🚨 Alert Summary<br/><<ReadModel>>"]
+    end
+    
+    %% ===== RELATIONSHIPS =====
+    
+    %% Domain to Ports (Dependency Inversion)
+    TrainerProfile -->|uses| ITrainerRepo
+    TrainerProfile -->|uses| IPaymentService
+    ClientCoachRelationship -->|uses| IRelationshipRepo
+    ClientCoachRelationship -->|uses| IUserService
+    CoachingSession -->|uses| ISessionRepo
+    CoachingSession -->|uses| ICalendarService
+    CoachingSession -->|uses| IVideoCallService
+    ProgramAssignment -->|uses| IAssignmentRepo
+    ProgramAssignment -->|uses| IProgramService
+    SessionSchedulingService -->|uses| INotificationService
+    ProgressMonitoringService -->|uses| IProgressionService
+    
+    %% Application to Domain
+    TrainerCommands -->|orchestrates| TrainerProfile
+    TrainerCommands -->|orchestrates| ClientCoachRelationship
+    TrainerCommands -->|orchestrates| CoachingSession
+    TrainerCommands -->|orchestrates| ProgramAssignment
+    TrainerQueries -->|reads| TrainerProfile
+    TrainerQueries -->|reads| ClientCoachRelationship
+    TrainerQueries -->|reads| CoachingSession
+    TrainerQueries -->|reads| TrainerDashboard
+    
+    %% Ports to Adapters (Implementation)
+    ITrainerRepo -.->|implements| MongoTrainerRepo
+    IRelationshipRepo -.->|implements| MongoRelationshipRepo
+    ISessionRepo -.->|implements| MongoSessionRepo
+    IAssignmentRepo -.->|implements| MongoAssignmentRepo
+    IFeedbackRepo -.->|implements| MongoFeedbackRepo
+    IAlertRepo -.->|implements| MongoAlertRepo
+    IPaymentService -.->|implements| StripePaymentAdapter
+    ICalendarService -.->|implements| GoogleCalendarAdapter
+    IVideoCallService -.->|implements| ZoomVideoAdapter
+    INotificationService -.->|implements| FCMNotificationAdapter
+    IUserService -.->|implements| UserContextAdapter
+    IProgramService -.->|implements| ProgramContextAdapter
+    IProgressionService -.->|implements| ProgressionContextAdapter
+    
+    %% Adapters to External Systems
+    MongoTrainerRepo -->|connects| MongoDB
+    MongoRelationshipRepo -->|connects| MongoDB
+    MongoSessionRepo -->|connects| MongoDB
+    MongoAssignmentRepo -->|connects| MongoDB
+    MongoFeedbackRepo -->|connects| MongoDB
+    MongoAlertRepo -->|connects| MongoDB
+    TrainerProfileCache -->|connects| RedisCache
+    ClientListCache -->|connects| RedisCache
+    SessionCache -->|connects| RedisCache
+    DashboardCache -->|connects| RedisCache
+    StripePaymentAdapter -->|connects| StripeAPI
+    GoogleCalendarAdapter -->|connects| GoogleCalendarAPI
+    ZoomVideoAdapter -->|connects| ZoomAPI
+    FCMNotificationAdapter -->|connects| FCMService
+    FCMNotificationAdapter -->|also uses| EmailService
+    FCMNotificationAdapter -->|also uses| SMSService
+    
+    %% Cross-Context Communication
+    UserContextAdapter -.->|async calls| UserContext
+    ProgramContextAdapter -.->|async calls| ProgramContext
+    ProgressionContextAdapter -.->|async calls| ProgressionContext
+    
+    %% Domain Events
+    TrainerProfile -.->|publishes| TrainerProfileCreatedEvent
+    ClientCoachRelationship -.->|publishes| RelationshipEstablishedEvent
+    CoachingSession -.->|publishes| SessionScheduledEvent
+    CoachingSession -.->|publishes| SessionCompletedEvent
+    TrainingFeedback -.->|publishes| FeedbackProvidedEvent
+    ProgramAssignment -.->|publishes| ProgramAssignedEvent
+    ProgramModification -.->|publishes| ProgramModifiedEvent
+    ClientAlert -.->|publishes| ClientAlertCreatedEvent
+    TrainerProfile -.->|publishes| PaymentProcessedEvent
+    
+    %% Event to Read Models
+    TrainerProfileCreatedEvent -.->|projects to| TrainerProfileRM
+    RelationshipEstablishedEvent -.->|projects to| ClientListRM
+    SessionScheduledEvent -.->|projects to| SessionScheduleRM
+    SessionCompletedEvent -.->|projects to| TrainerDashboardRM
+    FeedbackProvidedEvent -.->|projects to| FeedbackSummaryRM
+    PaymentProcessedEvent -.->|projects to| EarningsReportRM
+    ClientAlertCreatedEvent -.->|projects to| AlertSummaryRM
+    
+    %% Sagas
+    ClientOnboardingSaga -.->|listens to| RelationshipEstablishedEvent
+    SessionCompletionSaga -.->|listens to| SessionCompletedEvent
+    PaymentProcessingSaga -.->|listens to| SessionCompletedEvent
+    ProgressReviewSaga -.->|listens to| FeedbackProvidedEvent
+    
+    %% External References
+    UserContext["👤 User Context<br/><<ExternalContext>>"]
+    ProgramContext["📋 Program Context<br/><<ExternalContext>>"]
+    ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+    
+    %% ===== STYLING =====
+    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
+    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    classDef externalContext fill:#f5f5f5,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5
+    
+    class TrainerProfile,ClientCoachRelationship,CoachingSession,ProgramAssignment,TrainerDashboard aggregate
+    class Certificate,ClientAlert,TrainingFeedback,MediaNote,PermissionSet,ProgramModification entity
+    class TrainerId,ClientId,SessionDuration,FeedbackRating,HourlyRate valueObject
+    class ITrainerRepo,IRelationshipRepo,ISessionRepo,IAssignmentRepo,IFeedbackRepo,IAlertRepo,IPaymentService,ICalendarService,IVideoCallService,INotificationService,IUserService,IProgramService,IProgressionService port
+    class MongoTrainerRepo,MongoRelationshipRepo,MongoSessionRepo,MongoAssignmentRepo,MongoFeedbackRepo,MongoAlertRepo,StripePaymentAdapter,GoogleCalendarAdapter,ZoomVideoAdapter,FCMNotificationAdapter,UserContextAdapter,ProgramContextAdapter,ProgressionContextAdapter,TrainerProfileCache,ClientListCache,SessionCache,DashboardCache adapter
+    class MongoDB,RedisCache,StripeAPI,GoogleCalendarAPI,ZoomAPI,FCMService,EmailService,SMSService external
+    class CreateTrainerProfileCmd,UpdateTrainerProfileCmd,EstablishRelationshipCmd,ScheduleSessionCmd,ProvideTrainingFeedbackCmd,AssignProgramCmd,ModifyProgramCmd,CreateClientAlertCmd,ProcessPaymentCmd command
+    class GetTrainerProfileQuery,GetClientListQuery,GetUpcomingSessionsQuery,GetTrainerDashboardQuery,GetClientProgressQuery,GetFeedbackHistoryQuery,GetActiveAlertsQuery,GetEarningsReportQuery query
+    class TrainerProfileCreatedEvent,RelationshipEstablishedEvent,SessionScheduledEvent,SessionCompletedEvent,FeedbackProvidedEvent,ProgramAssignedEvent,ProgramModifiedEvent,ClientAlertCreatedEvent,PaymentProcessedEvent event
+    class TrainerProfileRM,TrainerDashboardRM,ClientListRM,SessionScheduleRM,FeedbackSummaryRM,EarningsReportRM,ClientProgressRM,AlertSummaryRM readModel
+    class UserContext,ProgramContext,ProgressionContext externalContext

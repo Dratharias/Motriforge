@@ -1,0 +1,227 @@
+graph TB
+    %% ===== ORGANIZATION MANAGEMENT CONTEXT =====
+    subgraph OrgContext ["🏢 Organization Management Context"]
+        
+        %% ===== DOMAIN LAYER (HEXAGON CORE) =====
+        subgraph OrgDomain ["Domain Layer <<DomainCore>>"]
+            direction TB
+            
+            %% Aggregates
+            Organization["🏢 Organization<br/><<AggregateRoot>>"]
+            OrganizationMembership["👥 Organization Membership<br/><<AggregateRoot>>"]
+            
+            %% Entities
+            OrganizationMember["👤 Organization Member<br/><<Entity>>"]
+            Invitation["📨 Invitation<br/><<Entity>>"]
+            OrgSettings["⚙️ Settings<br/><<Entity>>"]
+            Contact["📞 Contact<br/><<Entity>>"]
+            
+            %% Value Objects
+            OrgId["🆔 Organization ID<br/><<ValueObject>>"]
+            OrgName["🏢 Organization Name<br/><<ValueObject>>"]
+            MemberRole["🎭 Member Role<br/><<ValueObject>>"]
+            InvitationToken["🎫 Invitation Token<br/><<ValueObject>>"]
+            
+            %% Domain Services
+            MembershipService["👥 Membership Service<br/><<DomainService>>"]
+            InvitationService["📨 Invitation Service<br/><<DomainService>>"]
+            OrgValidationService["✅ Organization Validation<br/><<DomainService>>"]
+        end
+        
+        %% ===== PORTS (DOMAIN INTERFACES) =====
+        subgraph OrgPorts ["Ports <<Port>>"]
+            direction TB
+            
+            %% Repository Ports
+            IOrganizationRepo["🏢 IOrganizationRepository<br/><<Port>>"]
+            IMemberRepo["👥 IMemberRepository<br/><<Port>>"]
+            IInvitationRepo["📨 IInvitationRepository<br/><<Port>>"]
+            ISettingsRepo["⚙️ ISettingsRepository<br/><<Port>>"]
+            
+            %% Service Ports
+            IEmailService["📧 IEmailService<br/><<Port>>"]
+            IPermissionService["🔒 IPermissionService<br/><<Port>>"]
+            IBillingService["💳 IBillingService<br/><<Port>>"]
+            IAnalyticsService["📊 IAnalyticsService<br/><<Port>>"]
+        end
+        
+        %% ===== APPLICATION LAYER =====
+        subgraph OrgApplication ["Application Layer <<Application>>"]
+            direction TB
+            
+            %% Commands
+            subgraph OrgCommands ["Commands"]
+                CreateOrgCmd["➕ Create Organization<br/><<Command>>"]
+                UpdateOrgCmd["✏️ Update Organization<br/><<Command>>"]
+                AddMemberCmd["👤 Add Member<br/><<Command>>"]
+                RemoveMemberCmd["➖ Remove Member<br/><<Command>>"]
+                ChangeRoleCmd["🎭 Change Role<br/><<Command>>"]
+                InviteMemberCmd["📨 Invite Member<br/><<Command>>"]
+                AcceptInvitationCmd["✅ Accept Invitation<br/><<Command>>"]
+                UpdateSettingsCmd["⚙️ Update Settings<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph OrgQueries ["Queries"]
+                GetOrgQuery["🏢 Get Organization<br/><<Query>>"]
+                GetMembersQuery["👥 Get Members<br/><<Query>>"]
+                GetInvitationsQuery["📨 Get Invitations<br/><<Query>>"]
+                GetOrgStatsQuery["📊 Get Org Stats<br/><<Query>>"]
+                GetUserOrgsQuery["👤 Get User Orgs<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph OrgSagas ["Sagas"]
+                OrgSetupSaga["🎯 Organization Setup<br/><<Saga>>"]
+                MemberInvitationSaga["📨 Member Invitation<br/><<Saga>>"]
+                OrgDeactivationSaga["🚫 Org Deactivation<br/><<Saga>>"]
+            end
+        end
+        
+        %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
+        subgraph OrgAdapters ["Infrastructure Layer <<Adapter>>"]
+            direction TB
+            
+            %% Repository Adapters
+            subgraph OrgRepositoryAdapters ["Repository Adapters"]
+                MongoOrgRepo["🗄️ Mongo Organization Repository<br/><<RepositoryAdapter>>"]
+                MongoMemberRepo["🗄️ Mongo Member Repository<br/><<RepositoryAdapter>>"]
+                MongoInvitationRepo["🗄️ Mongo Invitation Repository<br/><<RepositoryAdapter>>"]
+                MongoSettingsRepo["🗄️ Mongo Settings Repository<br/><<RepositoryAdapter>>"]
+            end
+            
+            %% Service Adapters
+            subgraph OrgServiceAdapters ["Service Adapters"]
+                SendGridEmailAdapter["📧 SendGrid Email<br/><<EmailAdapter>>"]
+                Auth0PermissionAdapter["🔒 Auth0 Permission<br/><<PermissionAdapter>>"]
+                StripeBillingAdapter["💳 Stripe Billing<br/><<BillingAdapter>>"]
+                MixpanelAnalyticsAdapter["📊 Mixpanel Analytics<br/><<AnalyticsAdapter>>"]
+            end
+            
+            %% Cache Adapters
+            subgraph OrgCacheAdapters ["Cache Adapters"]
+                OrgCache["💾 Organization Cache<br/><<CacheAdapter>>"]
+                MemberCache["💾 Member Cache<br/><<CacheAdapter>>"]
+                PermissionCache["💾 Permission Cache<br/><<CacheAdapter>>"]
+            end
+        end
+    end
+    
+    %% ===== EXTERNAL SYSTEMS =====
+    subgraph OrgExternal ["🌐 External Systems"]
+        MongoDB["🗄️ MongoDB<br/><<Database>>"]
+        RedisCache["🔴 Redis<br/><<Cache>>"]
+        SendGridAPI["📧 SendGrid API<br/><<EmailService>>"]
+        Auth0API["🔒 Auth0 API<br/><<AuthService>>"]
+        StripeAPI["💳 Stripe API<br/><<PaymentService>>"]
+        MixpanelAPI["📊 Mixpanel API<br/><<AnalyticsService>>"]
+    end
+    
+    %% ===== EVENTS =====
+    subgraph OrgEvents ["📨 Domain Events"]
+        OrgCreatedEvent["🏢 Organization Created<br/><<DomainEvent>>"]
+        OrgUpdatedEvent["✏️ Organization Updated<br/><<DomainEvent>>"]
+        MemberAddedEvent["👤 Member Added<br/><<DomainEvent>>"]
+        MemberRemovedEvent["➖ Member Removed<br/><<DomainEvent>>"]
+        RoleChangedEvent["🎭 Role Changed<br/><<DomainEvent>>"]
+        InvitationSentEvent["📨 Invitation Sent<br/><<DomainEvent>>"]
+        InvitationAcceptedEvent["✅ Invitation Accepted<br/><<DomainEvent>>"]
+        SettingsUpdatedEvent["⚙️ Settings Updated<br/><<DomainEvent>>"]
+    end
+    
+    %% ===== READ MODELS =====
+    subgraph OrgReadModels ["📊 Read Models"]
+        OrgDashboardRM["🏢 Organization Dashboard<br/><<ReadModel>>"]
+        MemberListRM["👥 Member List<br/><<ReadModel>>"]
+        OrgStatsRM["📊 Organization Stats<br/><<ReadModel>>"]
+        InvitationListRM["📨 Invitation List<br/><<ReadModel>>"]
+        UserOrgsRM["👤 User Organizations<br/><<ReadModel>>"]
+    end
+    
+    %% ===== RELATIONSHIPS =====
+    
+    %% Domain to Ports (Dependency Inversion)
+    Organization -->|uses| IOrganizationRepo
+    Organization -->|uses| IEmailService
+    Organization -->|uses| IBillingService
+    OrganizationMembership -->|uses| IMemberRepo
+    OrganizationMembership -->|uses| IPermissionService
+    MembershipService -->|uses| IAnalyticsService
+    InvitationService -->|uses| IInvitationRepo
+    
+    %% Application to Domain
+    OrgCommands -->|orchestrates| Organization
+    OrgCommands -->|orchestrates| OrganizationMembership
+    OrgQueries -->|reads| Organization
+    OrgQueries -->|reads| OrganizationMembership
+    
+    %% Ports to Adapters (Implementation)
+    IOrganizationRepo -.->|implements| MongoOrgRepo
+    IMemberRepo -.->|implements| MongoMemberRepo
+    IInvitationRepo -.->|implements| MongoInvitationRepo
+    ISettingsRepo -.->|implements| MongoSettingsRepo
+    IEmailService -.->|implements| SendGridEmailAdapter
+    IPermissionService -.->|implements| Auth0PermissionAdapter
+    IBillingService -.->|implements| StripeBillingAdapter
+    IAnalyticsService -.->|implements| MixpanelAnalyticsAdapter
+    
+    %% Adapters to External Systems
+    MongoOrgRepo -->|connects| MongoDB
+    MongoMemberRepo -->|connects| MongoDB
+    MongoInvitationRepo -->|connects| MongoDB
+    MongoSettingsRepo -->|connects| MongoDB
+    OrgCache -->|connects| RedisCache
+    MemberCache -->|connects| RedisCache
+    PermissionCache -->|connects| RedisCache
+    SendGridEmailAdapter -->|connects| SendGridAPI
+    Auth0PermissionAdapter -->|connects| Auth0API
+    StripeBillingAdapter -->|connects| StripeAPI
+    MixpanelAnalyticsAdapter -->|connects| MixpanelAPI
+    
+    %% Domain Events
+    Organization -.->|publishes| OrgCreatedEvent
+    Organization -.->|publishes| OrgUpdatedEvent
+    Organization -.->|publishes| SettingsUpdatedEvent
+    OrganizationMembership -.->|publishes| MemberAddedEvent
+    OrganizationMembership -.->|publishes| MemberRemovedEvent
+    OrganizationMembership -.->|publishes| RoleChangedEvent
+    InvitationService -.->|publishes| InvitationSentEvent
+    InvitationService -.->|publishes| InvitationAcceptedEvent
+    
+    %% Event to Read Models
+    OrgCreatedEvent -.->|projects to| OrgDashboardRM
+    OrgUpdatedEvent -.->|projects to| OrgDashboardRM
+    MemberAddedEvent -.->|projects to| MemberListRM
+    MemberAddedEvent -.->|projects to| OrgStatsRM
+    MemberRemovedEvent -.->|projects to| MemberListRM
+    RoleChangedEvent -.->|projects to| MemberListRM
+    InvitationSentEvent -.->|projects to| InvitationListRM
+    
+    %% Sagas
+    OrgSetupSaga -.->|listens to| OrgCreatedEvent
+    MemberInvitationSaga -.->|listens to| InvitationSentEvent
+    MemberInvitationSaga -.->|listens to| InvitationAcceptedEvent
+    OrgDeactivationSaga -.->|orchestrates| Organization
+    
+    %% ===== STYLING =====
+    classDef aggregate fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef valueObject fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef port fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef adapter fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    classDef external fill:#fafafa,stroke:#424242,stroke-width:2px
+    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef query fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef event fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef readModel fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    
+    class Organization,OrganizationMembership aggregate
+    class OrganizationMember,Invitation,OrgSettings,Contact entity
+    class OrgId,OrgName,MemberRole,InvitationToken valueObject
+    class IOrganizationRepo,IMemberRepo,IInvitationRepo,ISettingsRepo,IEmailService,IPermissionService,IBillingService,IAnalyticsService port
+    class MongoOrgRepo,MongoMemberRepo,MongoInvitationRepo,MongoSettingsRepo,SendGridEmailAdapter,Auth0PermissionAdapter,StripeBillingAdapter,MixpanelAnalyticsAdapter,OrgCache,MemberCache,PermissionCache adapter
+    class MongoDB,RedisCache,SendGridAPI,Auth0API,StripeAPI,MixpanelAPI external
+    class CreateOrgCmd,UpdateOrgCmd,AddMemberCmd,RemoveMemberCmd,ChangeRoleCmd,InviteMemberCmd,AcceptInvitationCmd,UpdateSettingsCmd command
+    class GetOrgQuery,GetMembersQuery,GetInvitationsQuery,GetOrgStatsQuery,GetUserOrgsQuery query
+    class OrgCreatedEvent,OrgUpdatedEvent,MemberAddedEvent,MemberRemovedEvent,RoleChangedEvent,InvitationSentEvent,InvitationAcceptedEvent,SettingsUpdatedEvent event
+    class OrgDashboardRM,MemberListRM,OrgStatsRM,InvitationListRM,UserOrgsRM readModel
