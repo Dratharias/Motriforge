@@ -57,18 +57,18 @@
 - [x] `BaseRepository<T>` (`src/data/repositories/BaseRepository.ts`) [B] `repository-layer`
 - [x] `UserRepository` (`src/data/repositories/UserRepository.ts`) [B] `repository-layer`
 - [x] `OrganizationRepository` (`src/data/repositories/OrganizationRepository.ts`) [B] `repository-layer`
-- [ ] `TokenRepository` (`src/data/repositories/TokenRepository.ts`) [B] `repository-layer`
-- [ ] `PermissionRepository` (`src/data/repositories/PermissionRepository.ts`) [B] `repository-layer`
-- [ ] `MediaRepository` (`src/data/repositories/MediaRepository.ts`) [B] `repository-layer`
-- [ ] `ExerciseRepository` (`src/data/repositories/ExerciseRepository.ts`) [B] `repository-layer`
-- [ ] `WorkoutRepository` (`src/data/repositories/WorkoutRepository.ts`) [B] `repository-layer`
-- [ ] `ProgramRepository` (`src/data/repositories/ProgramRepository.ts`) [B] `repository-layer`
-- [ ] `ActivityRepository` (`src/data/repositories/ActivityRepository.ts`) [B] `repository-layer`
-- [ ] `FavoriteRepository` (`src/data/repositories/FavoriteRepository.ts`) [B] `repository-layer`
-- [ ] `AnalyticsRepository` (`src/data/repositories/AnalyticsRepository.ts`) [B] `repository-layer`
-- [ ] `NotificationRepository` (`src/data/repositories/NotificationRepository.ts`) [B] `repository-layer`
-- [ ] `SearchRepository` (`src/data/repositories/SearchRepository.ts`) [B] `repository-layer`
-- [ ] `PushTokenRepository` (`src/data/repositories/PushTokenRepository.ts`) [B] `repository-layer`
+- [x] `TokenRepository` (`src/data/repositories/TokenRepository.ts`) [B] `repository-layer`
+- [x] `PermissionRepository` (`src/data/repositories/PermissionRepository.ts`) [B] `repository-layer`
+- [x] `MediaRepository` (`src/data/repositories/MediaRepository.ts`) [B] `repository-layer`
+- [x] `ExerciseRepository` (`src/data/repositories/ExerciseRepository.ts`) [B] `repository-layer`
+- [x] `WorkoutRepository` (`src/data/repositories/WorkoutRepository.ts`) [B] `repository-layer`
+- [x] `ProgramRepository` (`src/data/repositories/ProgramRepository.ts`) [B] `repository-layer`
+- [x] `ActivityRepository` (`src/data/repositories/ActivityRepository.ts`) [B] `repository-layer`
+- [x] `FavoriteRepository` (`src/data/repositories/FavoriteRepository.ts`) [B] `repository-layer`
+- [x] `AnalyticsRepository` (`src/data/repositories/AnalyticsRepository.ts`) [B] `repository-layer`
+- [x] `NotificationRepository` (`src/data/repositories/NotificationRepository.ts`) [B] `repository-layer`
+- [x] `SearchRepository` (`src/data/repositories/SearchRepository.ts`) [B] `repository-layer`
+- [x] `PushTokenRepository` (`src/data/repositories/PushTokenRepository.ts`) [B] `repository-layer`
 - [ ] `ProgressionRepository` (`src/data/repositories/ProgressionRepository.ts`) [B] `progression-tracking-system`
 - [ ] `PersonalRecordRepository` (`src/data/repositories/PersonalRecordRepository.ts`) [B] `progression-tracking-system`
 - [ ] `GoalRepository` (`src/data/repositories/GoalRepository.ts`) [B] `progression-tracking-system`

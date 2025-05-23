@@ -63,7 +63,7 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
   /**
    * Find organizations by owner ID
    */
-  public async findByOwnerId(ownerId: string | Types.ObjectId): Promise<IOrganization[]> {
+  public async findByOwnerId(ownerId: Types.ObjectId): Promise<IOrganization[]> {
     const cacheKey = this.cacheHelpers.generateCustomKey('owner', { 
       ownerId: ownerId.toString() 
     });
@@ -77,7 +77,7 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
       this.logger.debug('Finding organizations by owner', { ownerId: ownerId.toString() });
       
       const orgs = await this.crudOps.find({
-        owner: new Types.ObjectId(ownerId.toString()),
+        owner: ownerId,
         isArchived: { $ne: true }
       }, {
         sort: [{ field: 'createdAt', direction: 'desc' }]
@@ -99,7 +99,7 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
   /**
    * Find organizations for user (including memberships)
    */
-  public async findForUser(userId: string | Types.ObjectId): Promise<IOrganization[]> {
+  public async findForUser(userId: Types.ObjectId): Promise<IOrganization[]> {
     const cacheKey = this.cacheHelpers.generateCustomKey('user', { 
       userId: userId.toString() 
     });
@@ -117,8 +117,8 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
         {
           $match: {
             $or: [
-              { owner: new Types.ObjectId(userId.toString()) },
-              { 'members.user': new Types.ObjectId(userId.toString()) }
+              { owner: userId },
+              { 'members.user': userId }
             ],
             isArchived: { $ne: true }
           }
@@ -145,7 +145,7 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
    * Add member to organization
    */
   public async addMember(
-    organizationId: string | Types.ObjectId, 
+    organizationId: Types.ObjectId, 
     member: Partial<IOrganizationMember>
   ): Promise<IOrganizationMember> {
     try {
@@ -176,13 +176,13 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
       // Create the member object with proper typing
       const newMember: IOrganizationMember = {
         _id: new Types.ObjectId(),
-        organization: new Types.ObjectId(organizationId.toString()),
-        user: new Types.ObjectId(member.user.toString()),
-        role: new Types.ObjectId(member.role.toString()),
-        permissions: member.permissions || [],
-        joinedAt: member.joinedAt || new Date(),
+        organization: organizationId,
+        user: member.user,
+        role: member.role,
+        permissions: member.permissions ?? [],
+        joinedAt: member.joinedAt ?? new Date(),
         active: member.active ?? true,
-        invitedBy: new Types.ObjectId(member.invitedBy.toString()),
+        invitedBy: member.invitedBy,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -225,8 +225,8 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
    * Remove member from organization
    */
   public async removeMember(
-    organizationId: string | Types.ObjectId, 
-    userId: string | Types.ObjectId
+    organizationId: Types.ObjectId, 
+    userId: Types.ObjectId
   ): Promise<boolean> {
     try {
       this.logger.debug('Removing member from organization', { 
@@ -235,7 +235,7 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
       });
 
       const result = await this.crudOps.update(organizationId, {
-        $pull: { members: { user: new Types.ObjectId(userId.toString()) } }
+        $pull: { members: { user: userId } }
       });
 
       if (result && this.cacheHelpers.isEnabled) {
@@ -266,8 +266,8 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
    * Update organization member
    */
   public async updateMember(
-    organizationId: string | Types.ObjectId, 
-    userId: string | Types.ObjectId, 
+    organizationId: Types.ObjectId, 
+    userId: Types.ObjectId, 
     updates: Partial<IOrganizationMember>
   ): Promise<IOrganizationMember | null> {
     try {
@@ -283,8 +283,6 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
       allowedFields.forEach(field => {
         if (field in updates && updates[field] !== undefined) {
           if (field === 'role') {
-            updateFields[`members.$.${field}`] = new Types.ObjectId(updates[field]!.toString());
-          } else {
             updateFields[`members.$.${field}`] = updates[field];
           }
         }
@@ -294,8 +292,8 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
 
       const result = await this.crudOps.findOneAndUpdate(
         { 
-          _id: new Types.ObjectId(organizationId.toString()), 
-          'members.user': new Types.ObjectId(userId.toString())
+          _id: organizationId, 
+          'members.user': userId
         },
         { $set: updateFields },
         { returnNew: true }
@@ -335,7 +333,7 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
   /**
    * Get organization members
    */
-  public async getMembers(organizationId: string | Types.ObjectId): Promise<IOrganizationMember[]> {
+  public async getMembers(organizationId: Types.ObjectId): Promise<IOrganizationMember[]> {
     const cacheKey = this.cacheHelpers.generateCustomKey('members', { 
       organizationId: organizationId.toString() 
     });
@@ -374,8 +372,8 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
    * Get specific organization member
    */
   public async getMember(
-    organizationId: string | Types.ObjectId, 
-    userId: string | Types.ObjectId
+    organizationId: Types.ObjectId, 
+    userId: Types.ObjectId
   ): Promise<IOrganizationMember | null> {
     try {
       this.logger.debug('Getting organization member', { 
@@ -542,17 +540,17 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
       _id: data._id,
       name: data.name,
       type: data.type,
-      description: data.description || '',
-      logoUrl: data.logoUrl || '',
+      description: data.description ?? '',
+      logoUrl: data.logoUrl ?? '',
       owner: data.owner,
-      admins: data.admins || [],
-      address: data.address || {},
-      contact: data.contact || {},
+      admins: data.admins ?? [],
+      address: data.address ?? {},
+      contact: data.contact ?? {},
       visibility: data.visibility,
       isVerified: data.isVerified ?? false,
       trustLevel: data.trustLevel,
-      settings: data.settings || {},
-      stats: data.stats || {
+      settings: data.settings ?? {},
+      stats: data.stats ?? {
         memberCount: 0,
         exerciseCount: 0,
         workoutCount: 0,
@@ -562,7 +560,7 @@ export class OrganizationRepository extends BaseRepository<IOrganization> implem
       },
       isActive: data.isActive ?? true,
       isArchived: data.isArchived ?? false,
-      members: data.members || [],
+      members: data.members ?? [],
       createdAt: data.createdAt,
       updatedAt: data.updatedAt
     } as IOrganization;

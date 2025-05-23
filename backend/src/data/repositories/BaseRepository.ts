@@ -68,7 +68,7 @@ export abstract class BaseRepository<T> implements Repository<T> {
    * Find document by ID
    */
   public async findById(
-    id: string | Types.ObjectId, 
+    id: Types.ObjectId, 
     context?: RepositoryContext
   ): Promise<T | null> {
     // Check cache first
@@ -205,7 +205,7 @@ export abstract class BaseRepository<T> implements Repository<T> {
    * Update document by ID
    */
   public async update(
-    id: string | Types.ObjectId, 
+    id: Types.ObjectId, 
     data: Partial<T>, 
     context?: RepositoryContext
   ): Promise<T | null> {
@@ -263,7 +263,7 @@ export abstract class BaseRepository<T> implements Repository<T> {
    * Delete document by ID
    */
   public async delete(
-    id: string | Types.ObjectId, 
+    id: Types.ObjectId, 
     context?: RepositoryContext
   ): Promise<boolean> {
     const result = await this.crudOps.delete(id, context);
@@ -446,7 +446,7 @@ export abstract class BaseRepository<T> implements Repository<T> {
   /**
    * Extract ID from document
    */
-  protected extractId(doc: any): string | Types.ObjectId | null {
+  protected extractId(doc: any): Types.ObjectId | null {
     if (doc && typeof doc === 'object') {
       if (doc._id) {
         return doc._id;

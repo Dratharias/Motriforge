@@ -1,620 +1,567 @@
-import { BaseRepository } from './helpers';
-import { Database } from '../database/Database';
-import { LoggerFacade } from '../../core/logging/LoggerFacade';
-import { EventMediator } from '../../core/events/EventMediator';
-import { ObjectId, Filter, Document, OptionalUnlessRequiredId } from 'mongodb';
-import { EntityNotFoundError, DatabaseError } from '../../core/error/exceptions/DatabaseError';
+import { Model, Types } from 'mongoose';
+import { LoggerFacade } from '@/core/logging';
+import { EventMediator } from '@/core/events/EventMediator';
+import { CacheFacade } from '@/core/cache/facade/CacheFacade';
+import { IRole } from '@/types/models';
+import { IPermissionRepository } from '@/types/repositories';
+import { ValidationResult, RepositoryContext } from '@/types/repositories/base';
+import { BaseRepository } from './BaseRepository';
+import { ValidationHelpers } from './helpers';
 
 /**
- * Role entity interface
+ * Repository for permission and role operations with enhanced validation and caching
  */
-export interface IRole extends Document {
-  _id?: ObjectId;
-  name: string;
-  description: string;
-  permissions: string[];
-  organizationId?: ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-/**
- * Permission entity interface
- */
-export interface IPermission extends Document {
-  _id?: ObjectId;
-  name: string;
-  description: string;
-  resource: string;
-  action: string;
-  scope?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-/**
- * User-Role assignment interface
- */
-export interface IUserRole extends Document {
-  _id?: ObjectId;
-  userId: ObjectId;
-  roleId: ObjectId;
-  organizationId?: ObjectId;
-  assignedBy: ObjectId;
-  assignedAt: Date;
-  expiresAt?: Date;
-  isActive: boolean;
-}
-
-/**
- * Role creation data
- */
-export interface RoleCreationData {
-  name: string;
-  description: string;
-  permissions?: string[];
-  organizationId?: ObjectId;
-}
-
-/**
- * Role update data
- */
-export interface RoleUpdateData {
-  name?: string;
-  description?: string;
-  permissions?: string[];
-}
-
-/**
- * User permission assignment data
- */
-export interface UserRoleAssignmentData {
-  userId: ObjectId;
-  roleId: ObjectId;
-  organizationId?: ObjectId;
-  assignedBy: ObjectId;
-  expiresAt?: Date;
-}
-
-/**
- * Repository for managing permissions, roles, and user-role assignments
- */
-export class PermissionRepository extends BaseRepository<IRole> {
-  private readonly permissionCollection: string = 'permissions';
-  private readonly userRoleCollection: string = 'user_roles';
+export class PermissionRepository extends BaseRepository<IRole> implements IPermissionRepository {
+  private static readonly CACHE_TTL = 900; // 15 minutes
+  private static readonly PERMISSION_CACHE_TTL = 1800; // 30 minutes for permission data
 
   constructor(
-    db: Database,
+    roleModel: Model<IRole>,
     logger: LoggerFacade,
-    eventMediator?: EventMediator
+    eventMediator: EventMediator,
+    cache?: CacheFacade
   ) {
-    super('roles', db, logger, eventMediator);
+    super(roleModel, logger, eventMediator, cache, 'PermissionRepository');
   }
 
   /**
-   * Find all permissions assigned to a user (direct and through roles)
-   * 
-   * @param userId - User ID
-   * @returns Array of permission names
+   * Find permissions by user ID
    */
-  public async findPermissionsByUser(userId: string | ObjectId): Promise<string[]> {
-    try {
-      const userObjectId = typeof userId === 'string' ? new ObjectId(userId) : userId;
-      
-      // Get user's roles
-      const userRoles = await this.findRolesByUser(userObjectId);
-      
-      if (userRoles.length === 0) {
-        return [];
-      }
-      
-      // Get permissions for all roles
-      const roles = await this.find({
-        _id: { $in: userRoles.map(roleId => new ObjectId(roleId)) }
-      } as Filter<IRole>);
-      
-      // Flatten and deduplicate permissions
-      const permissions = new Set<string>();
-      roles.forEach(role => {
-        role.permissions?.forEach(permission => permissions.add(permission));
-      });
-      
-      return Array.from(permissions);
-    } catch (err) {
-      this.logger.error(`Error finding permissions for user: ${userId}`, err as Error);
-      throw new DatabaseError(
-        'Error finding user permissions',
-        'findPermissionsByUser',
-        'DATABASE_ERROR',
-        err as Error,
-        'permissions'
-      );
+  public async findPermissionsByUser(userId: Types.ObjectId): Promise<string[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('user_permissions', { 
+      userId: userId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<string[]>(cacheKey);
+    if (cached) {
+      return cached;
     }
-  }
 
-  /**
-   * Find all permissions for a specific role
-   * 
-   * @param roleId - Role ID
-   * @returns Array of permission names
-   */
-  public async findPermissionsByRole(roleId: string | ObjectId): Promise<string[]> {
     try {
-      const role = await this.findById(roleId);
-      return role.permissions ?? [];
-    } catch (err) {
-      if (err instanceof EntityNotFoundError) {
-        throw err;
-      }
+      this.logger.debug('Finding permissions by user', { userId: userId.toString() });
       
-      this.logger.error(`Error finding permissions for role: ${roleId}`, err as Error);
-      throw new DatabaseError(
-        'Error finding role permissions',
-        'findPermissionsByRole',
-        'DATABASE_ERROR',
-        err as Error,
-        'roles'
-      );
-    }
-  }
-
-  /**
-   * Find all role IDs assigned to a user
-   * 
-   * @param userId - User ID
-   * @returns Array of role IDs
-   */
-  public async findRolesByUser(userId: string | ObjectId): Promise<string[]> {
-    try {
-      const userObjectId = typeof userId === 'string' ? new ObjectId(userId) : userId;
-      const userRoleCollection = this.db.getCollection<IUserRole>(this.userRoleCollection);
-      
-      const userRoles = await userRoleCollection.find({
-        userId: userObjectId,
-        isActive: true,
-        $or: [
-          { expiresAt: { $exists: false } },
-          { expiresAt: { $gt: new Date() } }
-        ]
-      } as Filter<IUserRole>);
-      
-      return userRoles.map(userRole => userRole.roleId.toString());
-    } catch (err) {
-      this.logger.error(`Error finding roles for user: ${userId}`, err as Error);
-      throw new DatabaseError(
-        'Error finding user roles',
-        'findRolesByUser',
-        'DATABASE_ERROR',
-        err as Error,
-        this.userRoleCollection
-      );
-    }
-  }
-
-  /**
-   * Find multiple roles by their IDs
-   * 
-   * @param roleIds - Array of role IDs
-   * @returns Array of roles
-   */
-  public async findRoles(roleIds: (string | ObjectId)[]): Promise<IRole[]> {
-    try {
-      const objectIds = roleIds.map(id => typeof id === 'string' ? new ObjectId(id) : id);
-      
-      return await this.find({
-        _id: { $in: objectIds }
-      } as Filter<IRole>);
-    } catch (err) {
-      this.logger.error(`Error finding roles by IDs: ${roleIds.join(', ')}`, err as Error);
-      throw new DatabaseError(
-        'Error finding roles',
-        'findRoles',
-        'DATABASE_ERROR',
-        err as Error,
-        'roles'
-      );
-    }
-  }
-
-  /**
-   * Find roles by organization
-   * 
-   * @param organizationId - Organization ID
-   * @returns Array of roles
-   */
-  public async findRolesByOrganization(organizationId: string | ObjectId): Promise<IRole[]> {
-    try {
-      const orgObjectId = typeof organizationId === 'string' ? new ObjectId(organizationId) : organizationId;
-      
-      return await this.find({
-        $or: [
-          { organizationId: orgObjectId },
-          { organizationId: { $exists: false } } // Global roles
-        ]
-      } as Filter<IRole>);
-    } catch (err) {
-      this.logger.error(`Error finding roles for organization: ${organizationId}`, err as Error);
-      throw new DatabaseError(
-        'Error finding organization roles',
-        'findRolesByOrganization',
-        'DATABASE_ERROR',
-        err as Error,
-        'roles'
-      );
-    }
-  }
-
-  /**
-   * Create a new role
-   * 
-   * @param roleData - Role creation data
-   * @returns Created role
-   */
-  public async createRole(roleData: RoleCreationData): Promise<IRole> {
-    try {
-      const now = new Date();
-      
-      const role: OptionalUnlessRequiredId<IRole> = {
-        name: roleData.name,
-        description: roleData.description,
-        permissions: roleData.permissions ?? [],
-        organizationId: roleData.organizationId,
-        createdAt: now,
-        updatedAt: now
-      };
-
-      return await this.create(role);
-    } catch (err) {
-      this.logger.error(`Error creating role: ${roleData.name}`, err as Error);
-      throw new DatabaseError(
-        'Error creating role',
-        'createRole',
-        'DATABASE_ERROR',
-        err as Error,
-        'roles'
-      );
-    }
-  }
-
-  /**
-   * Update an existing role
-   * 
-   * @param roleId - Role ID
-   * @param updates - Role update data
-   * @returns Updated role
-   */
-  public async updateRole(roleId: string | ObjectId, updates: RoleUpdateData): Promise<IRole> {
-    try {
-      const updateData: Partial<IRole> = {
-        ...updates,
-        updatedAt: new Date()
-      };
-
-      return await this.update(roleId, updateData);
-    } catch (err) {
-      this.logger.error(`Error updating role: ${roleId}`, err as Error);
-      throw new DatabaseError(
-        'Error updating role',
-        'updateRole',
-        'DATABASE_ERROR',
-        err as Error,
-        'roles'
-      );
-    }
-  }
-
-  /**
-   * Delete a role
-   * 
-   * @param roleId - Role ID
-   * @returns True if deleted successfully
-   */
-  public async deleteRole(roleId: string | ObjectId): Promise<void> {
-    try {
-      const objectId = typeof roleId === 'string' ? new ObjectId(roleId) : roleId;
-      
-      // Check if role is assigned to any users
-      const userRoleCollection = this.db.getCollection<IUserRole>(this.userRoleCollection);
-      const assignmentCount = await userRoleCollection.countDocuments({
-        roleId: objectId,
-        isActive: true
-      } as Filter<IUserRole>);
-      
-      if (assignmentCount > 0) {
-        throw new DatabaseError(
-          'Cannot delete role that is assigned to users',
-          'deleteRole',
-          'ROLE_IN_USE',
-          undefined,
-          'roles'
-        );
-      }
-      
-      const deleted = await this.delete(roleId);
-      
-      if (!deleted) {
-        throw new EntityNotFoundError('Role', objectId.toString());
-      }
-    } catch (err) {
-      if (err instanceof EntityNotFoundError || err instanceof DatabaseError) {
-        throw err;
-      }
-      
-      this.logger.error(`Error deleting role: ${roleId}`, err as Error);
-      throw new DatabaseError(
-        'Error deleting role',
-        'deleteRole',
-        'DATABASE_ERROR',
-        err as Error,
-        'roles'
-      );
-    }
-  }
-
-  /**
-   * Assign a role to a user
-   * 
-   * @param assignmentData - User role assignment data
-   * @returns Created user-role assignment
-   */
-  public async assignRole(assignmentData: UserRoleAssignmentData): Promise<IUserRole> {
-    try {
-      const userRoleCollection = this.db.getCollection<IUserRole>(this.userRoleCollection);
-      const now = new Date();
-      
-      // Check if assignment already exists
-      const existingAssignment = await userRoleCollection.findOne({
-        userId: assignmentData.userId,
-        roleId: assignmentData.roleId,
-        organizationId: assignmentData.organizationId,
-        isActive: true
-      } as Filter<IUserRole>);
-      
-      if (existingAssignment) {
-        throw new DatabaseError(
-          'Role already assigned to user',
-          'assignRole',
-          'ROLE_ALREADY_ASSIGNED',
-          undefined,
-          this.userRoleCollection
-        );
-      }
-      
-      const userRole: OptionalUnlessRequiredId<IUserRole> = {
-        userId: assignmentData.userId,
-        roleId: assignmentData.roleId,
-        organizationId: assignmentData.organizationId,
-        assignedBy: assignmentData.assignedBy,
-        assignedAt: now,
-        expiresAt: assignmentData.expiresAt,
-        isActive: true
-      };
-      
-      const result = await userRoleCollection.insertOne(userRole);
-      
-      return {
-        ...userRole,
-        _id: result.insertedId
-      } as IUserRole;
-    } catch (err) {
-      if (err instanceof DatabaseError) {
-        throw err;
-      }
-      
-      this.logger.error(`Error assigning role to user`, err as Error, {
-        userId: assignmentData.userId.toString(),
-        roleId: assignmentData.roleId.toString()
-      });
-      throw new DatabaseError(
-        'Error assigning role to user',
-        'assignRole',
-        'DATABASE_ERROR',
-        err as Error,
-        this.userRoleCollection
-      );
-    }
-  }
-
-  /**
-   * Remove a role assignment from a user
-   * 
-   * @param userId - User ID
-   * @param roleId - Role ID
-   * @param organizationId - Optional organization ID
-   * @returns True if removed successfully
-   */
-  public async removeRole(
-    userId: string | ObjectId, 
-    roleId: string | ObjectId, 
-    organizationId?: string | ObjectId
-  ): Promise<void> {
-    try {
-      const userObjectId = typeof userId === 'string' ? new ObjectId(userId) : userId;
-      const roleObjectId = typeof roleId === 'string' ? new ObjectId(roleId) : roleId;
-      const orgObjectId = organizationId 
-        ? (typeof organizationId === 'string' ? new ObjectId(organizationId) : organizationId)
-        : undefined;
-      
-      const userRoleCollection = this.db.getCollection<IUserRole>(this.userRoleCollection);
-      
-      const filter: Filter<IUserRole> = {
-        userId: userObjectId,
-        roleId: roleObjectId,
-        isActive: true
-      };
-      
-      if (orgObjectId) {
-        filter.organizationId = orgObjectId;
-      }
-      
-      const result = await userRoleCollection.updateOne(
-        filter,
+      // Aggregate to get all permissions for user's roles
+      const result = await this.crudOps.aggregate<{ permissions: string[] }>([
         {
-          $set: {
-            isActive: false,
-            updatedAt: new Date()
+          $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: 'role',
+            as: 'users'
+          }
+        },
+        {
+          $match: {
+            'users._id': userId
+          }
+        },
+        {
+          $project: {
+            permissions: 1
           }
         }
-      );
-      
-      if (result.matchedCount === 0) {
-        throw new EntityNotFoundError('UserRole', `${userId}-${roleId}`);
+      ]);
+
+      const permissions = result.flatMap(role => role.permissions ?? []);
+      const uniquePermissions = [...new Set(permissions)];
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(
+          cacheKey, 
+          uniquePermissions, 
+          PermissionRepository.PERMISSION_CACHE_TTL
+        );
       }
-    } catch (err) {
-      if (err instanceof EntityNotFoundError) {
-        throw err;
-      }
+
+      return uniquePermissions;
+    } catch (error) {
+      this.logger.error('Error finding permissions by user', error as Error, { 
+        userId: userId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Find permissions by role ID
+   */
+  public async findPermissionsByRole(roleId: Types.ObjectId): Promise<string[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('role_permissions', { 
+      roleId: roleId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<string[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      this.logger.debug('Finding permissions by role', { roleId: roleId.toString() });
       
-      this.logger.error(`Error removing role from user`, err as Error, {
+      const role = await this.findById(roleId);
+      const permissions = role?.permissions ?? [];
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(
+          cacheKey, 
+          permissions, 
+          PermissionRepository.PERMISSION_CACHE_TTL
+        );
+      }
+
+      return permissions;
+    } catch (error) {
+      this.logger.error('Error finding permissions by role', error as Error, { 
+        roleId: roleId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Find roles by user ID
+   */
+  public async findRolesByUser(userId: Types.ObjectId): Promise<string[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('user_roles', { 
+      userId: userId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<string[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      this.logger.debug('Finding roles by user', { userId: userId.toString() });
+      
+      // Aggregate to get user's role and organization roles
+      const result = await this.crudOps.aggregate<{ name: string }>([
+        {
+          $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: 'role',
+            as: 'directUsers'
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            let: { roleId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  _id: userId,
+                  'organizations.role': '$$roleId'
+                }
+              }
+            ],
+            as: 'orgUsers'
+          }
+        },
+        {
+          $match: {
+            $or: [
+              { 'directUsers._id': userId },
+              { orgUsers: { $ne: [] } }
+            ]
+          }
+        },
+        {
+          $project: {
+            name: 1
+          }
+        }
+      ]);
+
+      const roleNames = result.map(role => role.name);
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, roleNames, PermissionRepository.CACHE_TTL);
+      }
+
+      return roleNames;
+    } catch (error) {
+      this.logger.error('Error finding roles by user', error as Error, { 
+        userId: userId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Find role by ID
+   */
+  public async findRole(roleId: Types.ObjectId): Promise<IRole | null> {
+    return this.findById(roleId);
+  }
+
+  /**
+   * Find multiple roles by IDs
+   */
+  public async findRoles(roleIds: (Types.ObjectId)[]): Promise<IRole[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('multiple_roles', { 
+      roleIds: roleIds.map(id => id.toString()).sort((a, b) => a.localeCompare(b)) 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<IRole[]>(cacheKey);
+    if (cached) {
+      return cached.map(role => this.mapToEntity(role));
+    }
+
+    try {
+      this.logger.debug('Finding multiple roles', { roleCount: roleIds.length });
+      
+      const objectIds = roleIds.map(id => id);
+      const roles = await this.crudOps.find({
+        _id: { $in: objectIds }
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, roles, PermissionRepository.CACHE_TTL);
+      }
+
+      return roles.map(role => this.mapToEntity(role));
+    } catch (error) {
+      this.logger.error('Error finding multiple roles', error as Error, { 
+        roleCount: roleIds.length 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Assign role to user
+   */
+  public async assignRole(userId: Types.ObjectId, roleId: Types.ObjectId): Promise<void> {
+    try {
+      this.logger.debug('Assigning role to user', { 
         userId: userId.toString(),
-        roleId: roleId.toString()
+        roleId: roleId.toString() 
       });
-      throw new DatabaseError(
-        'Error removing role from user',
-        'removeRole',
-        'DATABASE_ERROR',
-        err as Error,
-        this.userRoleCollection
-      );
-    }
-  }
 
-  /**
-   * Add a permission to a role
-   * 
-   * @param roleId - Role ID
-   * @param permission - Permission name
-   * @returns Updated role
-   */
-  public async addPermission(roleId: string | ObjectId, permission: string): Promise<IRole> {
-    try {
-      const role = await this.findById(roleId);
-      
-      if (role.permissions?.includes(permission)) {
-        return role; // Permission already exists
+      // This would typically be handled by UserRepository, but we'll emit an event
+      await this.publishEvent('role.assigned', {
+        userId: userId.toString(),
+        roleId: roleId.toString(),
+        timestamp: new Date()
+      });
+
+      // Invalidate user permission caches
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateByPattern('user_permissions:*');
+        await this.cacheHelpers.invalidateByPattern('user_roles:*');
       }
-      
-      const permissions = [...(role.permissions ?? []), permission];
-      
-      return await this.update(roleId, { permissions });
-    } catch (err) {
-      this.logger.error(`Error adding permission to role`, err as Error, {
-        roleId: roleId.toString(),
-        permission
+    } catch (error) {
+      this.logger.error('Error assigning role to user', error as Error, { 
+        userId: userId.toString(),
+        roleId: roleId.toString() 
       });
-      throw new DatabaseError(
-        'Error adding permission to role',
-        'addPermission',
-        'DATABASE_ERROR',
-        err as Error,
-        'roles'
-      );
+      throw error;
     }
   }
 
   /**
-   * Remove a permission from a role
-   * 
-   * @param roleId - Role ID
-   * @param permission - Permission name
-   * @returns Updated role
+   * Remove role from user
    */
-  public async removePermission(roleId: string | ObjectId, permission: string): Promise<IRole> {
+  public async removeRole(userId: Types.ObjectId, roleId: Types.ObjectId): Promise<void> {
     try {
-      const role = await this.findById(roleId);
-      
-      const permissions = (role.permissions ?? []).filter(p => p !== permission);
-      
-      return await this.update(roleId, { permissions });
-    } catch (err) {
-      this.logger.error(`Error removing permission from role`, err as Error, {
-        roleId: roleId.toString(),
-        permission
+      this.logger.debug('Removing role from user', { 
+        userId: userId.toString(),
+        roleId: roleId.toString() 
       });
-      throw new DatabaseError(
-        'Error removing permission from role',
-        'removePermission',
-        'DATABASE_ERROR',
-        err as Error,
-        'roles'
-      );
+
+      await this.publishEvent('role.removed', {
+        userId: userId.toString(),
+        roleId: roleId.toString(),
+        timestamp: new Date()
+      });
+
+      // Invalidate user permission caches
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateByPattern('user_permissions:*');
+        await this.cacheHelpers.invalidateByPattern('user_roles:*');
+      }
+    } catch (error) {
+      this.logger.error('Error removing role from user', error as Error, { 
+        userId: userId.toString(),
+        roleId: roleId.toString() 
+      });
+      throw error;
     }
   }
 
   /**
-   * Check if a user has a specific permission
-   * 
-   * @param userId - User ID
-   * @param permission - Permission name
-   * @param organizationId - Optional organization context
-   * @returns True if user has permission
+   * Add permission to role
    */
-  public async hasPermission(
-    userId: string | ObjectId, 
-    permission: string, 
-    organizationId?: string | ObjectId
-  ): Promise<boolean> {
+  public async addPermission(roleId: Types.ObjectId, permission: string): Promise<void> {
     try {
+      this.logger.debug('Adding permission to role', { 
+        roleId: roleId.toString(),
+        permission 
+      });
+
+      const result = await this.crudOps.update(roleId, {
+        $addToSet: { permissions: permission }
+      });
+
+      if (result && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateAfterUpdate(roleId, result);
+        await this.cacheHelpers.invalidateByPattern('*_permissions:*');
+        await this.cacheHelpers.invalidateByPattern('multiple_roles:*');
+      }
+
+      if (result) {
+        await this.publishEvent('permission.added', {
+          roleId: roleId.toString(),
+          permission,
+          timestamp: new Date()
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error adding permission to role', error as Error, { 
+        roleId: roleId.toString(),
+        permission 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Remove permission from role
+   */
+  public async removePermission(roleId: Types.ObjectId, permission: string): Promise<void> {
+    try {
+      this.logger.debug('Removing permission from role', { 
+        roleId: roleId.toString(),
+        permission 
+      });
+
+      const result = await this.crudOps.update(roleId, {
+        $pull: { permissions: permission }
+      });
+
+      if (result && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateAfterUpdate(roleId, result);
+        await this.cacheHelpers.invalidateByPattern('*_permissions:*');
+        await this.cacheHelpers.invalidateByPattern('multiple_roles:*');
+      }
+
+      if (result) {
+        await this.publishEvent('permission.removed', {
+          roleId: roleId.toString(),
+          permission,
+          timestamp: new Date()
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error removing permission from role', error as Error, { 
+        roleId: roleId.toString(),
+        permission 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Check if user has permission
+   */
+  public async hasPermission(userId: Types.ObjectId, permission: string): Promise<boolean> {
+    try {
+      this.logger.debug('Checking if user has permission', { 
+        userId: userId.toString(),
+        permission 
+      });
+
       const userPermissions = await this.findPermissionsByUser(userId);
       return userPermissions.includes(permission);
-    } catch (err) {
-      this.logger.error(`Error checking user permission`, err as Error, {
+    } catch (error) {
+      this.logger.error('Error checking user permission', error as Error, { 
         userId: userId.toString(),
-        permission
+        permission 
       });
-      return false; // Fail safe - deny access on error
+      throw error;
     }
   }
 
   /**
-   * Get all available permissions in the system
-   * 
-   * @returns Array of permission objects
+   * Find system roles (no organization constraint)
    */
-  public async getAllPermissions(): Promise<IPermission[]> {
-    try {
-      const permissionCollection = this.db.getCollection<IPermission>(this.permissionCollection);
-      return await permissionCollection.find({});
-    } catch (err) {
-      this.logger.error('Error getting all permissions', err as Error);
-      throw new DatabaseError(
-        'Error getting all permissions',
-        'getAllPermissions',
-        'DATABASE_ERROR',
-        err as Error,
-        this.permissionCollection
-      );
+  public async findSystemRoles(): Promise<IRole[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('system_roles', {});
+    
+    const cached = await this.cacheHelpers.getCustom<IRole[]>(cacheKey);
+    if (cached) {
+      return cached.map(role => this.mapToEntity(role));
     }
+
+    try {
+      this.logger.debug('Finding system roles');
+      
+      const roles = await this.crudOps.find({
+        organizationId: { $exists: false }
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, roles, PermissionRepository.CACHE_TTL);
+      }
+
+      return roles.map(role => this.mapToEntity(role));
+    } catch (error) {
+      this.logger.error('Error finding system roles', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find organization roles
+   */
+  public async findOrganizationRoles(organizationId: Types.ObjectId): Promise<IRole[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('org_roles', { 
+      organizationId: organizationId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<IRole[]>(cacheKey);
+    if (cached) {
+      return cached.map(role => this.mapToEntity(role));
+    }
+
+    try {
+      this.logger.debug('Finding organization roles', { 
+        organizationId: organizationId.toString() 
+      });
+      
+      const roles = await this.crudOps.find({
+        organizationId: organizationId
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, roles, PermissionRepository.CACHE_TTL);
+      }
+
+      return roles.map(role => this.mapToEntity(role));
+    } catch (error) {
+      this.logger.error('Error finding organization roles', error as Error, { 
+        organizationId: organizationId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Override create to handle role-specific logic
+   */
+  public async create(data: Partial<IRole>, context?: RepositoryContext): Promise<IRole> {
+    // Set default values
+    const roleData: Partial<IRole> = {
+      ...data,
+      permissions: data.permissions ?? []
+    };
+
+    const role = await super.create(roleData, context);
+
+    // Publish role creation event
+    await this.publishEvent('role.created', {
+      roleId: role._id.toString(),
+      name: role.name,
+      organizationId: role.organizationId?.toString(),
+      permissions: role.permissions,
+      timestamp: new Date()
+    });
+
+    return role;
+  }
+
+  /**
+   * Override update to invalidate permission caches
+   */
+  public async update(
+    id: Types.ObjectId, 
+    data: Partial<IRole>, 
+    context?: RepositoryContext
+  ): Promise<IRole | null> {
+    const result = await super.update(id, data, context);
+
+    if (result && this.cacheHelpers.isEnabled) {
+      // Invalidate all permission-related caches since role changed
+      await this.cacheHelpers.invalidateByPattern('*_permissions:*');
+      await this.cacheHelpers.invalidateByPattern('*_roles:*');
+    }
+
+    return result;
   }
 
   /**
    * Validate role data
    */
-  protected override validateData(data: any, isUpdate: boolean = false): void {
-    if (!isUpdate) {
-      if (!data.name?.trim()) {
-        throw new DatabaseError(
-          'Role name is required',
-          'validateData',
-          'VALIDATION_ERROR'
-        );
+  protected validateData(data: Partial<IRole>): ValidationResult {
+    const errors: string[] = [];
+
+    // Name validation
+    if (data.name !== undefined) {
+      const nameValidation = ValidationHelpers.validateFieldLength(
+        data.name, 
+        'name', 
+        2, 
+        50
+      );
+      if (!nameValidation.valid) {
+        errors.push(...nameValidation.errors);
       }
     }
-    
-    if (data.name !== undefined && !data.name?.trim()) {
-      throw new DatabaseError(
-        'Role name cannot be empty',
-        'validateData',
-        'VALIDATION_ERROR'
-      );
+
+    // Description validation
+    if (data.description !== undefined && data.description.length > 200) {
+      errors.push('Description must be less than 200 characters');
     }
-    
-    if (data.permissions && !Array.isArray(data.permissions)) {
-      throw new DatabaseError(
-        'Permissions must be an array',
-        'validateData',
-        'VALIDATION_ERROR'
-      );
+
+    // Permissions validation
+    if (data.permissions) {
+      if (!Array.isArray(data.permissions)) {
+        errors.push('Permissions must be an array');
+      } else {
+        data.permissions.forEach((permission, index) => {
+          if (typeof permission !== 'string' || permission.length === 0) {
+            errors.push(`Permission at index ${index} must be a non-empty string`);
+          }
+        });
+      }
     }
+
+    return {
+      valid: errors.length === 0,
+      errors: errors.length > 0 ? errors : undefined
+    };
+  }
+
+  /**
+   * Map database document to domain entity
+   */
+  protected mapToEntity(data: any): IRole {
+    return {
+      _id: data._id,
+      name: data.name,
+      description: data.description ?? '',
+      permissions: data.permissions ?? [],
+      organizationId: data.organizationId,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    } as IRole;
+  }
+
+  /**
+   * Map domain entity to database document
+   */
+  protected mapFromEntity(entity: IRole): any {
+    const doc = { ...entity };
+    
+    // Remove any computed fields
+    delete (doc as any).__v;
+    
+    return doc;
   }
 }

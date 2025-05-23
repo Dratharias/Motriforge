@@ -10,7 +10,8 @@ export enum CacheDomain {
   ORGANIZATION = 'organization',
   API = 'api',
   SYSTEM = 'system',
-  DEFAULT = 'default'
+  DEFAULT = 'default',
+  PUSH_TOKENS = "push_tokens"
 }
 
 

@@ -42,7 +42,7 @@ export interface IUserOrganization {
 export interface IRefreshToken extends IBaseModel {
   readonly token: string;
   readonly user: Types.ObjectId;
-  readonly expiresAt: Date;
+  expiresAt: Date;
   readonly clientId: string;
   readonly userAgent: string;
   readonly ipAddress: string;
@@ -56,7 +56,7 @@ export interface IRefreshToken extends IBaseModel {
 export interface IRole extends IBaseModel {
   readonly name: string;
   readonly description: string;
-  readonly permissions: readonly string[];
+  readonly permissions: string[];
   readonly organizationId?: Types.ObjectId;
 }
 

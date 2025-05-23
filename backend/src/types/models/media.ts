@@ -15,7 +15,7 @@ export interface IMedia extends IBaseModel, IOrganizationContext {
   readonly url: string;
   readonly mimeType: string;
   readonly sizeInBytes: number;
-  readonly tags: readonly string[];
+  readonly tags: string[];
   readonly organizationVisibility: Types.ObjectId;
   readonly metadata: Record<string, any>;
 }

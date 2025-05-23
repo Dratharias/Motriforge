@@ -108,3 +108,25 @@ export enum MetricType {
   QUERY_COMPLEXITY = 'query_complexity',
   DOCUMENT_SIZE = 'document_size'
 }
+
+export enum NotificationPriority {
+  LOW = 'low',
+  NORMAL = 'normal',
+  HIGH = 'high',
+  URGENT = 'urgent'
+}
+
+export enum DeliveryStatus {
+  PENDING = 'pending',
+  SENT = 'sent',
+  DELIVERED = 'delivered',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled'
+}
+
+export enum NotificationChannel {
+  EMAIL = 'email',
+  PUSH = 'push',
+  SMS = 'sms',
+  IN_APP = 'in-app'
+}

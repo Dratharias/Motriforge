@@ -1,688 +1,610 @@
-import { BaseRepository } from './helpers';
-import { Database } from '../database/Database';
-import { LoggerFacade } from '../../core/logging/LoggerFacade';
-import { EventMediator } from '../../core/events/EventMediator';
-import { ObjectId, Filter, Document, OptionalUnlessRequiredId } from 'mongodb';
-import { DatabaseError } from '../../core/error/exceptions/DatabaseError';
+import { Model, Types } from 'mongoose';
+import { LoggerFacade } from '@/core/logging';
+import { EventMediator } from '@/core/events/EventMediator';
+import { CacheFacade } from '@/core/cache/facade/CacheFacade';
+import { IExercise, IExerciseAlternative, IExerciseProgression, IExerciseSwap } from '@/types/models';
+import { IExerciseRepository } from '@/types/repositories';
+import { ValidationResult, RepositoryContext } from '@/types/repositories/base';
+import { BaseRepository } from './BaseRepository';
+import { ValidationHelpers } from './helpers';
 
 /**
- * Exercise entity interface
+ * Repository for exercise operations with enhanced validation and caching
  */
-export interface IExercise extends Document {
-  _id?: ObjectId;
-  name: string;
-  description: string;
-  instructions: string;
-  muscleGroups: string[];
-  primaryMuscleGroup: string;
-  equipment: ObjectId[];
-  exerciseType: ObjectId;
-  difficulty: ObjectId;
-  mediaIds: ObjectId[];
-  prerequisites: string[];
-  formCues: string[];
-  commonMistakes: string[];
-  tags: string[];
-  organization: ObjectId;
-  createdBy: ObjectId;
-  shared: boolean;
-  organizationVisibility: string;
-  isArchived: boolean;
-  workoutsCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-/**
- * Exercise progression interface
- */
-export interface IExerciseProgression extends Document {
-  _id?: ObjectId;
-  exerciseId: ObjectId;
-  progressionExerciseId: ObjectId;
-  notes: string;
-  modifications: string[];
-  isEasier: boolean;
-  progressionOrder: number;
-  difficultyDelta: number;
-  createdBy: ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-/**
- * Exercise alternative interface
- */
-export interface IExerciseAlternative extends Document {
-  _id?: ObjectId;
-  exerciseId: ObjectId;
-  alternativeExerciseId: ObjectId;
-  reason: string;
-  notes: string;
-  accommodates: string[];
-  similarityScore: number;
-  createdBy: ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-/**
- * Exercise metric interface
- */
-export interface IExerciseMetric extends Document {
-  _id?: ObjectId;
-  name: string;
-  unit: ObjectId;
-  defaultValue: number;
-  exerciseId: ObjectId;
-  isStandard: boolean;
-  minValue: number;
-  maxValue: number;
-  increment: number;
-}
-
-/**
- * Exercise creation data
- */
-export interface ExerciseCreationData {
-  name: string;
-  description: string;
-  instructions: string;
-  muscleGroups: string[];
-  primaryMuscleGroup: string;
-  equipment?: ObjectId[];
-  exerciseType: ObjectId;
-  difficulty: ObjectId;
-  mediaIds?: ObjectId[];
-  prerequisites?: string[];
-  formCues?: string[];
-  commonMistakes?: string[];
-  tags?: string[];
-  organization: ObjectId;
-  createdBy: ObjectId;
-  shared?: boolean;
-  organizationVisibility?: string;
-}
-
-/**
- * Exercise update data
- */
-export interface ExerciseUpdateData {
-  name?: string;
-  description?: string;
-  instructions?: string;
-  muscleGroups?: string[];
-  primaryMuscleGroup?: string;
-  equipment?: ObjectId[];
-  exerciseType?: ObjectId;
-  difficulty?: ObjectId;
-  mediaIds?: ObjectId[];
-  prerequisites?: string[];
-  formCues?: string[];
-  commonMistakes?: string[];
-  tags?: string[];
-  shared?: boolean;
-  organizationVisibility?: string;
-  isArchived?: boolean;
-}
-
-/**
- * Exercise search criteria
- */
-export interface ExerciseSearchCriteria {
-  name?: string;
-  muscleGroups?: string[];
-  primaryMuscleGroup?: string;
-  equipment?: ObjectId[];
-  exerciseType?: ObjectId;
-  difficulty?: ObjectId;
-  organizationId?: ObjectId;
-  createdBy?: ObjectId;
-  tags?: string[];
-  shared?: boolean;
-  isArchived?: boolean;
-  searchTerm?: string;
-}
-
-/**
- * Repository for managing exercises and related entities
- */
-export class ExerciseRepository extends BaseRepository<IExercise> {
-  private readonly progressionCollection: string = 'exercise_progressions';
-  private readonly alternativeCollection: string = 'exercise_alternatives';
-  private readonly metricCollection: string = 'exercise_metrics';
+export class ExerciseRepository extends BaseRepository<IExercise> implements IExerciseRepository {
+  private static readonly CACHE_TTL = 600; // 10 minutes
+  private static readonly EXERCISE_CACHE_TTL = 1800; // 30 minutes for exercise data
+  private static readonly POPULAR_CACHE_TTL = 3600; // 1 hour for popular exercises
 
   constructor(
-    db: Database,
+    exerciseModel: Model<IExercise>,
     logger: LoggerFacade,
-    eventMediator?: EventMediator
+    eventMediator: EventMediator,
+    cache?: CacheFacade
   ) {
-    super('exercises', db, logger, eventMediator);
+    super(exerciseModel, logger, eventMediator, cache, 'ExerciseRepository');
   }
 
   /**
-   * Create new exercise with optional progressions and alternatives
+   * Find exercise by name
    */
-  public async createExercise(
-    data: ExerciseCreationData,
-    progressions?: Partial<IExerciseProgression>[],
-    alternatives?: Partial<IExerciseAlternative>[]
-  ): Promise<IExercise> {
-    return await this.withTransaction(async (tx) => {
-      const now = new Date();
-      const exercise: OptionalUnlessRequiredId<IExercise> = {
-        ...data,
-        equipment: data.equipment ?? [],
-        mediaIds: data.mediaIds ?? [],
-        prerequisites: data.prerequisites ?? [],
-        formCues: data.formCues ?? [],
-        commonMistakes: data.commonMistakes ?? [],
-        tags: data.tags ?? [],
-        shared: data.shared ?? false,
-        organizationVisibility: data.organizationVisibility ?? 'private',
-        isArchived: false,
-        workoutsCount: 0,
-        createdAt: now,
-        updatedAt: now
-      };
-  
-      const createdExercise = await tx.insertOne<IExercise>(this.collectionName, exercise);
-  
-      if (progressions?.length) {
-        await this.progressionRepo.insertMany(progressions.map(p => ({
-          ...p,
-          exerciseId: createdExercise._id,
-          createdAt: now,
-          updatedAt: now
-        })) as IExerciseProgression[]);
+  public async findByName(name: string): Promise<IExercise | null> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('name', { name });
+    
+    const cached = await this.cacheHelpers.getCustom<IExercise>(cacheKey);
+    if (cached) {
+      return this.mapToEntity(cached);
+    }
+
+    try {
+      this.logger.debug('Finding exercise by name', { name });
+      
+      const exercise = await this.crudOps.findOne({
+        name: { $regex: new RegExp(`^${name}$`, 'i') }
+      });
+
+      if (exercise && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, exercise, ExerciseRepository.EXERCISE_CACHE_TTL);
+        const exerciseId = this.extractId(exercise);
+        if (exerciseId) {
+          await this.cacheHelpers.cacheById(exerciseId, exercise, ExerciseRepository.EXERCISE_CACHE_TTL);
+        }
       }
-  
-      if (alternatives?.length) {
-        await this.alternativeRepo.insertMany(alternatives.map(a => ({
-          ...a,
-          exerciseId: createdExercise._id,
-          createdAt: now,
-          updatedAt: now
-        })) as IExerciseAlternative[]);
-      }
-  
-      return createdExercise;
-    });
-  }  
+
+      return exercise ? this.mapToEntity(exercise) : null;
+    } catch (error) {
+      this.logger.error('Error finding exercise by name', error as Error, { name });
+      throw error;
+    }
+  }
 
   /**
-   * Find exercises by muscle groups
+   * Find exercises by muscle group
    */
-  public async findByMuscleGroups(
-    muscleGroups: string[],
-    matchAll: boolean = false,
-    organizationId?: ObjectId
-  ): Promise<IExercise[]> {
+  public async findByMuscleGroup(muscleGroup: string): Promise<IExercise[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('muscle_group', { muscleGroup });
+    
+    const cached = await this.cacheHelpers.getCustom<IExercise[]>(cacheKey);
+    if (cached) {
+      return cached.map(exercise => this.mapToEntity(exercise));
+    }
+
     try {
-      const filter: Filter<IExercise> = {
-        isArchived: false
-      };
+      this.logger.debug('Finding exercises by muscle group', { muscleGroup });
+      
+      const exercises = await this.crudOps.find({
+        $or: [
+          { primaryMuscleGroup: muscleGroup },
+          { muscleGroups: { $in: [muscleGroup] } }
+        ]
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }]
+      });
 
-      if (matchAll) {
-        filter.muscleGroups = { $all: muscleGroups };
-      } else {
-        filter.muscleGroups = { $in: muscleGroups };
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, exercises, ExerciseRepository.CACHE_TTL);
       }
 
-      if (organizationId) {
-        filter.organization = organizationId;
-      }
-
-      return await this.find(filter, { sort: { name: 1 } });
-    } catch (err) {
-      this.logger.error(`Error finding exercises by muscle groups: ${muscleGroups.join(', ')}`, err as Error);
-      throw new DatabaseError(
-        'Error finding exercises by muscle groups',
-        'findByMuscleGroups',
-        'DATABASE_ERROR',
-        err as Error,
-        'exercises'
-      );
+      return exercises.map(exercise => this.mapToEntity(exercise));
+    } catch (error) {
+      this.logger.error('Error finding exercises by muscle group', error as Error, { muscleGroup });
+      throw error;
     }
   }
 
   /**
    * Find exercises by equipment
    */
-  public async findByEquipment(
-    equipmentIds: ObjectId[],
-    requiresAll: boolean = false,
-    organizationId?: ObjectId
-  ): Promise<IExercise[]> {
-    try {
-      const filter: Filter<IExercise> = {
-        isArchived: false
-      };
-
-      if (requiresAll) {
-        filter.equipment = { $all: equipmentIds };
-      } else {
-        filter.equipment = { $in: equipmentIds };
-      }
-
-      if (organizationId) {
-        filter.organization = organizationId;
-      }
-
-      return await this.find(filter, { sort: { name: 1 } });
-    } catch (err) {
-      this.logger.error(`Error finding exercises by equipment`, err as Error);
-      throw new DatabaseError(
-        'Error finding exercises by equipment',
-        'findByEquipment',
-        'DATABASE_ERROR',
-        err as Error,
-        'exercises'
-      );
+  public async findByEquipment(equipmentId: Types.ObjectId): Promise<IExercise[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('equipment', { 
+      equipmentId: equipmentId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<IExercise[]>(cacheKey);
+    if (cached) {
+      return cached.map(exercise => this.mapToEntity(exercise));
     }
-  }
 
-  /**
-   * Search exercises with comprehensive criteria
-   */
-  public async searchExercises(criteria: ExerciseSearchCriteria): Promise<IExercise[]> {
     try {
-      const filter: Filter<IExercise> = {};
-
-      if (criteria.name) {
-        filter.name = { $regex: criteria.name, $options: 'i' };
-      }
-
-      if (criteria.muscleGroups && criteria.muscleGroups.length > 0) {
-        filter.muscleGroups = { $in: criteria.muscleGroups };
-      }
-
-      if (criteria.primaryMuscleGroup) {
-        filter.primaryMuscleGroup = criteria.primaryMuscleGroup;
-      }
-
-      if (criteria.equipment && criteria.equipment.length > 0) {
-        filter.equipment = { $in: criteria.equipment };
-      }
-
-      if (criteria.exerciseType) {
-        filter.exerciseType = criteria.exerciseType;
-      }
-
-      if (criteria.difficulty) {
-        filter.difficulty = criteria.difficulty;
-      }
-
-      if (criteria.organizationId) {
-        filter.organization = criteria.organizationId;
-      }
-
-      if (criteria.createdBy) {
-        filter.createdBy = criteria.createdBy;
-      }
-
-      if (criteria.tags && criteria.tags.length > 0) {
-        filter.tags = { $in: criteria.tags };
-      }
-
-      if (criteria.shared !== undefined) {
-        filter.shared = criteria.shared;
-      }
-
-      if (criteria.isArchived !== undefined) {
-        filter.isArchived = criteria.isArchived;
-      } else {
-        filter.isArchived = false; // Default to non-archived
-      }
-
-      if (criteria.searchTerm) {
-        filter.$or = [
-          { name: { $regex: criteria.searchTerm, $options: 'i' } },
-          { description: { $regex: criteria.searchTerm, $options: 'i' } },
-          { tags: { $in: [new RegExp(criteria.searchTerm, 'i')] } }
-        ];
-      }
-
-      return await this.find(filter, { sort: { name: 1 } });
-    } catch (err) {
-      this.logger.error('Error searching exercises', err as Error, { criteria });
-      throw new DatabaseError(
-        'Error searching exercises',
-        'searchExercises',
-        'DATABASE_ERROR',
-        err as Error,
-        'exercises'
-      );
-    }
-  }
-
-  /**
-   * Find exercises by organization with visibility rules
-   */
-  public async findByOrganization(
-    organizationId: ObjectId,
-    includeShared: boolean = true
-  ): Promise<IExercise[]> {
-    try {
-      const filter: Filter<IExercise> = {
-        isArchived: false,
-        $or: [
-          { organization: organizationId }
-        ]
-      };
-
-      if (includeShared) {
-        filter.$or!.push({ shared: true });
-      }
-
-      return await this.find(filter, { sort: { name: 1 } });
-    } catch (err) {
-      this.logger.error(`Error finding exercises by organization: ${organizationId}`, err as Error);
-      throw new DatabaseError(
-        'Error finding exercises by organization',
-        'findByOrganization',
-        'DATABASE_ERROR',
-        err as Error,
-        'exercises'
-      );
-    }
-  }
-
-  /**
-   * Get exercise progressions
-   */
-  public async getExerciseProgressions(exerciseId: ObjectId): Promise<IExerciseProgression[]> {
-    try {
-      const progressionCollection = this.db.getCollection<IExerciseProgression>(this.progressionCollection);
+      this.logger.debug('Finding exercises by equipment', { 
+        equipmentId: equipmentId.toString() 
+      });
       
-      return await progressionCollection.find({
-        exerciseId
-      } as Filter<IExerciseProgression>, {
-        sort: { progressionOrder: 1 }
+      const exercises = await this.crudOps.find({
+        equipment: { $in: [equipmentId] }
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }]
       });
-    } catch (err) {
-      this.logger.error(`Error getting exercise progressions for: ${exerciseId}`, err as Error);
-      throw new DatabaseError(
-        'Error getting exercise progressions',
-        'getExerciseProgressions',
-        'DATABASE_ERROR',
-        err as Error,
-        this.progressionCollection
-      );
-    }
-  }
 
-  /**
-   * Get exercise alternatives
-   */
-  public async getExerciseAlternatives(exerciseId: ObjectId): Promise<IExerciseAlternative[]> {
-    try {
-      const alternativeCollection = this.db.getCollection<IExerciseAlternative>(this.alternativeCollection);
-      
-      return await alternativeCollection.find({
-        exerciseId
-      } as Filter<IExerciseAlternative>, {
-        sort: { similarityScore: -1 }
-      });
-    } catch (err) {
-      this.logger.error(`Error getting exercise alternatives for: ${exerciseId}`, err as Error);
-      throw new DatabaseError(
-        'Error getting exercise alternatives',
-        'getExerciseAlternatives',
-        'DATABASE_ERROR',
-        err as Error,
-        this.alternativeCollection
-      );
-    }
-  }
-
-  /**
-   * Add exercise progression
-   */
-  public async addProgression(
-    exerciseId: ObjectId,
-    progressionData: Partial<IExerciseProgression>
-  ): Promise<IExerciseProgression> {
-    try {
-      // Verify exercise exists
-      await this.findById(exerciseId);
-
-      const progressionCollection = this.db.getCollection<IExerciseProgression>(this.progressionCollection);
-      const now = new Date();
-
-      const progression: OptionalUnlessRequiredId<IExerciseProgression> = {
-        ...progressionData,
-        exerciseId,
-        createdAt: now,
-        updatedAt: now
-      };
-
-      const result = await progressionCollection.insertOne(progression);
-
-      return {
-        ...progression,
-        _id: result.insertedId
-      } as IExerciseProgression;
-    } catch (err) {
-      this.logger.error(`Error adding progression for exercise: ${exerciseId}`, err as Error);
-      throw new DatabaseError(
-        'Error adding exercise progression',
-        'addProgression',
-        'DATABASE_ERROR',
-        err as Error,
-        this.progressionCollection
-      );
-    }
-  }
-
-  /**
-   * Add exercise alternative
-   */
-  public async addAlternative(
-    exerciseId: ObjectId,
-    alternativeData: Partial<IExerciseAlternative>
-  ): Promise<IExerciseAlternative> {
-    try {
-      // Verify exercise exists
-      await this.findById(exerciseId);
-
-      const alternativeCollection = this.db.getCollection<IExerciseAlternative>(this.alternativeCollection);
-      const now = new Date();
-
-      const alternative: OptionalUnlessRequiredId<IExerciseAlternative> = {
-        ...alternativeData,
-        exerciseId,
-        createdAt: now,
-        updatedAt: now
-      };
-
-      const result = await alternativeCollection.insertOne(alternative);
-
-      return {
-        ...alternative,
-        _id: result.insertedId
-      } as IExerciseAlternative;
-    } catch (err) {
-      this.logger.error(`Error adding alternative for exercise: ${exerciseId}`, err as Error);
-      throw new DatabaseError(
-        'Error adding exercise alternative',
-        'addAlternative',
-        'DATABASE_ERROR',
-        err as Error,
-        this.alternativeCollection
-      );
-    }
-  }
-
-  /**
-   * Update exercise with workout count increment
-   */
-  public async incrementWorkoutCount(exerciseId: ObjectId): Promise<void> {
-    try {
-      await this.collection.updateOne(
-        { _id: exerciseId } as Filter<IExercise>,
-        { 
-          $inc: { workoutsCount: 1 },
-          $set: { updatedAt: new Date() }
-        }
-      );
-    } catch (err) {
-      this.logger.error(`Error incrementing workout count for exercise: ${exerciseId}`, err as Error);
-      throw new DatabaseError(
-        'Error incrementing workout count',
-        'incrementWorkoutCount',
-        'DATABASE_ERROR',
-        err as Error,
-        'exercises'
-      );
-    }
-  }
-
-  /**
-   * Find similar exercises based on muscle groups and type
-   */
-  public async findSimilarExercises(
-    exerciseId: ObjectId,
-    limit: number = 5
-  ): Promise<IExercise[]> {
-    try {
-      const exercise = await this.findById(exerciseId);
-      
-      const filter: Filter<IExercise> = {
-        _id: { $ne: exerciseId },
-        isArchived: false,
-        $or: [
-          { primaryMuscleGroup: exercise.primaryMuscleGroup },
-          { muscleGroups: { $in: exercise.muscleGroups } },
-          { exerciseType: exercise.exerciseType }
-        ]
-      };
-
-      return await this.find(filter, { 
-        sort: { workoutsCount: -1 },
-        limit 
-      });
-    } catch (err) {
-      this.logger.error(`Error finding similar exercises for: ${exerciseId}`, err as Error);
-      throw new DatabaseError(
-        'Error finding similar exercises',
-        'findSimilarExercises',
-        'DATABASE_ERROR',
-        err as Error,
-        'exercises'
-      );
-    }
-  }
-
-  /**
-   * Archive exercise
-   */
-  public async archiveExercise(exerciseId: ObjectId): Promise<IExercise> {
-    try {
-      return await this.update(exerciseId, { 
-        isArchived: true,
-        updatedAt: new Date()
-      });
-    } catch (err) {
-      this.logger.error(`Error archiving exercise: ${exerciseId}`, err as Error);
-      throw new DatabaseError(
-        'Error archiving exercise',
-        'archiveExercise',
-        'DATABASE_ERROR',
-        err as Error,
-        'exercises'
-      );
-    }
-  }
-
-  /**
-   * Get popular exercises by workout count
-   */
-  public async getPopularExercises(
-    organizationId?: ObjectId,
-    limit: number = 10
-  ): Promise<IExercise[]> {
-    try {
-      const filter: Filter<IExercise> = {
-        isArchived: false,
-        workoutsCount: { $gt: 0 }
-      };
-
-      if (organizationId) {
-        filter.$or = [
-          { organization: organizationId },
-          { shared: true }
-        ];
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, exercises, ExerciseRepository.CACHE_TTL);
       }
 
-      return await this.find(filter, {
-        sort: { workoutsCount: -1 },
-        limit
+      return exercises.map(exercise => this.mapToEntity(exercise));
+    } catch (error) {
+      this.logger.error('Error finding exercises by equipment', error as Error, { 
+        equipmentId: equipmentId.toString() 
       });
-    } catch (err) {
-      this.logger.error('Error getting popular exercises', err as Error);
-      throw new DatabaseError(
-        'Error getting popular exercises',
-        'getPopularExercises',
-        'DATABASE_ERROR',
-        err as Error,
-        'exercises'
-      );
+      throw error;
     }
+  }
+
+  /**
+   * Find exercises by difficulty
+   */
+  public async findByDifficulty(difficulty: string): Promise<IExercise[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('difficulty', { difficulty });
+    
+    const cached = await this.cacheHelpers.getCustom<IExercise[]>(cacheKey);
+    if (cached) {
+      return cached.map(exercise => this.mapToEntity(exercise));
+    }
+
+    try {
+      this.logger.debug('Finding exercises by difficulty', { difficulty });
+      
+      const exercises = await this.crudOps.find({
+        difficulty: difficulty
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, exercises, ExerciseRepository.CACHE_TTL);
+      }
+
+      return exercises.map(exercise => this.mapToEntity(exercise));
+    } catch (error) {
+      this.logger.error('Error finding exercises by difficulty', error as Error, { difficulty });
+      throw error;
+    }
+  }
+
+  /**
+   * Find exercises by type
+   */
+  public async findByType(type: string): Promise<IExercise[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('type', { type });
+    
+    const cached = await this.cacheHelpers.getCustom<IExercise[]>(cacheKey);
+    if (cached) {
+      return cached.map(exercise => this.mapToEntity(exercise));
+    }
+
+    try {
+      this.logger.debug('Finding exercises by type', { type });
+      
+      const exercises = await this.crudOps.find({
+        exerciseType: type
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, exercises, ExerciseRepository.CACHE_TTL);
+      }
+
+      return exercises.map(exercise => this.mapToEntity(exercise));
+    } catch (error) {
+      this.logger.error('Error finding exercises by type', error as Error, { type });
+      throw error;
+    }
+  }
+
+  /**
+   * Find exercises by organization
+   */
+  public async findByOrganization(organizationId: Types.ObjectId): Promise<IExercise[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('organization', { 
+      organizationId: organizationId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<IExercise[]>(cacheKey);
+    if (cached) {
+      return cached.map(exercise => this.mapToEntity(exercise));
+    }
+
+    try {
+      this.logger.debug('Finding exercises by organization', { 
+        organizationId: organizationId.toString() 
+      });
+      
+      const exercises = await this.crudOps.find({
+        organization: organizationId
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, exercises, ExerciseRepository.CACHE_TTL);
+      }
+
+      return exercises.map(exercise => this.mapToEntity(exercise));
+    } catch (error) {
+      this.logger.error('Error finding exercises by organization', error as Error, { 
+        organizationId: organizationId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Search exercises by name
+   */
+  public async searchByName(query: string, limit: number = 20): Promise<IExercise[]> {
+    try {
+      this.logger.debug('Searching exercises by name', { query, limit });
+      
+      const exercises = await this.crudOps.find({
+        name: { $regex: query, $options: 'i' }
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }],
+        pagination: { limit, offset: 0, page: 1, pageSize: limit }
+      });
+
+      return exercises.map(exercise => this.mapToEntity(exercise));
+    } catch (error) {
+      this.logger.error('Error searching exercises by name', error as Error, { query, limit });
+      throw error;
+    }
+  }
+
+  /**
+   * Find exercise alternatives
+   */
+  public async findAlternatives(exerciseId: Types.ObjectId): Promise<IExerciseAlternative[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('alternatives', { 
+      exerciseId: exerciseId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<IExerciseAlternative[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      this.logger.debug('Finding exercise alternatives', { 
+        exerciseId: exerciseId.toString() 
+      });
+      
+      // This would need to be implemented with a separate ExerciseAlternative collection
+      // For now, returning empty array as placeholder
+      const alternatives: IExerciseAlternative[] = [];
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, alternatives, ExerciseRepository.CACHE_TTL);
+      }
+
+      return alternatives;
+    } catch (error) {
+      this.logger.error('Error finding exercise alternatives', error as Error, { 
+        exerciseId: exerciseId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Find exercise progressions
+   */
+  public async findProgressions(exerciseId: Types.ObjectId): Promise<IExerciseProgression[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('progressions', { 
+      exerciseId: exerciseId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<IExerciseProgression[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      this.logger.debug('Finding exercise progressions', { 
+        exerciseId: exerciseId.toString() 
+      });
+      
+      // This would need to be implemented with a separate ExerciseProgression collection
+      // For now, returning empty array as placeholder
+      const progressions: IExerciseProgression[] = [];
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, progressions, ExerciseRepository.CACHE_TTL);
+      }
+
+      return progressions;
+    } catch (error) {
+      this.logger.error('Error finding exercise progressions', error as Error, { 
+        exerciseId: exerciseId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Find exercise swaps for user
+   */
+  public async findSwaps(userId: Types.ObjectId): Promise<IExerciseSwap[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('swaps', { 
+      userId: userId.toString() 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<IExerciseSwap[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      this.logger.debug('Finding exercise swaps for user', { 
+        userId: userId.toString() 
+      });
+      
+      // This would need to be implemented with a separate ExerciseSwap collection
+      // For now, returning empty array as placeholder
+      const swaps: IExerciseSwap[] = [];
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, swaps, ExerciseRepository.CACHE_TTL);
+      }
+
+      return swaps;
+    } catch (error) {
+      this.logger.error('Error finding exercise swaps for user', error as Error, { 
+        userId: userId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Find popular exercises
+   */
+  public async findPopular(limit: number = 10): Promise<IExercise[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('popular', { limit });
+    
+    const cached = await this.cacheHelpers.getCustom<IExercise[]>(cacheKey);
+    if (cached) {
+      return cached.map(exercise => this.mapToEntity(exercise));
+    }
+
+    try {
+      this.logger.debug('Finding popular exercises', { limit });
+      
+      const exercises = await this.crudOps.find({}, {
+        sort: [{ field: 'workoutsCount', direction: 'desc' }],
+        pagination: { limit, offset: 0, page: 1, pageSize: limit }
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(
+          cacheKey, 
+          exercises, 
+          ExerciseRepository.POPULAR_CACHE_TTL
+        );
+      }
+
+      return exercises.map(exercise => this.mapToEntity(exercise));
+    } catch (error) {
+      this.logger.error('Error finding popular exercises', error as Error, { limit });
+      throw error;
+    }
+  }
+
+  /**
+   * Increment workout count for exercise
+   */
+  public async incrementWorkoutCount(id: Types.ObjectId): Promise<void> {
+    try {
+      this.logger.debug('Incrementing workout count', { id: id.toString() });
+
+      const result = await this.crudOps.update(id, {
+        $inc: { workoutsCount: 1 }
+      });
+
+      if (result && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateAfterUpdate(id, result);
+        await this.cacheHelpers.invalidateByPattern('popular:*');
+      }
+
+      if (result) {
+        await this.publishEvent('exercise.workout_count.incremented', {
+          exerciseId: id.toString(),
+          newCount: result.workoutsCount,
+          timestamp: new Date()
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error incrementing workout count', error as Error, { 
+        id: id.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Find exercises by tags
+   */
+  public async findByTags(tags: string[]): Promise<IExercise[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('tags', { 
+      tags: tags.toSorted((a, b) => a.localeCompare(b)) 
+    });
+    
+    const cached = await this.cacheHelpers.getCustom<IExercise[]>(cacheKey);
+    if (cached) {
+      return cached.map(exercise => this.mapToEntity(exercise));
+    }
+
+    try {
+      this.logger.debug('Finding exercises by tags', { tags });
+      
+      const exercises = await this.crudOps.find({
+        tags: { $in: tags }
+      }, {
+        sort: [{ field: 'name', direction: 'asc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, exercises, ExerciseRepository.CACHE_TTL);
+      }
+
+      return exercises.map(exercise => this.mapToEntity(exercise));
+    } catch (error) {
+      this.logger.error('Error finding exercises by tags', error as Error, { tags });
+      throw error;
+    }
+  }
+
+  /**
+   * Override create to handle exercise-specific logic
+   */
+  public async create(data: Partial<IExercise>, context?: RepositoryContext): Promise<IExercise> {
+    // Validate unique name within organization
+    if (data.name && data.organization) {
+      const existingExercise = await this.crudOps.findOne({
+        name: { $regex: new RegExp(`^${data.name}$`, 'i') },
+        organization: data.organization
+      });
+      
+      if (existingExercise) {
+        throw new Error('Exercise with this name already exists in the organization');
+      }
+    }
+
+    // Set default values
+    const exerciseData: Partial<IExercise> = {
+      ...data,
+      tags: data.tags ?? [],
+      muscleGroups: data.muscleGroups ?? [],
+      equipment: data.equipment ?? [],
+      prerequisites: data.prerequisites ?? [],
+      formCues: data.formCues ?? [],
+      commonMistakes: data.commonMistakes ?? [],
+      mediaIds: data.mediaIds ?? [],
+      workoutsCount: 0,
+      shared: data.shared ?? false
+    };
+
+    const exercise = await super.create(exerciseData, context);
+
+    // Publish exercise creation event
+    await this.publishEvent('exercise.created', {
+      exerciseId: exercise._id.toString(),
+      name: exercise.name,
+      organizationId: exercise.organization.toString(),
+      primaryMuscleGroup: exercise.primaryMuscleGroup,
+      equipmentCount: exercise.equipment.length,
+      timestamp: new Date()
+    });
+
+    return exercise;
   }
 
   /**
    * Validate exercise data
    */
-  protected override validateData(data: any, isUpdate: boolean = false): void {
-    if (!isUpdate) {
-      if (!data.name?.trim()) {
-        throw new DatabaseError(
-          'Exercise name is required',
-          'validateData',
-          'VALIDATION_ERROR'
-        );
-      }
+  protected validateData(data: Partial<IExercise>): ValidationResult {
+    const errors: string[] = [];
 
-      if (!data.muscleGroups || !Array.isArray(data.muscleGroups) || data.muscleGroups.length === 0) {
-        throw new DatabaseError(
-          'At least one muscle group is required',
-          'validateData',
-          'VALIDATION_ERROR'
-        );
-      }
-
-      if (!data.primaryMuscleGroup?.trim()) {
-        throw new DatabaseError(
-          'Primary muscle group is required',
-          'validateData',
-          'VALIDATION_ERROR'
-        );
+    // Name validation
+    if (data.name !== undefined) {
+      const nameValidation = ValidationHelpers.validateFieldLength(
+        data.name, 
+        'name', 
+        2, 
+        100
+      );
+      if (!nameValidation.valid) {
+        errors.push(...nameValidation.errors);
       }
     }
 
-    if (data.name !== undefined && !data.name?.trim()) {
-      throw new DatabaseError(
-        'Exercise name cannot be empty',
-        'validateData',
-        'VALIDATION_ERROR'
-      );
+    // Description validation
+    if (data.description !== undefined && data.description.length > 1000) {
+      errors.push('Description must be less than 1000 characters');
     }
 
-    if (data.muscleGroups && (!Array.isArray(data.muscleGroups) || data.muscleGroups.length === 0)) {
-      throw new DatabaseError(
-        'Muscle groups must be a non-empty array',
-        'validateData',
-        'VALIDATION_ERROR'
-      );
+    // Instructions validation
+    if (data.instructions !== undefined && data.instructions.length > 2000) {
+      errors.push('Instructions must be less than 2000 characters');
     }
 
-    if (data.equipment && !Array.isArray(data.equipment)) {
-      throw new DatabaseError(
-        'Equipment must be an array',
-        'validateData',
-        'VALIDATION_ERROR'
-      );
+    // Muscle groups validation
+    if (data.muscleGroups) {
+      if (!Array.isArray(data.muscleGroups)) {
+        errors.push('Muscle groups must be an array');
+      } else if (data.muscleGroups.length === 0) {
+        errors.push('At least one muscle group is required');
+      }
     }
+
+    // Primary muscle group validation
+    if (data.primaryMuscleGroup !== undefined && data.primaryMuscleGroup.length === 0) {
+      errors.push('Primary muscle group is required');
+    }
+
+    // Tags validation
+    if (data.tags) {
+      if (!Array.isArray(data.tags)) {
+        errors.push('Tags must be an array');
+      } else {
+        data.tags.forEach((tag, index) => {
+          if (typeof tag !== 'string' || tag.length === 0) {
+            errors.push(`Tag at index ${index} must be a non-empty string`);
+          }
+        });
+      }
+    }
+
+    // Prerequisites validation
+    if (data.prerequisites) {
+      if (!Array.isArray(data.prerequisites)) {
+        errors.push('Prerequisites must be an array');
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors: errors.length > 0 ? errors : undefined
+    };
+  }
+
+  /**
+   * Map database document to domain entity
+   */
+  protected mapToEntity(data: any): IExercise {
+    return {
+      _id: data._id,
+      name: data.name,
+      description: data.description ?? '',
+      instructions: data.instructions ?? '',
+      muscleGroups: data.muscleGroups ?? [],
+      primaryMuscleGroup: data.primaryMuscleGroup,
+      equipment: data.equipment ?? [],
+      exerciseType: data.exerciseType,
+      difficulty: data.difficulty,
+      mediaIds: data.mediaIds ?? [],
+      prerequisites: data.prerequisites ?? [],
+      formCues: data.formCues ?? [],
+      commonMistakes: data.commonMistakes ?? [],
+      tags: data.tags ?? [],
+      workoutsCount: data.workoutsCount ?? 0,
+      organization: data.organization,
+      createdBy: data.createdBy,
+      isArchived: data.isArchived ?? false,
+      shared: data.shared ?? false,
+      organizationVisibility: data.organizationVisibility,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    } as IExercise;
+  }
+
+  /**
+   * Map domain entity to database document
+   */
+  protected mapFromEntity(entity: IExercise): any {
+    const doc = { ...entity };
+    
+    // Remove any computed fields
+    delete (doc as any).__v;
+    
+    return doc;
   }
 }

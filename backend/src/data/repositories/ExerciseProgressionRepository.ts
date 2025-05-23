@@ -1,5 +1,5 @@
+import { IExerciseProgression } from '@/types/models';
 import { Database } from '../database/Database';
-import { IExerciseProgression } from './ExerciseRepository';
 import { ObjectId } from 'mongodb';
 
 export class ExerciseProgressionRepository {

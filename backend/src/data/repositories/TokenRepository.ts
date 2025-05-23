@@ -1,375 +1,375 @@
-import { BaseRepository } from './helpers';
-import { Database } from '../database/Database';
-import { LoggerFacade } from '../../core/logging/LoggerFacade';
-import { EventMediator } from '../../core/events/EventMediator';
-import { ValidationError } from '../../core/error/exceptions/ValidationError';
-import { Filter, ObjectId, OptionalUnlessRequiredId } from 'mongodb';
+import { Model, Types } from 'mongoose';
+import { LoggerFacade } from '@/core/logging';
+import { EventMediator } from '@/core/events/EventMediator';
 import { CacheFacade } from '@/core/cache/facade/CacheFacade';
+import { IRefreshToken } from '@/types/models';
+import { ITokenRepository } from '@/types/repositories';
+import { ValidationResult, RepositoryContext } from '@/types/repositories/base';
+import { BaseRepository } from './BaseRepository';
+import { ValidationHelpers } from './helpers';
 
 /**
- * Refresh token model interface
+ * Repository for token operations with enhanced validation and caching
  */
-export interface RefreshToken {
-  _id?: ObjectId;
-  token: string;
-  userId: ObjectId;
-  expiresAt: Date;
-  clientId?: string;
-  userAgent?: string;
-  ipAddress?: string;
-  isRevoked: boolean;
-  revokedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export class TokenRepository extends BaseRepository<IRefreshToken> implements ITokenRepository {
+  private static readonly CACHE_TTL = 300; // 5 minutes
+  private static readonly TOKEN_CACHE_TTL = 1800; // 30 minutes for token data
 
-/**
- * Repository for token data access
- */
-export class TokenRepository extends BaseRepository<RefreshToken> {
-  /**
-   * Cache for token storage
-   */
-  private readonly tokenCache?: CacheFacade;
-  
-  /**
-   * Cache key prefix for tokens
-   */
-  private readonly cacheKeyPrefix: string = 'token:';
-  
-  /**
-   * Cache domain for tokens
-   */
-  private readonly cacheDomain: string = 'auth';
-  
-  /**
-   * Create a new TokenRepository instance
-   * 
-   * @param db - Database instance
-   * @param logger - Logger instance
-   * @param eventMediator - Event mediator instance
-   * @param tokenCache - Optional cache for tokens
-   */
   constructor(
-    db: Database,
+    tokenModel: Model<IRefreshToken>,
     logger: LoggerFacade,
-    eventMediator?: EventMediator,
-    tokenCache?: CacheFacade
+    eventMediator: EventMediator,
+    cache?: CacheFacade
   ) {
-    super('refresh_tokens', db, logger, eventMediator);
-    this.tokenCache = tokenCache;
+    super(tokenModel, logger, eventMediator, cache, 'TokenRepository');
   }
 
   /**
-   * Find a token by its value
-   * 
-   * @param token - Token value
-   * @returns Token if found, null otherwise
+   * Find token by token string
    */
-  public async findByToken(token: string): Promise<RefreshToken | null> {
-    // Try cache first if available
-    if (this.tokenCache) {
-      const cacheKey = this.getCacheKey(token);
-      const cachedToken = await this.tokenCache.get<RefreshToken>(cacheKey, this.cacheDomain);
+  public async findByToken(token: string): Promise<IRefreshToken | null> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('token', { token });
+    
+    // Check cache first
+    const cached = await this.cacheHelpers.getCustom<IRefreshToken>(cacheKey);
+    if (cached) {
+      return this.mapToEntity(cached);
+    }
+
+    try {
+      this.logger.debug('Finding token by token string');
       
-      if (cachedToken) {
-        return cachedToken;
+      const refreshToken = await this.crudOps.findOne({
+        token,
+        expiresAt: { $gt: new Date() },
+        isRevoked: { $ne: true }
+      });
+
+      if (refreshToken && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, refreshToken, TokenRepository.TOKEN_CACHE_TTL);
+        const tokenId = this.extractId(refreshToken);
+        if (tokenId) {
+          await this.cacheHelpers.cacheById(tokenId, refreshToken, TokenRepository.TOKEN_CACHE_TTL);
+        }
       }
+
+      return refreshToken ? this.mapToEntity(refreshToken) : null;
+    } catch (error) {
+      this.logger.error('Error finding token by token string', error as Error);
+      throw error;
     }
-    
-    // Fall back to database
-    const result = await this.findOne({ token, isRevoked: false });
-    
-    // Cache the result if found
-    if (result && this.tokenCache) {
-      const cacheKey = this.getCacheKey(token);
-      await this.tokenCache.set(cacheKey, result, { ttl: this.getRemainingTTL(result) }, this.cacheDomain);
-    }
-    
-    return result;
   }
 
   /**
-   * Find all tokens for a user
-   * 
-   * @param userId - User ID
-   * @param includeRevoked - Whether to include revoked tokens
-   * @returns Array of tokens
+   * Find tokens by user ID
    */
-  public async findByUserId(
-    userId: string | ObjectId,
-    includeRevoked: boolean = false
-  ): Promise<RefreshToken[]> {
-    const userObjectId = typeof userId === 'string' ? new ObjectId(userId) : userId;
+  public async findByUserId(userId: Types.ObjectId): Promise<IRefreshToken[]> {
+    const cacheKey = this.cacheHelpers.generateCustomKey('user', { 
+      userId: userId.toString() 
+    });
     
-    const query: Filter<RefreshToken> = { userId: userObjectId };
-    
-    if (!includeRevoked) {
-      query.isRevoked = false;
+    const cached = await this.cacheHelpers.getCustom<IRefreshToken[]>(cacheKey);
+    if (cached) {
+      return cached.map(token => this.mapToEntity(token));
     }
-    
-    return this.find(query);
-  }
 
-  /**
-   * Create a new token
-   * 
-   * @param token - Token data
-   * @returns Created token
-   */
-  public async create(token: OptionalUnlessRequiredId<RefreshToken>): Promise<RefreshToken> {
-    // Ensure token value uniqueness
-    const existingToken = await this.findOne({ token: token.token });
-    if (existingToken) {
-      throw new ValidationError(
-        'Token already exists',
-        [{ field: 'token', message: 'Token already exists' }],
-        'TOKEN_ALREADY_EXISTS'
-      );
-    }
-    
-    // Create token with defaults
-    const now = new Date();
-    
-    const tokenData: OptionalUnlessRequiredId<RefreshToken> = {
-      ...token,
-      isRevoked: false,
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    // Create in database
-    const result = await super.create(tokenData);
-    
-    // Cache the token if cache is available
-    if (this.tokenCache) {
-      const cacheKey = this.getCacheKey(result.token);
-      await this.tokenCache.set(cacheKey, result, { ttl: this.getRemainingTTL(result) }, this.cacheDomain);
-    }
-    
-    return result;
-  }
-
-  /**
-   * Update a token
-   * 
-   * @param id - Token ID
-   * @param updates - Token update data
-   * @returns Updated token
-   */
-  public async update(id: string | ObjectId, updates: Partial<RefreshToken>): Promise<RefreshToken> {
-    const result = await super.update(id, updates);
-    
-    // Update cache if available and token has changed
-    if (this.tokenCache && result.token) {
-      const cacheKey = this.getCacheKey(result.token);
+    try {
+      this.logger.debug('Finding tokens by user ID', { userId: userId.toString() });
       
-      if (result.isRevoked) {
-        // Remove from cache if revoked
-        await this.tokenCache.remove(cacheKey, this.cacheDomain);
-      } else {
-        // Update the cache
-        await this.tokenCache.set(cacheKey, result, { ttl: this.getRemainingTTL(result) }, this.cacheDomain);
+      const tokens = await this.crudOps.find({
+        user: new Types.ObjectId(userId.toString()),
+        expiresAt: { $gt: new Date() },
+        isRevoked: { $ne: true }
+      }, {
+        sort: [{ field: 'createdAt', direction: 'desc' }]
+      });
+
+      if (this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.setCustom(cacheKey, tokens, TokenRepository.CACHE_TTL);
       }
+
+      return tokens.map(token => this.mapToEntity(token));
+    } catch (error) {
+      this.logger.error('Error finding tokens by user ID', error as Error, { 
+        userId: userId.toString() 
+      });
+      throw error;
     }
-    
-    return result;
   }
 
   /**
-   * Delete a token by its value
-   * 
-   * @param token - Token value
-   * @returns True if token was deleted, false otherwise
+   * Delete token by token string
    */
   public async deleteByToken(token: string): Promise<boolean> {
-    const existingToken = await this.findOne({ token });
-    
-    if (!existingToken) {
-      return false;
-    }
-    
-    const result = await this.delete(existingToken._id as ObjectId);
-    
-    // Remove from cache if available
-    if (this.tokenCache) {
-      const cacheKey = this.getCacheKey(token);
-      await this.tokenCache.remove(cacheKey, this.cacheDomain);
-    }
-    
-    return result;
-  }
+    try {
+      this.logger.debug('Deleting token by token string');
+      
+      const result = await this.crudOps.findOneAndDelete({ token });
 
-  /**
-   * Delete all tokens for a user
-   * 
-   * @param userId - User ID
-   * @returns True if tokens were deleted, false otherwise
-   */
-  public async deleteAllForUser(userId: string | ObjectId): Promise<boolean> {
-    const userObjectId = typeof userId === 'string' ? new ObjectId(userId) : userId;
-    
-    // Get all tokens for the user
-    const tokens = await this.findByUserId(userObjectId, true);
-    
-    if (tokens.length === 0) {
-      return false;
-    }
-    
-    // Delete from database
-    const result = await this.collection.deleteMany({ userId: userObjectId });
-    
-    // Remove from cache if available
-    if (this.tokenCache) {
-      for (const token of tokens) {
-        const cacheKey = this.getCacheKey(token.token);
-        await this.tokenCache.remove(cacheKey, this.cacheDomain);
+      if (result && this.cacheHelpers.isEnabled) {
+        const tokenId = this.extractId(result);
+        if (tokenId) {
+          await this.cacheHelpers.invalidateAfterDelete(tokenId);
+        }
+        await this.cacheHelpers.invalidateByPattern('token:*');
+        await this.cacheHelpers.invalidateByPattern('user:*');
       }
-    }
-    
-    // Publish events for each deleted token
-    for (const token of tokens) {
-      this.publishEvent('deleted', token);
-    }
-    
-    return result.deletedCount > 0;
-  }
 
-  /**
-   * Mark a token as revoked
-   * 
-   * @param tokenId - Token ID
-   * @returns True if token was revoked, false otherwise
-   */
-  public async markAsRevoked(tokenId: string | ObjectId): Promise<boolean> {
-    const objectId = typeof tokenId === 'string' ? new ObjectId(tokenId) : tokenId;
-    
-    // Get token to remove from cache
-    const token = await this.findById(objectId);
-    
-    const now = new Date();
-    const result = await this.collection.updateOne(
-      { _id: objectId } as Filter<RefreshToken>,
-      { 
-        $set: { 
-          isRevoked: true,
-          revokedAt: now,
-          updatedAt: now
-        } 
+      if (result) {
+        await this.publishEvent('token.deleted', {
+          tokenId: this.extractId(result)?.toString(),
+          userId: result.user.toString(),
+          timestamp: new Date()
+        });
       }
-    );
-    
-    // Remove from cache if available
-    if (this.tokenCache) {
-      const cacheKey = this.getCacheKey(token.token);
-      await this.tokenCache.remove(cacheKey, this.cacheDomain);
+
+      return !!result;
+    } catch (error) {
+      this.logger.error('Error deleting token by token string', error as Error);
+      throw error;
     }
-    
-    // Publish event
-    if (result.matchedCount > 0) {
-      const updatedToken = { ...token, isRevoked: true, revokedAt: now, updatedAt: now };
-      this.publishEvent('revoked', updatedToken);
-    }
-    
-    return result.matchedCount > 0;
   }
 
   /**
-   * Check if a token is revoked
-   * 
-   * @param tokenId - Token ID
-   * @returns True if token is revoked, false otherwise
+   * Delete all tokens for user
    */
-  public async isRevoked(tokenId: string | ObjectId): Promise<boolean> {
-    const objectId = typeof tokenId === 'string' ? new ObjectId(tokenId) : tokenId;
-    
-    const token = await this.findById(objectId);
-    return token.isRevoked;
+  public async deleteAllForUser(userId: Types.ObjectId): Promise<boolean> {
+    try {
+      this.logger.debug('Deleting all tokens for user', { userId: userId.toString() });
+      
+      const result = await this.crudOps.deleteMany({
+        user: userId
+      });
+
+      if (result.deletedCount > 0 && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateByPattern('token:*');
+        await this.cacheHelpers.invalidateByPattern('user:*');
+      }
+
+      if (result.deletedCount > 0) {
+        await this.publishEvent('tokens.deleted.all', {
+          userId: userId.toString(),
+          deletedCount: result.deletedCount,
+          timestamp: new Date()
+        });
+      }
+
+      return result.deletedCount > 0;
+    } catch (error) {
+      this.logger.error('Error deleting all tokens for user', error as Error, { 
+        userId: userId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Mark token as revoked
+   */
+  public async markAsRevoked(tokenId: Types.ObjectId): Promise<void> {
+    try {
+      this.logger.debug('Marking token as revoked', { tokenId: tokenId.toString() });
+      
+      const result = await this.crudOps.update(tokenId, {
+        isRevoked: true,
+        revokedAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      if (result && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateAfterUpdate(tokenId, result);
+        await this.cacheHelpers.invalidateByPattern('token:*');
+      }
+
+      if (result) {
+        await this.publishEvent('token.revoked', {
+          tokenId: tokenId.toString(),
+          userId: result.user.toString(),
+          timestamp: new Date()
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error marking token as revoked', error as Error, { 
+        tokenId: tokenId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Check if token is revoked
+   */
+  public async isRevoked(tokenId: Types.ObjectId): Promise<boolean> {
+    try {
+      this.logger.debug('Checking if token is revoked', { tokenId: tokenId.toString() });
+      
+      const token = await this.findById(tokenId);
+      return token?.isRevoked ?? true;
+    } catch (error) {
+      this.logger.error('Error checking if token is revoked', error as Error, { 
+        tokenId: tokenId.toString() 
+      });
+      throw error;
+    }
   }
 
   /**
    * Clean up expired tokens
-   * 
-   * @returns Number of deleted tokens
    */
   public async cleanupExpiredTokens(): Promise<number> {
-    const now = new Date();
-    
-    // Delete expired tokens
-    const result = await this.collection.deleteMany({
-      expiresAt: { $lt: now }
+    try {
+      this.logger.debug('Cleaning up expired tokens');
+      
+      const result = await this.crudOps.deleteMany({
+        expiresAt: { $lt: new Date() }
+      });
+
+      if (result.deletedCount > 0 && this.cacheHelpers.isEnabled) {
+        await this.cacheHelpers.invalidateByPattern('*');
+      }
+
+      if (result.deletedCount > 0) {
+        await this.publishEvent('tokens.cleanup', {
+          deletedCount: result.deletedCount,
+          timestamp: new Date()
+        });
+      }
+
+      this.logger.info('Cleaned up expired tokens', { 
+        deletedCount: result.deletedCount 
+      });
+
+      return result.deletedCount;
+    } catch (error) {
+      this.logger.error('Error cleaning up expired tokens', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find active tokens for user
+   */
+  public async findActiveTokensForUser(userId: Types.ObjectId): Promise<IRefreshToken[]> {
+    try {
+      this.logger.debug('Finding active tokens for user', { userId: userId.toString() });
+      
+      const tokens = await this.crudOps.find({
+        user: userId,
+        expiresAt: { $gt: new Date() },
+        isRevoked: { $ne: true }
+      }, {
+        sort: [{ field: 'createdAt', direction: 'desc' }]
+      });
+
+      return tokens.map(token => this.mapToEntity(token));
+    } catch (error) {
+      this.logger.error('Error finding active tokens for user', error as Error, { 
+        userId: userId.toString() 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Override create to handle token-specific logic
+   */
+  public async create(data: Partial<IRefreshToken>, context?: RepositoryContext): Promise<IRefreshToken> {
+    // Set default expiration if not provided (7 days)
+    if (!data.expiresAt) {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+      data.expiresAt = expiresAt;
+    }
+
+    // Set default values
+    const tokenData: Partial<IRefreshToken> = {
+      ...data,
+      isRevoked: data.isRevoked ?? false,
+      clientId: data.clientId ?? 'default',
+      userAgent: data.userAgent ?? 'unknown',
+      ipAddress: data.ipAddress ?? 'unknown'
+    };
+
+    const token = await super.create(tokenData, context);
+
+    // Publish token creation event
+    await this.publishEvent('token.created', {
+      tokenId: token._id.toString(),
+      userId: token.user.toString(),
+      expiresAt: token.expiresAt,
+      timestamp: new Date()
     });
-    
-    // Cannot clean cache for expired tokens as we don't know the token values
-    // But they'll expire from the cache naturally due to TTL
-    
-    return result.deletedCount ?? 0;
+
+    return token;
   }
 
   /**
-   * Build a cache key for a token
-   * 
-   * @param token - Token value
-   * @returns Cache key
+   * Validate token data
    */
-  private getCacheKey(token: string): string {
-    return `${this.cacheKeyPrefix}${token}`;
+  protected validateData(data: Partial<IRefreshToken>): ValidationResult {
+    const errors: string[] = [];
+
+    // Required fields validation
+    const requiredFields = ['token', 'user'];
+    const requiredValidation = ValidationHelpers.validateRequiredFields(data, requiredFields);
+    if (!requiredValidation.valid) {
+      errors.push(...requiredValidation.errors);
+    }
+
+    // Token format validation
+    if (data.token && data.token.length < 32) {
+      errors.push('Token must be at least 32 characters long');
+    }
+
+    // Expiration date validation
+    if (data.expiresAt && data.expiresAt < new Date()) {
+      errors.push('Token expiration date cannot be in the past');
+    }
+
+    // User agent validation
+    if (data.userAgent && data.userAgent.length > 500) {
+      errors.push('User agent must be less than 500 characters');
+    }
+
+    // IP address validation (basic)
+    if (data.ipAddress && data.ipAddress.length > 45) {
+      errors.push('IP address must be less than 45 characters');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors: errors.length > 0 ? errors : undefined
+    };
   }
 
   /**
-   * Calculate the remaining TTL for a token in seconds
-   * 
-   * @param token - Token object
-   * @returns TTL in seconds
+   * Map database document to domain entity
    */
-  private getRemainingTTL(token: RefreshToken): number {
-    const now = new Date();
-    const expiresAt = new Date(token.expiresAt);
-    
-    const ttlMs = expiresAt.getTime() - now.getTime();
-    
-    // Return TTL in seconds, minimum 1 second
-    return Math.max(Math.floor(ttlMs / 1000), 1);
+  protected mapToEntity(data: any): IRefreshToken {
+    return {
+      _id: data._id,
+      token: data.token,
+      user: data.user,
+      expiresAt: data.expiresAt,
+      clientId: data.clientId ?? 'default',
+      userAgent: data.userAgent ?? 'unknown',
+      ipAddress: data.ipAddress ?? 'unknown',
+      isRevoked: data.isRevoked ?? false,
+      revokedAt: data.revokedAt,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    } as IRefreshToken;
   }
 
   /**
-   * Override validation to ensure token data is valid
-   * 
-   * @param data - Token data to validate
-   * @param isUpdate - Whether this is an update operation
+   * Map domain entity to database document
    */
-  protected validateData(data: any, isUpdate: boolean = false): void {
-    const errors: Array<{ field: string; message: string }> = [];
+  protected mapFromEntity(entity: IRefreshToken): any {
+    const doc = { ...entity };
     
-    // Skip validation for empty updates
-    if (isUpdate && Object.keys(data).length === 0) {
-      return;
-    }
+    // Remove any computed fields
+    delete (doc as any).__v;
     
-    // Validate token if provided
-    if (!isUpdate && !data.token) {
-      errors.push({ field: 'token', message: 'Token is required' });
-    }
-    
-    // Validate userId if provided
-    if (!isUpdate && !data.userId) {
-      errors.push({ field: 'userId', message: 'User ID is required' });
-    }
-    
-    // Validate expiresAt if provided
-    if (!isUpdate && !data.expiresAt) {
-      errors.push({ field: 'expiresAt', message: 'Expiration date is required' });
-    } else if (data.expiresAt && !(data.expiresAt instanceof Date)) {
-      errors.push({ field: 'expiresAt', message: 'Expiration date must be a valid date' });
-    }
-    
-    // Throw validation error if any errors were found
-    if (errors.length > 0) {
-      throw new ValidationError(
-        'Validation failed',
-        errors,
-        'VALIDATION_ERROR'
-      );
-    }
+    return doc;
   }
 }
