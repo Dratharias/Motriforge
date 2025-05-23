@@ -1,2 +1,0 @@
-// CookieStrategy.ts
-// TODO: Implement

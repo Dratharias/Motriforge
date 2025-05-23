@@ -1,2 +1,0 @@
-// ExerciseConstants.ts
-// TODO: Implement

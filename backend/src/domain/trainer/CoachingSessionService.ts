@@ -1,2 +1,0 @@
-// CoachingSessionService.ts
-// TODO: Implement

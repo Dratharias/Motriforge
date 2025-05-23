@@ -1,2 +1,0 @@
-// BaseController.ts
-// TODO: Implement

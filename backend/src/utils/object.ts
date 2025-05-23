@@ -1,2 +1,0 @@
-// object.ts
-// TODO: Implement

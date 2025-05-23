@@ -1,2 +1,0 @@
-// AuthFacade.ts
-// TODO: Implement

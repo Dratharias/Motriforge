@@ -1,2 +1,0 @@
-// IndexManager.ts
-// TODO: Implement

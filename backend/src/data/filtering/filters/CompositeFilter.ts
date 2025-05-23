@@ -1,2 +1,0 @@
-// CompositeFilter.ts
-// TODO: Implement

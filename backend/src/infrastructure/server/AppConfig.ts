@@ -1,2 +1,0 @@
-// AppConfig.ts
-// TODO: Implement

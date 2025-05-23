@@ -1,2 +1,0 @@
-// ThemeConstants.ts
-// TODO: Implement

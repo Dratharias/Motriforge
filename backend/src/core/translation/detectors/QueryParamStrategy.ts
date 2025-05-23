@@ -1,2 +1,0 @@
-// QueryParamStrategy.ts
-// TODO: Implement

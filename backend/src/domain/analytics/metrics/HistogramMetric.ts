@@ -1,2 +1,0 @@
-// HistogramMetric.ts
-// TODO: Implement

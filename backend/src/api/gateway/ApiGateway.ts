@@ -1,2 +1,0 @@
-// ApiGateway.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// TranslationFacade.ts
-// TODO: Implement

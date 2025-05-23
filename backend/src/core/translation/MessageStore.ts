@@ -1,2 +1,0 @@
-// MessageStore.ts
-// TODO: Implement

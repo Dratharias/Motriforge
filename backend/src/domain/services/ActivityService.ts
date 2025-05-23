@@ -1,2 +1,0 @@
-// ActivityService.ts
-// TODO: Implement

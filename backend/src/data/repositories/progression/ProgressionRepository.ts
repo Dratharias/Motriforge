@@ -1,2 +1,0 @@
-// ProgressionRepository.ts
-// TODO: Implement

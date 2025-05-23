@@ -1,2 +1,0 @@
-// LocaleConstants.ts
-// TODO: Implement

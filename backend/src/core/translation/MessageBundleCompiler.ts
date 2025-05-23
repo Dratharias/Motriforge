@@ -1,2 +1,0 @@
-// MessageBundleCompiler.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// ProgressionService.ts
-// TODO: Implement

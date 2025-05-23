@@ -1,2 +1,0 @@
-// ConstantsRegistry.ts
-// TODO: Implement

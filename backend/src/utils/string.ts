@@ -1,2 +1,0 @@
-// string.ts
-// TODO: Implement

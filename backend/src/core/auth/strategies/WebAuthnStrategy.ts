@@ -1,2 +1,0 @@
-// WebAuthnStrategy.ts
-// TODO: Implement

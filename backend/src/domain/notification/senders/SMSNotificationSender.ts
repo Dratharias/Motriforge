@@ -1,2 +1,0 @@
-// SMSNotificationSender.ts
-// TODO: Implement

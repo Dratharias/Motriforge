@@ -1,2 +1,0 @@
-// EnumFilter.ts
-// TODO: Implement

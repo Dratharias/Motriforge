@@ -1,2 +1,0 @@
-// OrganizationConstants.ts
-// TODO: Implement

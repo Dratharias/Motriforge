@@ -1,2 +1,0 @@
-// ProgressionFacade.ts
-// TODO: Implement

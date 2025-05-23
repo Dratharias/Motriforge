@@ -1,2 +1,0 @@
-// CacheFacade.ts
-// TODO: Implement

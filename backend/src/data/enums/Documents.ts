@@ -1,1 +1,0 @@
-export type DocumentVisibility = "public" | "private" | "organization" | "member"

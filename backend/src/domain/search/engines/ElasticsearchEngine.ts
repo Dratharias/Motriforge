@@ -1,2 +1,0 @@
-// ElasticsearchEngine.ts
-// TODO: Implement

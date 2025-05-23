@@ -1,2 +1,0 @@
-// EmailNotificationSender.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// ExerciseFilters.ts
-// TODO: Implement

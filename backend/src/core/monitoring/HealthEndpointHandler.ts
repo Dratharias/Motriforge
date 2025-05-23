@@ -1,2 +1,0 @@
-// HealthEndpointHandler.ts
-// TODO: Implement

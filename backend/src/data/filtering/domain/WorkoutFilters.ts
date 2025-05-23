@@ -1,2 +1,0 @@
-// WorkoutFilters.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// EquipmentConstants.ts
-// TODO: Implement

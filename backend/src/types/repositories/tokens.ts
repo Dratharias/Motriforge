@@ -1,6 +1,5 @@
 import { Types } from "mongoose";
 import { IDeviceToken } from "../models";
-import { LoggerFacade } from "@/core/logging";
 
 /**
  * Extended device token interface for repository operations
@@ -18,7 +17,7 @@ export interface IPushToken extends IDeviceToken {
     readonly systemNotifications: boolean;
   };
   readonly metadata?: Record<string, any>;
-  readonly logger?: LoggerFacade;
+  readonly logger?: any;
   readonly failureCount: number;
   readonly lastFailure?: Date;
   readonly lastSuccess?: Date;

@@ -1,2 +1,0 @@
-// ApiHealthCheck.ts
-// TODO: Implement

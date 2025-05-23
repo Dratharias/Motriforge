@@ -1,2 +1,0 @@
-// ActivityController.ts
-// TODO: Implement

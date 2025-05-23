@@ -1,2 +1,0 @@
-// MemoryHealthCheck.ts
-// TODO: Implement

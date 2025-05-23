@@ -1,2 +1,0 @@
-// GoalRepository.ts
-// TODO: Implement

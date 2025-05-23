@@ -1,2 +1,0 @@
-// MagicLinkStrategy.ts
-// TODO: Implement

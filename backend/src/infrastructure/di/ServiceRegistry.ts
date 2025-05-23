@@ -1,2 +1,0 @@
-// ServiceRegistry.ts
-// TODO: Implement

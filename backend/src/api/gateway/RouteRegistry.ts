@@ -1,2 +1,0 @@
-// RouteRegistry.ts
-// TODO: Implement

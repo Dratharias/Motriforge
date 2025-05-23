@@ -1,2 +1,0 @@
-// MembershipService.ts
-// TODO: Implement

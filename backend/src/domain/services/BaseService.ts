@@ -1,2 +1,0 @@
-// BaseService.ts
-// TODO: Implement

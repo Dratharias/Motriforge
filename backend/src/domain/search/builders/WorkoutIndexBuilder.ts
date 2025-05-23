@@ -1,2 +1,0 @@
-// WorkoutIndexBuilder.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// PersonalRecordRepository.ts
-// TODO: Implement

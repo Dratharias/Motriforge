@@ -1,2 +1,0 @@
-// MetricsCollector.ts
-// TODO: Implement

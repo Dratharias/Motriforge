@@ -1,2 +1,0 @@
-// PermissionConstants.ts
-// TODO: Implement

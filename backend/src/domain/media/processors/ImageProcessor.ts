@@ -1,2 +1,0 @@
-// ImageProcessor.ts
-// TODO: Implement

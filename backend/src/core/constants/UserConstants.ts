@@ -1,2 +1,0 @@
-// UserConstants.ts
-// TODO: Implement

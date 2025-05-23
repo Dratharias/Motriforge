@@ -1,2 +1,0 @@
-// WorkoutService.ts
-// TODO: Implement

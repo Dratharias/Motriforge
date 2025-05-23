@@ -1,2 +1,0 @@
-// TextFilter.ts
-// TODO: Implement

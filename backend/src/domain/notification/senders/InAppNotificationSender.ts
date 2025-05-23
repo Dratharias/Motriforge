@@ -1,2 +1,0 @@
-// InAppNotificationSender.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// CircuitBreaker.ts
-// TODO: Implement

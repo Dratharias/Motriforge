@@ -1,2 +1,0 @@
-// VideoProcessor.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// PaginationManager.ts
-// TODO: Implement

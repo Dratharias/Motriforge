@@ -1,2 +1,0 @@
-// SortRegistry.ts
-// TODO: Implement

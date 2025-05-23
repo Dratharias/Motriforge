@@ -1,2 +1,0 @@
-// LoginController.ts
-// TODO: Implement

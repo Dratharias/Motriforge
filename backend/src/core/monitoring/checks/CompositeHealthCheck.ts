@@ -1,2 +1,0 @@
-// CompositeHealthCheck.ts
-// TODO: Implement

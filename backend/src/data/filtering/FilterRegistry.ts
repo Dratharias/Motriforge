@@ -1,2 +1,0 @@
-// FilterRegistry.ts
-// TODO: Implement

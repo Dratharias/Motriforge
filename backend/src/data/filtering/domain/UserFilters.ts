@@ -1,2 +1,0 @@
-// UserFilters.ts
-// TODO: Implement

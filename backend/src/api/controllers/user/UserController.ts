@@ -1,2 +1,0 @@
-// UserController.ts
-// TODO: Implement

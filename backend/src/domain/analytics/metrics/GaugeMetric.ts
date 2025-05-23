@@ -1,2 +1,0 @@
-// GaugeMetric.ts
-// TODO: Implement

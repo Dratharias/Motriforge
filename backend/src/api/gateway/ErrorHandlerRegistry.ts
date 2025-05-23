@@ -1,2 +1,0 @@
-// ErrorHandlerRegistry.ts
-// TODO: Implement

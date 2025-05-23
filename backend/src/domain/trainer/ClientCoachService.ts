@@ -1,2 +1,0 @@
-// ClientCoachService.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// OrganizationController.ts
-// TODO: Implement

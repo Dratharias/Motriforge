@@ -1,2 +1,0 @@
-// MiddlewareRegistry.ts
-// TODO: Implement

@@ -1,2 +1,0 @@
-// ExerciseController.ts
-// TODO: Implement

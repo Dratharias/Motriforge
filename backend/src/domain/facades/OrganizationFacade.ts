@@ -1,2 +1,0 @@
-// OrganizationFacade.ts
-// TODO: Implement

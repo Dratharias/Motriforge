@@ -1,2 +1,0 @@
-// PermissionFacade.ts
-// TODO: Implement

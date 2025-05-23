@@ -1,2 +1,0 @@
-// PushNotificationSender.ts
-// TODO: Implement

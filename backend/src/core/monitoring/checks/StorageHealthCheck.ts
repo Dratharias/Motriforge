@@ -1,2 +1,0 @@
-// StorageHealthCheck.ts
-// TODO: Implement

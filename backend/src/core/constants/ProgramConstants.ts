@@ -1,2 +1,0 @@
-// ProgramConstants.ts
-// TODO: Implement

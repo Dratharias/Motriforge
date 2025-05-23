@@ -1,2 +1,0 @@
-// MuscleConstants.ts
-// TODO: Implement

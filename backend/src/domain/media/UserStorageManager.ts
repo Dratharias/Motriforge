@@ -1,2 +1,0 @@
-// UserStorageManager.ts
-// TODO: Implement

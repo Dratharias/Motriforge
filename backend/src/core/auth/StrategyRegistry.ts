@@ -1,2 +1,0 @@
-// StrategyRegistry.ts
-// TODO: Implement

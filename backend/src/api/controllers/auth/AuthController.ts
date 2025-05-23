@@ -1,2 +1,0 @@
-// AuthController.ts
-// TODO: Implement

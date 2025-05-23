@@ -1,2 +1,0 @@
-// WorkoutConstants.ts
-// TODO: Implement

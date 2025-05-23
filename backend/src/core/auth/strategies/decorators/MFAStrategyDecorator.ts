@@ -1,2 +1,0 @@
-// MFAStrategyDecorator.ts
-// TODO: Implement

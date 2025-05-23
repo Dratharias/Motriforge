@@ -1,2 +1,0 @@
-// OwnershipPermissionStrategy.ts
-// TODO: Implement

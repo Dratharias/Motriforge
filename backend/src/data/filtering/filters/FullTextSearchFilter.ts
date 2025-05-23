@@ -1,2 +1,0 @@
-// FullTextSearchFilter.ts
-// TODO: Implement

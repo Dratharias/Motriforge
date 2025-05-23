@@ -1,2 +1,0 @@
-// FavoriteService.ts
-// TODO: Implement
