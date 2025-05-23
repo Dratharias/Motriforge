@@ -1,0 +1,463 @@
+graph TB
+    %% ===== AUDIT & COMPLIANCE CONTEXT =====
+    subgraph AuditContext ["📋 Audit & Compliance Context"]
+        
+        %% ===== APPLICATION SERVICE LAYER =====
+        subgraph AuditApplicationLayer ["Application Service Layer <<Application>>"]
+            AuditApplicationService["📋 Audit Application Service<br/><<ApplicationService>>"]
+            
+            %% Commands
+            subgraph AuditCommands ["Commands"]
+                CreateAuditEntryCmd["📝 Create Audit Entry<br/><<Command>>"]
+                StartComplianceAuditCmd["🔍 Start Compliance Audit<br/><<Command>>"]
+                CompleteComplianceAuditCmd["✅ Complete Compliance Audit<br/><<Command>>"]
+                CreateComplianceReportCmd["📄 Create Compliance Report<br/><<Command>>"]
+                DefineComplianceRuleCmd["📏 Define Compliance Rule<br/><<Command>>"]
+                UpdateComplianceRuleCmd["✏️ Update Compliance Rule<br/><<Command>>"]
+                ActivateComplianceRuleCmd["▶️ Activate Compliance Rule<br/><<Command>>"]
+                DeactivateComplianceRuleCmd["⏸️ Deactivate Compliance Rule<br/><<Command>>"]
+                CreateRetentionPolicyCmd["🗂️ Create Retention Policy<br/><<Command>>"]
+                ExecuteDataPurgeCmd["🗑️ Execute Data Purge<br/><<Command>>"]
+                FlagComplianceViolationCmd["🚩 Flag Violation<br/><<Command>>"]
+                ResolveComplianceViolationCmd["✅ Resolve Violation<br/><<Command>>"]
+                ScheduleComplianceCheckCmd["📅 Schedule Compliance Check<br/><<Command>>"]
+            end
+            
+            %% Queries
+            subgraph AuditQueries ["Queries"]
+                GetAuditTrailQuery["📜 Get Audit Trail<br/><<Query>>"]
+                GetComplianceStatusQuery["📊 Get Compliance Status<br/><<Query>>"]
+                GetComplianceReportQuery["📄 Get Compliance Report<br/><<Query>>"]
+                GetViolationsQuery["🚩 Get Violations<br/><<Query>>"]
+                GetRetentionPoliciesQuery["🗂️ Get Retention Policies<br/><<Query>>"]
+                GetDataInventoryQuery["📦 Get Data Inventory<br/><<Query>>"]
+                GetComplianceRulesQuery["📏 Get Compliance Rules<br/><<Query>>"]
+                GetRegulatoryRequirementsQuery["⚖️ Get Regulatory Requirements<br/><<Query>>"]
+                GetAccessLogQuery["🔍 Get Access Log<br/><<Query>>"]
+                GetDataFlowMapQuery["🗺️ Get Data Flow Map<br/><<Query>>"]
+                GetPrivacyImpactAssessmentQuery["🔒 Get Privacy Impact Assessment<br/><<Query>>"]
+                GetCertificationStatusQuery["🏆 Get Certification Status<br/><<Query>>"]
+            end
+            
+            %% Sagas
+            subgraph AuditSagas ["Sagas"]
+                ComplianceAuditSaga["🔍 Compliance Audit<br/><<Saga>>"]
+                DataRetentionSaga["🗂️ Data Retention<br/><<Saga>>"]
+                ViolationResolutionSaga["✅ Violation Resolution<br/><<Saga>>"]
+                RegulatoryReportingSaga["📄 Regulatory Reporting<br/><<Saga>>"]
+                CertificationRenewalSaga["🔄 Certification Renewal<br/><<Saga>>"]
+                IncidentResponseSaga["🚨 Incident Response<br/><<Saga>>"]
+            end
+        end
+        
+        %% ===== DOMAIN LAYER (HEXAGON CORE) =====
+        subgraph AuditDomain ["Domain Layer <<DomainCore>>"]
+            direction TB
+            
+            %% Aggregates
+            AuditLog["📜 Audit Log<br/><<AggregateRoot>>"]
+            ComplianceFramework["⚖️ Compliance Framework<br/><<AggregateRoot>>"]
+            DataGovernance["🛡️ Data Governance<br/><<AggregateRoot>>"]
+            RegulatoryCompliance["📋 Regulatory Compliance<br/><<AggregateRoot>>"]
+            PrivacyManagement["🔒 Privacy Management<br/><<AggregateRoot>>"]
+            
+            %% Entities
+            AuditEntry["📝 Audit Entry<br/><<Entity>>"]
+            ComplianceRule["📏 Compliance Rule<br/><<Entity>>"]
+            ComplianceViolation["🚩 Compliance Violation<br/><<Entity>>"]
+            RetentionPolicy["🗂️ Retention Policy<br/><<Entity>>"]
+            DataClassification["📊 Data Classification<br/><<Entity>>"]
+            ComplianceReport["📄 Compliance Report<br/><<Entity>>"]
+            RegulatoryRequirement["⚖️ Regulatory Requirement<br/><<Entity>>"]
+            PrivacyPolicy["🔒 Privacy Policy<br/><<Entity>>"]
+            ConsentRecord["✅ Consent Record<br/><<Entity>>"]
+            DataInventoryItem["📦 Data Inventory Item<br/><<Entity>>"]
+            CertificationStatus["🏆 Certification Status<br/><<Entity>>"]
+            
+            %% Value Objects
+            AuditId["📝 Audit ID<br/><<ValueObject>>"]
+            ComplianceLevel["📊 Compliance Level<br/><<ValueObject>>"]
+            ViolationSeverity["⚠️ Violation Severity<br/><<ValueObject>>"]
+            RetentionPeriod["⏰ Retention Period<br/><<ValueObject>>"]
+            DataSensitivityLevel["🔒 Data Sensitivity Level<br/><<ValueObject>>"]
+            RegulatoryFramework["⚖️ Regulatory Framework<br/><<ValueObject>>"]
+            ComplianceScore["📊 Compliance Score<br/><<ValueObject>>"]
+            AuditTimestamp["🕐 Audit Timestamp<br/><<ValueObject>>"]
+            
+            %% Domain Services
+            AuditTrailService["📜 Audit Trail<br/><<DomainService>>"]
+            ComplianceMonitoringService["📊 Compliance Monitoring<br/><<DomainService>>"]
+            DataRetentionService["🗂️ Data Retention<br/><<DomainService>>"]
+            ViolationManagementService["🚩 Violation Management<br/><<DomainService>>"]
+            RegulatoryReportingService["📄 Regulatory Reporting<br/><<DomainService>>"]
+            PrivacyComplianceService["🔒 Privacy Compliance<br/><<DomainService>>"]
+            DataGovernanceService["🛡️ Data Governance<br/><<DomainService>>"]
+            CertificationManagementService["🏆 Certification Management<br/><<DomainService>>"]
+        end
+        
+        %% ===== PORTS (DOMAIN INTERFACES) =====
+        subgraph AuditPorts ["Ports <<Port>>"]
+            direction TB
+            
+            %% Repository Ports
+            IAuditLogRepo["📜 IAuditLogRepository<br/><<Port>>"]
+            IComplianceFrameworkRepo["⚖️ IComplianceFrameworkRepository<br/><<Port>>"]
+            IDataGovernanceRepo["🛡️ IDataGovernanceRepository<br/><<Port>>"]
+            IRegulatoryComplianceRepo["📋 IRegulatoryComplianceRepository<br/><<Port>>"]
+            IPrivacyManagementRepo["🔒 IPrivacyManagementRepository<br/><<Port>>"]
+            
+            %% Service Ports
+            IAuditingService["📝 IAuditingService<br/><<Port>>"]
+            IComplianceCheckService["✅ IComplianceCheckService<br/><<Port>>"]
+            IDataDiscoveryService["🔍 IDataDiscoveryService<br/><<Port>>"]
+            IEncryptionService["🔒 IEncryptionService<br/><<Port>>"]
+            INotificationService["🔔 INotificationService<br/><<Port>>"]
+            IReportingService["📄 IReportingService<br/><<Port>>"]
+            IIdentityService["🆔 IIdentityService<br/><<Port>>"]
+            IUserService["👤 IUserService<br/><<Port>>"]
+            IOrganizationService["🏢 IOrganizationService<br/><<Port>>"]
+            IMedicalService["🏥 IMedicalService<br/><<Port>>"]
+            IAnalyticsService["📊 IAnalyticsService<br/><<Port>>"]
+            IAuthenticationService["🔐 IAuthenticationService<br/><<Port>>"]
+        end
+        
+        %% ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
+        subgraph AuditAdapters ["Infrastructure Layer <<Adapter>>"]
+            direction TB
+            
+            %% Repository Adapters
+            subgraph AuditRepositoryAdapters ["Repository Adapters"]
+                ImmutableAuditLogRepo["🔒 Immutable Audit Log Repository<br/><<RepositoryAdapter>>"]
+                MongoComplianceFrameworkRepo["🗄️ Mongo Compliance Framework Repository<br/><<RepositoryAdapter>>"]
+                MongoDataGovernanceRepo["🗄️ Mongo Data Governance Repository<br/><<RepositoryAdapter>>"]
+                MongoRegulatoryComplianceRepo["🗄️ Mongo Regulatory Compliance Repository<br/><<RepositoryAdapter>>"]
+                MongoPrivacyManagementRepo["🗄️ Mongo Privacy Management Repository<br/><<RepositoryAdapter>>"]
+            end
+            
+            %% Service Adapters
+            subgraph AuditServiceAdapters ["Service Adapters"]
+                BlockchainAuditAdapter["⛓️ Blockchain Audit<br/><<AuditAdapter>>"]
+                SOCComplianceAdapter["🏛️ SOC Compliance<br/><<ComplianceAdapter>>"]
+                GDPRComplianceAdapter["🇪🇺 GDPR Compliance<br/><<ComplianceAdapter>>"]
+                HIPAAComplianceAdapter["🏥 HIPAA Compliance<br/><<ComplianceAdapter>>"]
+                DataDiscoveryAdapter["🔍 Data Discovery<br/><<DiscoveryAdapter>>"]
+                EncryptionAdapter["🔒 Encryption<br/><<EncryptionAdapter>>"]
+                SlackNotificationAdapter["💬 Slack Notification<br/><<NotificationAdapter>>"]
+                ComplianceReportingAdapter["📄 Compliance Reporting<br/><<ReportingAdapter>>"]
+                IdentityContextAdapter["🆔 Identity Context<br/><<ContextAdapter>>"]
+                UserContextAdapter["👤 User Context<br/><<ContextAdapter>>"]
+                OrganizationContextAdapter["🏢 Organization Context<br/><<ContextAdapter>>"]
+                MedicalContextAdapter["🏥 Medical Context<br/><<ContextAdapter>>"]
+                AnalyticsContextAdapter["📊 Analytics Context<br/><<ContextAdapter>>"]
+                AuthenticationContextAdapter["🔐 Authentication Context<br/><<ContextAdapter>>"]
+            end
+            
+            %% Compliance Tools Adapters
+            subgraph ComplianceToolsAdapters ["Compliance Tools Adapters"]
+                OneTrustAdapter["🛡️ OneTrust<br/><<PrivacyAdapter>>"]
+                TrustArcAdapter["🔒 TrustArc<br/><<PrivacyAdapter>>"]
+                ServiceNowGRCAdapter["📋 ServiceNow GRC<br/><<GRCAdapter>>"]
+                RSAArcherAdapter["🏹 RSA Archer<br/><<GRCAdapter>>"]
+                VantaComplianceAdapter["✅ Vanta<br/><<ComplianceAdapter>>"]
+            end
+        end
+        
+        %% ===== CONTEXT BUS INTERFACES =====
+        subgraph AuditContextBus ["Context Bus Interfaces"]
+            AuditCommandBus["⚡ Audit Command Bus<br/><<CommandBus>>"]
+            AuditQueryBus["❓ Audit Query Bus<br/><<QueryBus>>"]
+            AuditEventBus["📨 Audit Event Bus<br/><<EventBus>>"]
+        end
+        
+        %% ===== POLICY ENFORCEMENT =====
+        subgraph AuditPolicyLayer ["Policy Enforcement Layer"]
+            AuditPolicyEnforcementPoint["🛡️ Audit Policy Enforcement Point<br/><<PEP>>"]
+            GDPRPolicyService["🇪🇺 GDPR Policy<br/><<Policy>>"]
+            HIPAAPolicyService["🏥 HIPAA Policy<br/><<Policy>>"]
+            SOXPolicyService["💼 SOX Policy<br/><<Policy>>"]
+            DataRetentionPolicyService["🗂️ Data Retention Policy<br/><<Policy>>"]
+            AccessControlPolicyService["🔒 Access Control Policy<br/><<Policy>>"]
+        end
+        
+        %% ===== COMPLIANCE MONITORING LAYER =====
+        subgraph ComplianceMonitoringLayer ["📊 Compliance Monitoring Layer"]
+            ComplianceMonitor["📊 Compliance Monitor<br/><<Monitor>>"]
+            ViolationDetector["🚩 Violation Detector<br/><<Detector>>"]
+            ComplianceScoreCalculator["📊 Compliance Score Calculator<br/><<Calculator>>"]
+            RegulatoryChangeMonitor["📡 Regulatory Change Monitor<br/><<Monitor>>"]
+            CertificationTracker["🏆 Certification Tracker<br/><<Tracker>>"]
+        end
+        
+        %% ===== REGULATORY FRAMEWORKS =====
+        subgraph RegulatoryFrameworks ["⚖️ Regulatory Frameworks"]
+            GDPR["🇪🇺 GDPR Framework<br/><<Framework>>"]
+            HIPAA["🏥 HIPAA Framework<br/><<Framework>>"]
+            SOX["💼 SOX Framework<br/><<Framework>>"]
+            ISO27001["🛡️ ISO 27001 Framework<br/><<Framework>>"]
+            SOC2["🏛️ SOC 2 Framework<br/><<Framework>>"]
+            PCI_DSS["💳 PCI DSS Framework<br/><<Framework>>"]
+        end
+    end
+    
+    %% ===== EXTERNAL SYSTEMS =====
+    subgraph AuditExternal ["🌐 External Systems"]
+        MongoDB["🗄️ MongoDB<br/><<Database>>"]
+        BlockchainLedger["⛓️ Blockchain Ledger<br/><<ImmutableStorage>>"]
+        RedisCache["🔴 Redis<br/><<Cache>>"]
+        ElasticsearchCluster["🔍 Elasticsearch<br/><<SearchEngine>>"]
+        DataLakeStorage["🏞️ Data Lake<br/><<DataStorage>>"]
+        OneTrustPlatform["🛡️ OneTrust Platform<br/><<PrivacyService>>"]
+        TrustArcPlatform["🔒 TrustArc Platform<br/><<PrivacyService>>"]
+        ServiceNowGRC["📋 ServiceNow GRC<br/><<GRCService>>"]
+        RSAArcher["🏹 RSA Archer<br/><<GRCService>>"]
+        VantaPlatform["✅ Vanta Platform<br/><<ComplianceService>>"]
+        SlackAPI["💬 Slack API<br/><<NotificationService>>"]
+        EmailService["📧 Email Service<br/><<NotificationService>>"]
+        RegulatoryAPI["📡 Regulatory API<br/><<RegulatoryService>>"]
+    end
+    
+    %% ===== EVENTS =====
+    subgraph AuditEvents ["📨 Domain Events"]
+        AuditEntryCreatedEvent["📝 Audit Entry Created<br/><<DomainEvent>>"]
+        ComplianceViolationDetectedEvent["🚩 Violation Detected<br/><<DomainEvent>>"]
+        ComplianceViolationResolvedEvent["✅ Violation Resolved<br/><<DomainEvent>>"]
+        ComplianceAuditStartedEvent["🔍 Audit Started<br/><<DomainEvent>>"]
+        ComplianceAuditCompletedEvent["✅ Audit Completed<br/><<DomainEvent>>"]
+        RetentionPolicyTriggeredEvent["🗂️ Retention Policy Triggered<br/><<DomainEvent>>"]
+        DataPurgedEvent["🗑️ Data Purged<br/><<DomainEvent>>"]
+        RegulatoryChangeDetectedEvent["📡 Regulatory Change Detected<br/><<DomainEvent>>"]
+        ComplianceScoreUpdatedEvent["📊 Compliance Score Updated<br/><<DomainEvent>>"]
+        CertificationExpiredEvent["⏰ Certification Expired<br/><<DomainEvent>>"]
+        CertificationRenewedEvent["🔄 Certification Renewed<br/><<DomainEvent>>"]
+        PrivacyPolicyUpdatedEvent["🔒 Privacy Policy Updated<br/><<DomainEvent>>"]
+        ConsentWithdrawnEvent["❌ Consent Withdrawn<br/><<DomainEvent>>"]
+        UnauthorizedAccessAttemptEvent["🚨 Unauthorized Access Attempt<br/><<DomainEvent>>"]
+        DataBreachDetectedEvent["🚨 Data Breach Detected<br/><<DomainEvent>>"]
+    end
+    
+    %% ===== READ MODELS =====
+    subgraph AuditReadModels ["📊 Read Models"]
+        AuditTrailRM["📜 Audit Trail<br/><<ReadModel>>"]
+        ComplianceDashboardRM["📊 Compliance Dashboard<br/><<ReadModel>>"]
+        ViolationReportRM["🚩 Violation Report<br/><<ReadModel>>"]
+        ComplianceScoreRM["📊 Compliance Score<br/><<ReadModel>>"]
+        RegulatoryStatusRM["⚖️ Regulatory Status<br/><<ReadModel>>"]
+        DataInventoryRM["📦 Data Inventory<br/><<ReadModel>>"]
+        RetentionStatusRM["🗂️ Retention Status<br/><<ReadModel>>"]
+        PrivacyDashboardRM["🔒 Privacy Dashboard<br/><<ReadModel>>"]
+        CertificationStatusRM["🏆 Certification Status<br/><<ReadModel>>"]
+        AccessLogRM["🔍 Access Log<br/><<ReadModel>>"]
+        IncidentResponseRM["🚨 Incident Response<br/><<ReadModel>>"]
+        ComplianceMetricsRM["📊 Compliance Metrics<br/><<ReadModel>>"]
+    end
+    
+    %% ===== EXTERNAL CONTEXT REFERENCES =====
+    subgraph ExternalContexts ["🌐 External Contexts"]
+        UserContext["👤 User Context<br/><<ExternalContext>>"]
+        IdentityContext["🆔 Identity Context<br/><<ExternalContext>>"]
+        OrganizationContext["🏢 Organization Context<br/><<ExternalContext>>"]
+        MedicalContext["🏥 Medical Context<br/><<ExternalContext>>"]
+        AnalyticsContext["📊 Analytics Context<br/><<ExternalContext>>"]
+        AuthenticationContext["🔐 Authentication Context<br/><<ExternalContext>>"]
+        WorkoutContext["💪 Workout Context<br/><<ExternalContext>>"]
+        ProgressionContext["📈 Progression Context<br/><<ExternalContext>>"]
+        TrainerContext["👨‍🏫 Trainer Context<br/><<ExternalContext>>"]
+        NotificationContext["🔔 Notification Context<br/><<ExternalContext>>"]
+    end
+    
+    %% ===== RELATIONSHIPS =====
+    
+    %% Application Service orchestrates everything
+    AuditApplicationService --> AuditCommandBus
+    AuditApplicationService --> AuditQueryBus
+    AuditApplicationService --> AuditEventBus
+    
+    %% Commands and Queries through Application Service
+    AuditCommands --> AuditApplicationService
+    AuditQueries --> AuditApplicationService
+    AuditSagas --> AuditApplicationService
+    
+    %% Application Service to Domain (orchestration)
+    AuditApplicationService --> AuditLog
+    AuditApplicationService --> ComplianceFramework
+    AuditApplicationService --> DataGovernance
+    AuditApplicationService --> RegulatoryCompliance
+    AuditApplicationService --> PrivacyManagement
+    AuditApplicationService --> AuditTrailService
+    AuditApplicationService --> ComplianceMonitoringService
+    AuditApplicationService --> DataRetentionService
+    AuditApplicationService --> ViolationManagementService
+    AuditApplicationService --> RegulatoryReportingService
+    AuditApplicationService --> PrivacyComplianceService
+    AuditApplicationService --> DataGovernanceService
+    AuditApplicationService --> CertificationManagementService
+    
+    %% Policy Enforcement Integration
+    AuditApplicationService --> AuditPolicyEnforcementPoint
+    AuditPolicyEnforcementPoint --> GDPRPolicyService
+    AuditPolicyEnforcementPoint --> HIPAAPolicyService
+    AuditPolicyEnforcementPoint --> SOXPolicyService
+    AuditPolicyEnforcementPoint --> DataRetentionPolicyService
+    AuditPolicyEnforcementPoint --> AccessControlPolicyService
+    
+    %% Compliance Monitoring Layer Integration
+    ComplianceMonitoringService --> ComplianceMonitoringLayer
+    ComplianceMonitor --> ViolationDetector
+    ComplianceMonitor --> ComplianceScoreCalculator
+    ComplianceMonitor --> RegulatoryChangeMonitor
+    ComplianceMonitor --> CertificationTracker
+    
+    %% Regulatory Frameworks Integration
+    ComplianceFramework --> RegulatoryFrameworks
+    GDPR --> GDPRComplianceAdapter
+    HIPAA --> HIPAAComplianceAdapter
+    SOX --> SOCComplianceAdapter
+    ISO27001 --> VantaComplianceAdapter
+    SOC2 --> ServiceNowGRCAdapter
+    PCI_DSS --> RSAArcherAdapter
+    
+    %% Domain to Ports (Dependency Inversion)
+    AuditLog -->|uses| IAuditLogRepo
+    AuditLog -->|uses| IAuditingService
+    AuditLog -->|uses| IEncryptionService
+    ComplianceFramework -->|uses| IComplianceFrameworkRepo
+    ComplianceFramework -->|uses| IComplianceCheckService
+    DataGovernance -->|uses| IDataGovernanceRepo
+    DataGovernance -->|uses| IDataDiscoveryService
+    RegulatoryCompliance -->|uses| IRegulatoryComplianceRepo
+    RegulatoryCompliance -->|uses| IReportingService
+    PrivacyManagement -->|uses| IPrivacyManagementRepo
+    PrivacyManagement -->|uses| INotificationService
+    AuditTrailService -->|uses| IIdentityService
+    ComplianceMonitoringService -->|uses| IAnalyticsService
+    DataRetentionService -->|uses| IUserService
+    ViolationManagementService -->|uses| IOrganizationService
+    RegulatoryReportingService -->|uses| IMedicalService
+    PrivacyComplianceService -->|uses| IAuthenticationService
+    
+    %% Ports to Adapters (Implementation)
+    IAuditLogRepo -.->|implements| ImmutableAuditLogRepo
+    IComplianceFrameworkRepo -.->|implements| MongoComplianceFrameworkRepo
+    IDataGovernanceRepo -.->|implements| MongoDataGovernanceRepo
+    IRegulatoryComplianceRepo -.->|implements| MongoRegulatoryComplianceRepo
+    IPrivacyManagementRepo -.->|implements| MongoPrivacyManagementRepo
+    IAuditingService -.->|implements| BlockchainAuditAdapter
+    IComplianceCheckService -.->|implements| SOCComplianceAdapter
+    IComplianceCheckService -.->|implements| GDPRComplianceAdapter
+    IComplianceCheckService -.->|implements| HIPAAComplianceAdapter
+    IDataDiscoveryService -.->|implements| DataDiscoveryAdapter
+    IEncryptionService -.->|implements| EncryptionAdapter
+    INotificationService -.->|implements| SlackNotificationAdapter
+    IReportingService -.->|implements| ComplianceReportingAdapter
+    IIdentityService -.->|implements| IdentityContextAdapter
+    IUserService -.->|implements| UserContextAdapter
+    IOrganizationService -.->|implements| OrganizationContextAdapter
+    IMedicalService -.->|implements| MedicalContextAdapter
+    IAnalyticsService -.->|implements| AnalyticsContextAdapter
+    IAuthenticationService -.->|implements| AuthenticationContextAdapter
+    
+    %% Compliance Tools Integration
+    GDPRComplianceAdapter -.->|integrates| OneTrustAdapter
+    PrivacyComplianceService -.->|uses| TrustArcAdapter
+    ComplianceMonitoringService -.->|uses| ServiceNowGRCAdapter
+    ViolationManagementService -.->|uses| RSAArcherAdapter
+    CertificationManagementService -.->|uses| VantaComplianceAdapter
+    
+    %% Adapters to External Systems
+    ImmutableAuditLogRepo -->|connects| BlockchainLedger
+    MongoComplianceFrameworkRepo -->|connects| MongoDB
+    MongoDataGovernanceRepo -->|connects| MongoDB
+    MongoRegulatoryComplianceRepo -->|connects| MongoDB
+    MongoPrivacyManagementRepo -->|connects| MongoDB
+    BlockchainAuditAdapter -->|connects| BlockchainLedger
+    DataDiscoveryAdapter -->|connects| ElasticsearchCluster
+    DataDiscoveryAdapter -->|connects| DataLakeStorage
+    OneTrustAdapter -->|connects| OneTrustPlatform
+    TrustArcAdapter -->|connects| TrustArcPlatform
+    ServiceNowGRCAdapter -->|connects| ServiceNowGRC
+    RSAArcherAdapter -->|connects| RSAArcher
+    VantaComplianceAdapter -->|connects| VantaPlatform
+    SlackNotificationAdapter -->|connects| SlackAPI
+    ComplianceReportingAdapter -->|connects| EmailService
+    RegulatoryChangeMonitor -->|connects| RegulatoryAPI
+    
+    %% Cross-Context Communication
+    IdentityContextAdapter -.->|async calls| IdentityContext
+    UserContextAdapter -.->|async calls| UserContext
+    OrganizationContextAdapter -.->|async calls| OrganizationContext
+    MedicalContextAdapter -.->|async calls| MedicalContext
+    AnalyticsContextAdapter -.->|async calls| AnalyticsContext
+    AuthenticationContextAdapter -.->|async calls| AuthenticationContext
+    
+    %% Domain Events
+    AuditEntry -.->|publishes| AuditEntryCreatedEvent
+    ComplianceViolation -.->|publishes| ComplianceViolationDetectedEvent
+    ComplianceViolation -.->|publishes| ComplianceViolationResolvedEvent
+    ComplianceMonitoringService -.->|publishes| ComplianceAuditStartedEvent
+    ComplianceMonitoringService -.->|publishes| ComplianceAuditCompletedEvent
+    RetentionPolicy -.->|publishes| RetentionPolicyTriggeredEvent
+    DataRetentionService -.->|publishes| DataPurgedEvent
+    RegulatoryChangeMonitor -.->|publishes| RegulatoryChangeDetectedEvent
+    ComplianceScoreCalculator -.->|publishes| ComplianceScoreUpdatedEvent
+    CertificationStatus -.->|publishes| CertificationExpiredEvent
+    CertificationStatus -.->|publishes| CertificationRenewedEvent
+    PrivacyPolicy -.->|publishes| PrivacyPolicyUpdatedEvent
+    ConsentRecord -.->|publishes| ConsentWithdrawnEvent
+    ViolationDetector -.->|publishes| UnauthorizedAccessAttemptEvent
+    ViolationDetector -.->|publishes| DataBreachDetectedEvent
+    
+    %% Event to Read Models (via Event Bus)
+    AuditEventBus -.->|projects to| AuditTrailRM
+    AuditEventBus -.->|projects to| ComplianceDashboardRM
+    AuditEventBus -.->|projects to| ViolationReportRM
+    AuditEventBus -.->|projects to| ComplianceScoreRM
+    AuditEventBus -.->|projects to| RegulatoryStatusRM
+    AuditEventBus -.->|projects to| DataInventoryRM
+    AuditEventBus -.->|projects to| RetentionStatusRM
+    AuditEventBus -.->|projects to| PrivacyDashboardRM
+    AuditEventBus -.->|projects to| CertificationStatusRM
+    AuditEventBus -.->|projects to| AccessLogRM
+    AuditEventBus -.->|projects to| IncidentResponseRM
+    AuditEventBus -.->|projects to| ComplianceMetricsRM
+    
+    %% Events to Event Bus
+    AuditEntryCreatedEvent -.->|publishes to| AuditEventBus
+    ComplianceViolationDetectedEvent -.->|publishes to| AuditEventBus
+    ComplianceViolationResolvedEvent -.->|publishes to| AuditEventBus
+    ComplianceAuditStartedEvent -.->|publishes to| AuditEventBus
+    ComplianceAuditCompletedEvent -.->|publishes to| AuditEventBus
+    RetentionPolicyTriggeredEvent -.->|publishes to| AuditEventBus
+    DataPurgedEvent -.->|publishes to| AuditEventBus
+    RegulatoryChangeDetectedEvent -.->|publishes to| AuditEventBus
+    ComplianceScoreUpdatedEvent -.->|publishes to| AuditEventBus
+    CertificationExpiredEvent -.->|publishes to| AuditEventBus
+    CertificationRenewedEvent -.->|publishes to| AuditEventBus
+    PrivacyPolicyUpdatedEvent -.->|publishes to| AuditEventBus
+    ConsentWithdrawnEvent -.->|publishes to| AuditEventBus
+    UnauthorizedAccessAttemptEvent -.->|publishes to| AuditEventBus
+    DataBreachDetectedEvent -.->|publishes to| AuditEventBus
+    
+    %% Sagas listen to events
+    ComplianceAuditSaga -.->|listens to| ComplianceAuditStartedEvent
+    DataRetentionSaga -.->|listens to| RetentionPolicyTriggeredEvent
+    ViolationResolutionSaga -.->|listens to| ComplianceViolationDetectedEvent
+    RegulatoryReportingSaga -.->|listens to| RegulatoryChangeDetectedEvent
+    CertificationRenewalSaga -.->|listens to| CertificationExpiredEvent
+    IncidentResponseSaga -.->|listens to| DataBreachDetectedEvent
+    
+    %% Context Bus to External Event Bus
+    AuditEventBus -.->|integrates with| ExternalContexts
+    
+    %% External Events Integration (listening to other contexts)
+    UserCreated["👤 User Created<br/><<ExternalEvent>>"]
+    DataAccessed["🔍 Data Accessed<br/><<ExternalEvent>>"]
+    MedicalDataViewed["🏥 Medical Data Viewed<br/><<ExternalEvent>>"]
+    LoginAttempt["🔐 Login Attempt<br/><<ExternalEvent>>"]
+    PaymentProcessed["💳 Payment Processed<br/><<ExternalEvent>>"]
+    
+    %% External Events to Audit Commands
+    UserCreated -.->|triggers| CreateAuditEntryCmd
+    DataAccessed -.->|triggers| CreateAuditEntryCmd
+    MedicalDataViewed -.->|triggers| CreateAuditEntryCmd
+    LoginAttempt -.->|triggers| CreateAuditEntryCmd
+    PaymentProcessed -.->|triggers| CreateAuditEntryCmd
