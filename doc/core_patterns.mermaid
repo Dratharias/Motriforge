@@ -10,41 +10,104 @@ classDiagram
         +authorize(action: string, resource: string): Promise~boolean~
     }
     
-    %% ===== CROSS-CUTTING MIDDLEWARE FRAMEWORK =====
+    %% ===== DECOMPOSED MIDDLEWARE FRAMEWORK =====
     class MiddlewareFramework {
         <<Cross-Cutting Framework>>
         -middlewareChain: MiddlewareChain
-        -middlewareRegistry: MiddlewareRegistry
+        -registryEventManager: RegistryEventManager
         -policyEnforcementPoint: PolicyEnforcementPoint
         +registerMiddleware(middleware: IMiddleware): void
         +executeChain(context: RequestContext): Promise~RequestContext~
         +enforcePolicy(policy: Policy, context: RequestContext): Promise~boolean~
     }
     
+    %% ===== DECOMPOSED MIDDLEWARE CHAIN =====
     class MiddlewareChain {
-        <<Chain of Responsibility>>
-        -middlewares: IMiddleware[]
-        -registry: MiddlewareRegistry
-        +add(middleware: IMiddleware): MiddlewareChain
-        +execute(context: RequestContext): Promise~RequestContext~
-        +remove(middlewareName: string): boolean
+        <<Chain Orchestrator>>
+        -middleware: Map~string, IConfigurableMiddleware~
+        -executionOrder: string[]
+        -validator: ChainValidator
+        -executor: ChainExecutor
+        +add(middleware: IConfigurableMiddleware): MiddlewareChain
+        +remove(middlewareName: string): MiddlewareChain
+        +execute(context: RequestContext): Promise~ChainExecutionResult~
+        +validate(): ChainValidationResult
     }
     
-    class PolicyEnforcementPoint {
-        <<Security Pattern>>
-        -policyDecisionPoint: PolicyDecisionPoint
-        -policyInformationPoint: PolicyInformationPoint
-        +enforcePolicy(policy: Policy, context: SecurityContext): Promise~boolean~
-        +evaluatePermissions(subject: Subject, resource: Resource): Promise~Decision~
-        +auditDecision(decision: Decision, context: SecurityContext): Promise~void~
+    class ChainExecutor {
+        <<Execution Engine>>
+        -logger: ContextualLogger
+        +executeSequential(middleware: Map, order: string[], context: ChainExecutionContext): Promise~void~
+        +executeParallel(middleware: Map, context: ChainExecutionContext): Promise~void~
+        +executeMiddleware(middleware: IConfigurableMiddleware, context: ChainExecutionContext): Promise~MiddlewareExecutionResult~
+        +buildChainResult(context: ChainExecutionContext, duration: number): ChainExecutionResult
     }
     
-    class IMiddleware {
-        <<Strategy Pattern>>
-        +execute(context: RequestContext, next: NextFunction): Promise~void~
-        +getName(): string
-        +isEnabled(): boolean
-        +getPriority(): number
+    class ChainValidator {
+        <<Validation Engine>>
+        -logger: ContextualLogger
+        +validate(middleware: Map~string, IConfigurableMiddleware~): ChainValidationResult
+        -validateDependencies(middleware: Map): DependencyValidationResult
+        -validatePriorities(middleware: Map): PriorityValidationResult
+        -detectCircularDependencies(middleware: Map): string[]
+    }
+    
+    class MiddlewareChainFactory {
+        <<Factory Pattern>>
+        +create(middleware: IConfigurableMiddleware[], logger: ContextualLogger): MiddlewareChain
+        +createHighPerformance(middleware: IConfigurableMiddleware[], logger: ContextualLogger): MiddlewareChain
+        +createDevelopment(middleware: IConfigurableMiddleware[], logger: ContextualLogger): MiddlewareChain
+    }
+    
+    %% ===== DECOMPOSED MIDDLEWARE REGISTRY =====
+    class RegistryEventManager {
+        <<Event Management>>
+        -listeners: IRegistryEventListener[]
+        -eventHistory: RegistryEvent[]
+        +addEventListener(listener: IRegistryEventListener): void
+        +removeEventListener(listener: IRegistryEventListener): void
+        +emit(type: RegistryEventType, middlewareName: string, metadata?: Record): void
+        +getEventHistory(limit?: number): RegistryEvent[]
+    }
+    
+    class MiddlewareDiscovery {
+        <<Discovery & Search>>
+        -logger: ContextualLogger
+        +discover(registrations: Map, criteria: MiddlewareDiscoveryCriteria): MiddlewareRegistration[]
+        +getByCategory(registrations: Map, category: MiddlewareCategory): MiddlewareRegistration[]
+        +search(registrations: Map, query: string): MiddlewareRegistration[]
+        +getSuggestions(registrations: Map, context: ApplicationContext): MiddlewareRegistration[]
+    }
+    
+    class MiddlewareHealthChecker {
+        <<Health Monitoring>>
+        -logger: ContextualLogger
+        -eventManager: RegistryEventManager
+        -healthChecks: Map~string, MiddlewareHealthCheck~
+        +performHealthChecks(registrations: Map): Promise~MiddlewareHealthCheck[]~
+        +performSingleHealthCheck(registration: MiddlewareRegistration): Promise~MiddlewareHealthCheck~
+        +startPeriodicHealthChecks(registrations: Map, intervalMs: number): void
+        +getHealthCheckStats(): HealthCheckStats
+    }
+    
+    class MiddlewareStatistics {
+        <<Statistics & Analytics>>
+        -logger: ContextualLogger
+        -usageTrends: UsageTrend[]
+        -performanceMetrics: Map~string, MiddlewarePerformanceMetrics~
+        +generateStats(registrations: Map): MiddlewareRegistryStats
+        +getCategoryStats(registrations: Map): CategoryStats[]
+        +recordUsage(middlewareName: string, executionTime?: number): void
+        +getUsageTrends(days: number): UsageTrend[]
+    }
+    
+    class MiddlewareValidator {
+        <<Validation & Integrity>>
+        -logger: ContextualLogger
+        +validateName(name: string, existingNames: Set): RegistryValidationError[]
+        +validateSingle(registration: MiddlewareRegistration, registrations: Map): RegistryValidationError[]
+        +canRemove(name: string, registrations: Map): RemovalValidationResult
+        +validate(registrations: Map): DetailedValidationResult
     }
     
     %% ===== APPLICATION LAYER - DECOMPOSED SERVICES =====
@@ -318,9 +381,22 @@ classDiagram
     
     %% Presentation to Cross-Cutting Framework
     APIGateway --> MiddlewareFramework : uses
-    MiddlewareFramework --> MiddlewareChain : manages
-    MiddlewareFramework --> PolicyEnforcementPoint : enforces policies
-    MiddlewareChain --> IMiddleware : executes chain
+    
+    %% Decomposed Middleware Framework
+    MiddlewareFramework --> MiddlewareChain : orchestrates
+    MiddlewareFramework --> RegistryEventManager : manages events
+    
+    %% Decomposed Chain Relationships
+    MiddlewareChain --> ChainExecutor : delegates execution
+    MiddlewareChain --> ChainValidator : validates configuration
+    MiddlewareChainFactory --> MiddlewareChain : creates
+    
+    %% Registry Component Relationships
+    RegistryEventManager --> MiddlewareDiscovery : coordinates with
+    RegistryEventManager --> MiddlewareHealthChecker : coordinates with
+    RegistryEventManager --> MiddlewareStatistics : coordinates with
+    RegistryEventManager --> MiddlewareValidator : coordinates with
+    MiddlewareHealthChecker --> RegistryEventManager : emits events to
     
     %% Cross-Cutting to Application Services
     MiddlewareFramework --> ApplicationServiceRegistry : routes to services
@@ -353,13 +429,11 @@ classDiagram
     
     %% Identity & Access Management
     MiddlewareFramework --> IdentityContext : authenticates
-    PolicyEnforcementPoint --> AccessManagementService : authorizes
     IdentityContext --> SessionManagementService : manages sessions
     IdentityContext --> AccessManagementService : manages access
     
     %% Enhanced Plugin System
     PluginManager --> PluginSecurityGateway : validates security
-    PluginSecurityGateway --> PolicyEnforcementPoint : enforces policies
     PluginSecurityGateway --> SecurityContext : uses context
     
     %% Cross-Cutting Service Dependencies
@@ -372,4 +446,3 @@ classDiagram
     EventStore --> MetricsCollector : records metrics
     ReadModelStore --> MetricsCollector : records metrics
     PluginManager --> ServiceRegistry : registers plugins
-    PolicyEnforcementPoint --> MetricsCollector : records decisions

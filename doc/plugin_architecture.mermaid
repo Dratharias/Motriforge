@@ -43,6 +43,26 @@ graph TB
         end
     end
     
+    %% ===== DECOMPOSED MIDDLEWARE INTEGRATION =====
+    subgraph MiddlewareIntegration ["🔧 Middleware Integration"]
+        
+        %% ===== MIDDLEWARE FRAMEWORK =====
+        subgraph MiddlewareFramework ["Middleware Framework"]
+            MiddlewareChain["⛓️ Middleware Chain<br/><<Orchestrator>>"]
+            ChainExecutor["⚡ Chain Executor<br/><<Engine>>"]
+            ChainValidator["✅ Chain Validator<br/><<Validator>>"]
+        end
+        
+        %% ===== MIDDLEWARE REGISTRY COMPONENTS =====
+        subgraph MiddlewareRegistryComponents ["Middleware Registry Components"]
+            RegistryEventManager["📨 Registry Event Manager<br/><<EventManager>>"]
+            MiddlewareDiscovery["🔍 Middleware Discovery<br/><<Discovery>>"]
+            MiddlewareHealthChecker["❤️ Middleware Health Checker<br/><<HealthMonitor>>"]
+            MiddlewareStatistics["📊 Middleware Statistics<br/><<Analytics>>"]
+            MiddlewareValidator["✅ Middleware Validator<br/><<Validator>>"]
+        end
+    end
+    
     %% ===== PLUGIN TYPES =====
     subgraph PluginTypes ["🔌 Plugin Types"]
         PaymentPlugin["💳 Payment Plugin<br/><<BusinessPlugin>>"]
@@ -50,6 +70,7 @@ graph TB
         NotificationPlugin["🔔 Notification Plugin<br/><<BusinessPlugin>>"]
         AIPlugin["🤖 AI Plugin<br/><<BusinessPlugin>>"]
         CustomPlugin["🎨 Custom Plugin<br/><<BusinessPlugin>>"]
+        MiddlewarePlugin["🔗 Middleware Plugin<br/><<MiddlewareExtension>>"]
     end
     
     %% ===== SECURITY CONTEXT =====
@@ -123,6 +144,7 @@ graph TB
     PluginExecutor --> NotificationPlugin
     PluginExecutor --> AIPlugin
     PluginExecutor --> CustomPlugin
+    PluginExecutor --> MiddlewarePlugin
     
     %% ===== SECURITY CONTEXT RELATIONSHIPS =====
     SecurityContext --> Identity
@@ -130,6 +152,16 @@ graph TB
     SecurityContext --> Permissions
     SecurityContext --> Roles
     SecurityContext --> AccessTokens
+    
+    %% ===== MIDDLEWARE FRAMEWORK RELATIONSHIPS =====
+    MiddlewareChain --> ChainExecutor
+    MiddlewareChain --> ChainValidator
+    
+    %% ===== MIDDLEWARE REGISTRY RELATIONSHIPS =====
+    RegistryEventManager --> MiddlewareDiscovery
+    RegistryEventManager --> MiddlewareHealthChecker
+    RegistryEventManager --> MiddlewareStatistics
+    RegistryEventManager --> MiddlewareValidator
     
     %% ===== INTEGRATION RELATIONSHIPS =====
     PluginManager --> ApplicationServiceRegistry
@@ -139,6 +171,14 @@ graph TB
     AnalyticsPlugin --> ExternalAPIs
     NotificationPlugin --> ExternalAPIs
     AIPlugin --> ExternalAPIs
+    
+    %% ===== MIDDLEWARE INTEGRATION RELATIONSHIPS =====
+    PluginManager --> MiddlewareChain
+    PluginManager --> RegistryEventManager
+    MiddlewarePlugin --> MiddlewareDiscovery
+    MiddlewarePlugin --> MiddlewareHealthChecker
+    MiddlewarePlugin --> MiddlewareStatistics
+    MiddlewarePlugin --> MiddlewareValidator
     
     %% ===== LIFECYCLE RELATIONSHIPS =====
     PluginManager --> PluginDiscovery
@@ -154,18 +194,37 @@ graph TB
     PolicyEnforcementPoint --> ComplianceMonitor
     PluginExecutor --> HealthChecker
     
-    %% ===== SECURITY FLOW =====
+    %% ===== CROSS-INTEGRATION FLOWS =====
+    
+    %% Plugin to Middleware Integration
+    MiddlewarePlugin -.->|registers as| MiddlewareChain
+    MiddlewarePlugin -.->|validates through| ChainValidator
+    MiddlewarePlugin -.->|executes via| ChainExecutor
+    
+    %% Plugin Registry Integration
+    PluginRegistry -.->|discovers via| MiddlewareDiscovery
+    PluginRegistry -.->|monitors through| MiddlewareHealthChecker
+    PluginRegistry -.->|tracks stats via| MiddlewareStatistics
+    PluginRegistry -.->|validates with| MiddlewareValidator
+    
+    %% Security Flow Integration
     PluginManager -.->|validates security| PluginSecurityGateway
     PluginSecurityGateway -.->|enforces policies| PolicyEnforcementPoint
     PolicyEnforcementPoint -.->|makes decisions| PolicyDecisionPoint
     PolicyDecisionPoint -.->|gets context| SecurityContext
     
-    %% ===== EXECUTION FLOW =====
+    %% Execution Flow Integration
     PluginSecurityGateway -.->|authorized execution| PluginExecutor
     PluginExecutor -.->|sandboxed execution| SandboxManager
     SandboxManager -.->|isolated execution| WasmSandbox
     
-    %% ===== AUDIT FLOW =====
+    %% Monitoring Integration
+    MiddlewareHealthChecker -.->|health data| HealthChecker
+    MiddlewareStatistics -.->|performance data| PerformanceMonitor
+    RegistryEventManager -.->|security events| SecurityMonitor
+    
+    %% Audit Flow Integration
     PluginSecurityGateway -.->|logs activity| PluginAuditLogger
     PolicyEnforcementPoint -.->|logs decisions| PluginAuditLogger
     PluginExecutor -.->|logs execution| PluginAuditLogger
+    RegistryEventManager -.->|middleware events| PluginAuditLogger

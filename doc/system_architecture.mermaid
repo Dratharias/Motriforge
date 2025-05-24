@@ -5,11 +5,29 @@ graph TB
         ContextRouter["🔀 Context Router<br/><<Router>>"]
     end
     
-    %% ===== CROSS-CUTTING MIDDLEWARE FRAMEWORK =====
-    subgraph MiddlewareFramework ["🔧 Middleware Framework <<Cross-Cutting>>"]
-        MiddlewareChain["⛓️ Middleware Chain<br/><<Pipeline>>"]
+    %% ===== DECOMPOSED MIDDLEWARE FRAMEWORK =====
+    subgraph DecomposedMiddlewareFramework ["🔧 Decomposed Middleware Framework <<Cross-Cutting>>"]
+        
+        %% ===== MIDDLEWARE CHAIN SUBSYSTEM =====
+        subgraph MiddlewareChainSubsystem ["Middleware Chain Subsystem"]
+            MiddlewareChain["⛓️ Middleware Chain<br/><<Orchestrator>>"]
+            ChainExecutor["⚡ Chain Executor<br/><<Engine>>"]
+            ChainValidator["✅ Chain Validator<br/><<Validator>>"]
+            ChainFactory["🏭 Chain Factory<br/><<Factory>>"]
+        end
+        
+        %% ===== MIDDLEWARE REGISTRY SUBSYSTEM =====
+        subgraph MiddlewareRegistrySubsystem ["Middleware Registry Subsystem"]
+            RegistryEventManager["📨 Registry Event Manager<br/><<EventManager>>"]
+            MiddlewareDiscovery["🔍 Middleware Discovery<br/><<Discovery>>"]
+            MiddlewareHealthChecker["❤️ Middleware Health Checker<br/><<HealthMonitor>>"]
+            MiddlewareStatistics["📊 Middleware Statistics<br/><<Analytics>>"]
+            MiddlewareValidator["✅ Middleware Validator<br/><<Validator>>"]
+        end
+        
+        %% ===== MIDDLEWARE COORDINATION =====
+        MiddlewareCoordinator["🎯 Middleware Coordinator<br/><<Coordinator>>"]
         PolicyEnforcementPoint["🛡️ Policy Enforcement Point<br/><<Security>>"]
-        MiddlewareRegistry["📋 Middleware Registry<br/><<Registry>>"]
     end
     
     %% ===== APPLICATION SERVICE LAYER =====
@@ -106,7 +124,7 @@ graph TB
         SearchEngine["🔍 Search Engine<br/><<Search>>"]
     end
     
-    %% ===== PLUGIN SYSTEM WITH SECURITY =====
+    %% ===== ENHANCED PLUGIN SYSTEM WITH SECURITY =====
     subgraph PluginSystem ["🔌 Plugin System"]
         PluginManager["🔌 Plugin Manager<br/><<Manager>>"]
         PluginSecurityGateway["🛡️ Plugin Security Gateway<br/><<Security>>"]
@@ -151,11 +169,28 @@ graph TB
     
     %% ===== PRESENTATION TO MIDDLEWARE =====
     Gateway --> ContextRouter
-    ContextRouter --> MiddlewareFramework
+    ContextRouter --> MiddlewareCoordinator
+    
+    %% ===== DECOMPOSED MIDDLEWARE INTERNAL RELATIONSHIPS =====
+    
+    %% Chain Subsystem Internal
+    MiddlewareChain --> ChainExecutor
+    MiddlewareChain --> ChainValidator
+    ChainFactory --> MiddlewareChain
+    
+    %% Registry Subsystem Internal
+    RegistryEventManager --> MiddlewareDiscovery
+    RegistryEventManager --> MiddlewareHealthChecker
+    RegistryEventManager --> MiddlewareStatistics
+    RegistryEventManager --> MiddlewareValidator
+    
+    %% Coordination Between Subsystems
+    MiddlewareCoordinator --> MiddlewareChain
+    MiddlewareCoordinator --> RegistryEventManager
+    MiddlewareCoordinator --> PolicyEnforcementPoint
     
     %% ===== MIDDLEWARE TO APPLICATION SERVICES =====
-    MiddlewareChain --> ServiceRegistry
-    PolicyEnforcementPoint --> ServiceRegistry
+    MiddlewareCoordinator --> ServiceRegistry
     
     %% ===== SERVICE REGISTRY TO APPLICATION SERVICES =====
     ServiceRegistry --> UserAppService
@@ -194,7 +229,7 @@ graph TB
     MedicalContextApp --> MedicalAggregates
     
     %% ===== IDENTITY & ACCESS MANAGEMENT INTEGRATION =====
-    MiddlewareFramework --> IdentityLayer
+    MiddlewareCoordinator --> IdentityLayer
     PolicyEnforcementPoint --> AccessManagementService
     IdentityContext --> SessionManagementService
     IdentityContext --> CredentialManagementService
@@ -218,10 +253,22 @@ graph TB
     PluginManager --> ServiceRegistry
     PluginSandbox --> PluginRegistry
     
+    %% ===== MIDDLEWARE-PLUGIN INTEGRATION =====
+    PluginManager --> MiddlewareChain
+    PluginManager --> RegistryEventManager
+    PluginSecurityGateway --> MiddlewareValidator
+    
     %% ===== CROSS-CUTTING INTEGRATION =====
     ApplicationServices --> CrossCutting
     BoundedContexts --> CrossCutting
     SharedInfra --> CrossCutting
+    DecomposedMiddlewareFramework --> CrossCutting
+    
+    %% ===== MIDDLEWARE CROSS-CUTTING INTEGRATION =====
+    MiddlewareStatistics --> ContextualMetrics
+    MiddlewareHealthChecker --> ObservabilityStack
+    RegistryEventManager --> DistributedLogging
+    PolicyEnforcementPoint --> ComplianceSecurity
     
     %% ===== ANTI-CORRUPTION LAYER CONNECTIONS =====
     UserACL --> UserContext
@@ -244,3 +291,8 @@ graph TB
     MedicalContext --> MedicalSystems
     IdentityLayer --> IdentityProviders
     
+    %% ===== MONITORING & HEALTH INTEGRATION =====
+    MiddlewareHealthChecker --> ObservabilityStack
+    MiddlewareStatistics --> ContextualMetrics
+    ChainExecutor --> DistributedLogging
+    RegistryEventManager --> DistributedLogging
