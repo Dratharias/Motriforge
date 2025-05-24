@@ -1,4 +1,4 @@
-import { IConfigurableMiddleware, NextFunction } from '../MiddlewareFramework';
+import { IConfigurableMiddleware, NextFunction } from '../MiddlewareFramework/MiddlewareFramework';
 import { 
   ChainExecutionOptions, 
   ChainExecutionContext, 

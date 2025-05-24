@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { ApplicationContext } from '@/types/shared/enums/common';
 import { MiddlewareCategory, RegistryEventType, ValidationErrorType } from './enums';
-import { IConfigurableMiddleware, MiddlewareConfig } from '@/middleware/MiddlewareFramework';
+import { IConfigurableMiddleware, MiddlewareConfig } from '@/middleware/MiddlewareFramework/MiddlewareFramework';
 
 /**
  * Middleware registration metadata

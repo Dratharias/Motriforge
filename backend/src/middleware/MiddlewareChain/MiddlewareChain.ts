@@ -2,7 +2,7 @@
 
 import { ObjectId } from 'mongodb';
 import { ContextualLogger } from '@/shared-kernel/infrastructure/logging/ContextualLogger';
-import { IConfigurableMiddleware, RequestContext } from '../MiddlewareFramework';
+import { IConfigurableMiddleware, RequestContext } from '../MiddlewareFramework/MiddlewareFramework';
 import {
   ChainExecutionResult,
   ChainExecutionOptions,

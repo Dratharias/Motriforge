@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { 
   MiddlewareResult, 
   MiddlewareExecutionContext 
-} from '@/middleware/MiddlewareFramework';
+} from '@/middleware/MiddlewareFramework/MiddlewareFramework';
 
 /**
  * Chain execution result with detailed information

@@ -1,4 +1,4 @@
-import { IConfigurableMiddleware } from '../MiddlewareFramework';
+import { IConfigurableMiddleware } from '../MiddlewareFramework/MiddlewareFramework';
 import { 
   ChainValidationResult,
   DependencyValidationResult
