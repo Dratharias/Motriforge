@@ -42,9 +42,9 @@
 ## Part 3: Middleware Framework & Request Pipeline
 
 ### src/middleware/
-- [ ] `MiddlewareFramework.ts` `core_patterns`
-- [ ] `MiddlewareChain.ts` `core_patterns`
-- [ ] `MiddlewareRegistry.ts` `core_patterns`
+- [x] `MiddlewareFramework.ts` `core_patterns`
+- [x] `MiddlewareChain.ts` `core_patterns`
+- [x] `MiddlewareRegistry.ts` `core_patterns`
 
 ### src/middleware/security/
 - [ ] `AuthenticationMiddleware.ts` `authentication_context`
