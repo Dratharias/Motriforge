@@ -20,19 +20,56 @@
 
 ## Part 2: Core Infrastructure & Cross-Cutting Concerns
 
+### src/types/shared/infrastructure/
+- [x] `logging.ts` `decomposed_logging_types`
+
 ### src/shared-kernel/infrastructure/logging/
-- [x] `Logger.ts` `system_architecture`
-- [x] `ContextualLogger.ts` `system_architecture`
-- [x] `AuditLogger.ts` `audit_compliance_context`
+- [x] `interfaces/ILogger.ts` `logging_interfaces`
+- [x] `core/BaseLogger.ts` `decomposed_core_logger`
+- [x] `core/LogEventPublisher.ts` `event_management`
+- [x] `core/LogBuilder.ts` `builder_pattern`
+- [x] `strategies/ConsoleLogStrategy.ts` `strategy_pattern`
+- [x] `strategies/FileLogStrategy.ts` `strategy_pattern`
+- [x] `strategies/DatabaseLogStrategy.ts` `strategy_pattern`
+- [x] `strategies/RemoteLogStrategy.ts` `strategy_pattern`
+- [x] `formatters/JsonLogFormatter.ts` `formatter_pattern`
+- [x] `formatters/TextLogFormatter.ts` `formatter_pattern`
+- [x] `decorators/CachingLogDecorator.ts` `decorator_pattern`
+- [x] `decorators/EncryptionLogDecorator.ts` `decorator_pattern`
+- [x] `decorators/MetricsLogDecorator.ts` `decorator_pattern`
+- [x] `LoggerFacade.ts` `facade_pattern`
+- [x] `ContextualLogger.ts` `contextual_logging`
+- [x] `AuditLogger.ts` `audit_compliance`
+- [x] `PerformanceLogger.ts` `performance_monitoring`
+- [x] `LogConfigurationManager.ts` `configuration_management`
+- [x] `LoggerFactory.ts` `factory_pattern`
+
+### src/types/shared/infrastructure/
+- [x] `caching.ts` `decomposed_caching_types`
 
 ### src/shared-kernel/infrastructure/caching/
-- [x] `CacheAdapter.ts` `system_architecture`
-- [x] `RedisCache.ts` `system_architecture`
+- [x] `interfaces/ICache.ts` `caching_interfaces`
+- [x] `core/BaseCacheAdapter.ts` `decomposed_core_cache`
+- [x] `core/CacheEventPublisher.ts` `event_management`
+- [x] `metrics/CacheMetricsCollector.ts` `metrics_collection`
+- [x] `adapters/RedisCache.ts` `redis_implementation`
+- [x] `adapters/MemoryCache.ts` `memory_implementation`
+- [x] `health/CacheHealthChecker.ts` `health_monitoring`
+- [x] `strategies/CacheStrategy.ts` `strategy_pattern`
+- [x] `strategies/LRUCacheStrategy.ts` `strategy_pattern`
+- [x] `strategies/LFUCacheStrategy.ts` `strategy_pattern`
+- [x] `strategies/TTLCacheStrategy.ts` `strategy_pattern`
+- [x] `serializers/JsonCacheSerializer.ts` `serializer_pattern`
+- [x] `serializers/BinaryCacheSerializer.ts` `serializer_pattern`
+- [x] `serializers/CompressedCacheSerializer.ts` `decorator_pattern`
+- [x] `CacheFacade.ts` `facade_pattern`
+- [x] `CacheConfigurationManager.ts` `configuration_management`
+- [x] `CacheFactory.ts` `factory_pattern`
 
 ### src/shared-kernel/infrastructure/database/
-- [x] `DatabaseConnection.ts` `system_architecture`
-- [x] `MongoRepository.ts` `system_architecture`
-- [x] `BaseRepository.ts` `system_architecture`
+- [ ] `DatabaseConnection.ts` `system_architecture`
+- [ ] `MongoRepository.ts` `system_architecture`
+- [ ] `BaseRepository.ts` `system_architecture`
 
 ### src/shared-kernel/infrastructure/security/
 - [ ] `PolicyEnforcementPoint.ts` `core_patterns`
@@ -42,9 +79,9 @@
 ## Part 3: Middleware Framework & Request Pipeline
 
 ### src/middleware/
-- [x] `MiddlewareFramework.ts` `core_patterns`
-- [x] `MiddlewareChain.ts` `core_patterns`
-- [x] `MiddlewareRegistry.ts` `core_patterns`
+- [ ] `MiddlewareFramework.ts` `core_patterns`
+- [ ] `MiddlewareChain.ts` `core_patterns`
+- [ ] `MiddlewareRegistry.ts` `core_patterns`
 
 ### src/middleware/security/
 - [ ] `AuthenticationMiddleware.ts` `authentication_context`
