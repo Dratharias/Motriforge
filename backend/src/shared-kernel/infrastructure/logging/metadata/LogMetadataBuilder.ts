@@ -1,4 +1,4 @@
-import { LogMetadata } from "@/types/shared/infrastructure/logging";
+import { LogMetadata } from '@/types/shared/infrastructure/logging';
 
 export class LogMetadataBuilder {
   constructor(private readonly loggerName: string) {}
@@ -19,4 +19,3 @@ export class LogMetadataBuilder {
     return this;
   }
 }
-

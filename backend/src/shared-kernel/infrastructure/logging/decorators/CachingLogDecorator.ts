@@ -1,5 +1,5 @@
-import { LogEntry } from "@/types/shared/infrastructure/logging";
-import { ILogStrategy } from "../interfaces/ILogger";
+import { LogEntry } from '@/types/shared/infrastructure/logging';
+import { ILogStrategy } from '../interfaces/ILogger';
 
 /**
  * Caching decorator for log strategies - single responsibility for caching

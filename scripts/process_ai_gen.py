@@ -7,9 +7,10 @@ def extract_segments(generated_file: Path):
     Parses a generated file and extracts code segments keyed by destination path.
     Lines with a comment containing a relative filepath start a new segment.
     Supports comments // or # before the path.
+    Interprets paths starting with '@/...' as 'src/...'
     """
     # Regex to match comment-based file path, e.g. // src/.../file.ext or # src/.../file.ext
-    path_pattern = re.compile(r'^[ \t]*(?://|#)\s*(?P<path>[\w\-./]+\.[\w]+)')
+    path_pattern = re.compile(r'^[ \t]*(?://|#)\s*(?P<path>@?[\w\-./]+\.[\w]+)')
     segments = []  # List of (relative_path, code_lines)
     current_path = None
     current_lines = []
@@ -17,11 +18,15 @@ def extract_segments(generated_file: Path):
     for line in generated_file.read_text(encoding='utf-8').splitlines(keepends=True):
         m = path_pattern.match(line)
         if m:
+            # Normalize path
+            raw_path = m.group('path')
+            normalized_path = raw_path.replace('@/','src/') if raw_path.startswith('@/') else raw_path
+
             # Save previous segment
             if current_path and current_lines:
                 segments.append((current_path, ''.join(current_lines)))
             # Start new segment
-            current_path = m.group('path')
+            current_path = normalized_path
             current_lines = []
         else:
             if current_path:
@@ -30,6 +35,7 @@ def extract_segments(generated_file: Path):
     if current_path and current_lines:
         segments.append((current_path, ''.join(current_lines)))
     return segments
+
 
 
 def process_all(generated_root: Path, backend_root: Path):

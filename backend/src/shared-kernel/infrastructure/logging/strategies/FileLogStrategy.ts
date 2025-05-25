@@ -1,4 +1,3 @@
-
 import { promises as fs } from 'fs';
 import { dirname } from 'path';
 import { ILogFormatter, ILogStrategy } from '../interfaces/ILogger';
@@ -99,7 +98,7 @@ export class FileLogStrategy implements ILogStrategy {
         error: error instanceof Error ? {
           name: error.name,
           message: error.message,
-          code: (error as any).code, // File system error codes
+          code: (error as any).code,
           errno: (error as any).errno,
           path: (error as any).path
         } : error
@@ -107,7 +106,6 @@ export class FileLogStrategy implements ILogStrategy {
       return false;
     }
   }
-
 
   private async ensureFileHandle(): Promise<void> {
     if (this.fileHandle) {

@@ -1,110 +1,86 @@
-import { Types } from "mongoose";
-import { LogLevel } from "@/types/shared/common";
-import { ApplicationContext } from "@/types/shared/enums/common";
-import { LogContext, LogEntry } from "@/types/shared/infrastructure/logging";
-import { IFluentLogBuilder, ILogger } from "../interfaces/ILogger";
+import { Types } from 'mongoose';
+import { LogLevel, ApplicationContext } from '@/types/shared/enums/common';
+import { LogContext, LogEntry } from '@/types/shared/infrastructure/logging';
+import { IFluentLogBuilder, ILogger } from '../interfaces/ILogger';
 
 /**
- * Builder for constructing complex log entries
+ * Fixed Log Builder - Single responsibility: building complex log entries
+ * Resolves interface conflicts and naming issues
  */
 export class LogBuilder implements IFluentLogBuilder<LogBuilder> {
-  private level: LogLevel = LogLevel.INFO;
-  private message: string = '';
-  private context: Partial<LogContext> = {};
-  private data: Record<string, any> = {};
-  private error?: Error;
+  private logLevel: LogLevel = LogLevel.INFO;
+  private logMessage: string = '';
+  private logContext: Partial<LogContext> = {};
+  private logData: Record<string, any> = {};
+  private logError?: Error;
 
   constructor(private readonly logger: ILogger) {}
 
   withLevel(level: LogLevel): this {
-    this.level = level;
+    this.logLevel = level;
     return this;
   }
 
   withMessage(message: string): this {
-    this.message = message;
+    this.logMessage = message;
     return this;
   }
 
   withContext(context: LogContext): this {
-    this.context = { ...this.context, ...context };
+    this.logContext = { ...this.logContext, ...context };
     return this;
   }
 
   withData(data: Record<string, any>): this {
-    this.data = { ...this.data, ...data };
+    this.logData = { ...this.logData, ...data };
     return this;
   }
 
   withError(error: Error): this {
-    this.error = error;
+    this.logError = error;
     return this;
   }
 
   withCorrelationId(correlationId: string): this {
-    this.context.correlationId = correlationId;
+    this.logContext.correlationId = correlationId;
     return this;
   }
 
   withUserId(userId: Types.ObjectId): this {
-    this.context.userId = userId;
-    return this;
-  }
-
-  withOrganizationId(organizationId: Types.ObjectId): this {
-    this.context.organizationId = organizationId;
-    return this;
-  }
-
-  withSessionId(sessionId: string): this {
-    this.context.sessionId = sessionId;
-    return this;
-  }
-
-  withRequestId(requestId: string): this {
-    this.context.requestId = requestId;
-    return this;
-  }
-
-  withApplicationContext(applicationContext: ApplicationContext): this {
-    this.context.applicationContext = applicationContext;
+    this.logContext.userId = userId;
     return this;
   }
 
   withTags(tags: Record<string, string>): this {
-    this.data.tags ??= {};
-    this.data.tags = { ...this.data.tags, ...tags };
+    this.logData.tags = { ...this.logData.tags, ...tags };
     return this;
   }
 
-  // Additional fluent methods for common scenarios
   withDuration(duration: number): this {
-    this.data.duration = duration;
+    this.logData.duration = duration;
     return this;
   }
 
   withMetric(name: string, value: number): this {
-    this.data.metrics ??= {};
-    this.data.metrics[name] = value;
+    this.logData.metrics = { ...this.logData.metrics, [name]: value };
     return this;
   }
 
   withHttpStatus(status: number): this {
-    this.data.httpStatus = status;
+    this.logData.httpStatus = status;
     return this;
   }
 
   withUserAgent(userAgent: string): this {
-    this.data.userAgent = userAgent;
+    this.logData.userAgent = userAgent;
     return this;
   }
 
   withIpAddress(ipAddress: string): this {
-    this.data.ipAddress = ipAddress;
+    this.logData.ipAddress = ipAddress;
     return this;
   }
 
-  // Convenience methods for setting level and message together
   debug(message: string): this {
     return this.withLevel(LogLevel.DEBUG).withMessage(message);
   }
@@ -117,6 +93,7 @@ export class LogBuilder implements IFluentLogBuilder<LogBuilder> {
     return this.withLevel(LogLevel.WARN).withMessage(message);
   }
 
+  // Fixed method name to avoid conflict
   error(message: string, error?: Error): this {
     this.withLevel(LogLevel.ERROR).withMessage(message);
     if (error) {
@@ -134,26 +111,26 @@ export class LogBuilder implements IFluentLogBuilder<LogBuilder> {
   }
 
   build(): LogEntry {
-    if (!this.message) {
+    if (!this.logMessage) {
       throw new Error('Log message is required');
     }
 
     return {
       id: new Types.ObjectId(),
       timestamp: new Date(),
-      level: this.level,
-      message: this.message,
-      context: this.context.applicationContext ?? ApplicationContext.USER,
-      correlationId: this.context.correlationId,
-      userId: this.context.userId,
-      organizationId: this.context.organizationId,
-      sessionId: this.context.sessionId,
-      requestId: this.context.requestId,
-      data: Object.keys(this.data).length > 0 ? this.data : undefined,
-      error: this.error ? {
-        name: this.error.name,
-        message: this.error.message,
-        stack: this.error.stack
+      level: this.logLevel,
+      message: this.logMessage,
+      context: this.logContext.applicationContext ?? ApplicationContext.USER,
+      correlationId: this.logContext.correlationId,
+      userId: this.logContext.userId,
+      organizationId: this.logContext.organizationId,
+      sessionId: this.logContext.sessionId,
+      requestId: this.logContext.requestId,
+      data: Object.keys(this.logData).length > 0 ? this.logData : undefined,
+      error: this.logError ? {
+        name: this.logError.name,
+        message: this.logError.message,
+        stack: this.logError.stack
       } : undefined,
       metadata: {
         source: this.logger.name,
@@ -172,28 +149,26 @@ export class LogBuilder implements IFluentLogBuilder<LogBuilder> {
       entry.level, 
       entry.message, 
       entry.data, 
-      this.context as LogContext
+      this.logContext as LogContext
     );
   }
 
-  // Reset method to reuse the builder
   reset(): this {
-    this.level = LogLevel.INFO;
-    this.message = '';
-    this.context = {};
-    this.data = {};
-    this.error = undefined;
+    this.logLevel = LogLevel.INFO;
+    this.logMessage = '';
+    this.logContext = {};
+    this.logData = {};
+    this.logError = undefined;
     return this;
   }
 
-  // Clone method to create a copy
   clone(): LogBuilder {
     const cloned = new LogBuilder(this.logger);
-    cloned.level = this.level;
-    cloned.message = this.message;
-    cloned.context = { ...this.context };
-    cloned.data = { ...this.data };
-    cloned.error = this.error;
+    cloned.logLevel = this.logLevel;
+    cloned.logMessage = this.logMessage;
+    cloned.logContext = { ...this.logContext };
+    cloned.logData = { ...this.logData };
+    cloned.logError = this.logError;
     return cloned;
   }
 }

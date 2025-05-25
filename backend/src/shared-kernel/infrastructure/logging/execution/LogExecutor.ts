@@ -1,5 +1,6 @@
-import { LogLevel } from "@/types/shared/common";
-import { LogEntry, LogContext, ILogger } from "@/types/shared/infrastructure/logging";
+import { LogLevel } from '@/types/shared/enums/common';
+import { LogEntry, LogContext } from '@/types/shared/infrastructure/logging';
+import { ILogger } from '../interfaces/ILogger';
 
 export class LogExecutor {
   constructor(private readonly logger: ILogger) {}
@@ -16,7 +17,7 @@ export class LogExecutor {
         await this.logger.warn(entry.message, entry.data, context as LogContext);
         break;
       case LogLevel.ERROR:
-        await this.logger.logError(
+        await this.logger.error(
           entry.message, 
           entry.error ? new Error(entry.error.message) : undefined,
           entry.data, 
@@ -36,6 +37,4 @@ export class LogExecutor {
     }
   }
 }
-
-// ===== STRATEGY PATTERN FOR LOG FORMATTING =====
 

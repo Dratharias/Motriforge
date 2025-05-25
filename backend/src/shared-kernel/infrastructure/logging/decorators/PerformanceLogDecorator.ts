@@ -1,5 +1,6 @@
-import { LogLevel } from "@/types/shared/common";
-import { LogContext } from "@/types/shared/infrastructure/logging";
+import { LogLevel } from '@/types/shared/enums/common';
+import { LogContext } from '@/types/shared/infrastructure/logging';
+import { BaseLogDecorator } from './BaseLogDecorator';
 
 export class PerformanceLogDecorator extends BaseLogDecorator {
   get name(): string {
@@ -36,11 +37,11 @@ export class PerformanceLogDecorator extends BaseLogDecorator {
     return this.log(LogLevel.WARN, message, data, context);
   }
 
-  async logError(message: string, errorInfo?: Error, data?: Record<string, any>, context?: LogContext): Promise<void> {
+  async error(message: string, error?: Error, data?: Record<string, any>, context?: LogContext): Promise<void> {
     return this.log(LogLevel.ERROR, message, data, context);
   }
 
-  async fatal(message: string, errorInfo?: Error, data?: Record<string, any>, context?: LogContext): Promise<void> {
+  async fatal(message: string, error?: Error, data?: Record<string, any>, context?: LogContext): Promise<void> {
     return this.log(LogLevel.FATAL, message, data, context);
   }
 }

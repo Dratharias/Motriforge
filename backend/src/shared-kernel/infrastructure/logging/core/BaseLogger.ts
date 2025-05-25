@@ -1,5 +1,4 @@
-
-import { ObjectId } from 'mongodb';
+import { Types } from 'mongoose';
 import { LogLevel, ApplicationContext } from '@/types/shared/enums/common';
 import { LogEntry, LogContext } from '@/types/shared/infrastructure/logging';
 import { 
@@ -114,7 +113,7 @@ export class BaseLogger implements ILogger {
    */
   private createLogEntry(level: LogLevel, message: string, data?: any, context?: LogContext): LogEntry {
     return {
-      id: new ObjectId(),
+      id: new Types.ObjectId(),
       timestamp: new Date(),
       level,
       message,
@@ -192,4 +191,3 @@ export class BaseLogger implements ILogger {
     }
   }
 }
-

@@ -1,9 +1,9 @@
-
 import { LogEntry } from '@/types/shared/infrastructure/logging';
 import { ILogFormatter } from '../interfaces/ILogger';
+import { toObjectId } from '@/types/shared/common';
 
 /**
- * JSON log formatter - single responsibility for JSON formatting
+ * JSON log formatter - Fixed toObjectId function
  */
 export class JsonLogFormatter implements ILogFormatter {
   public readonly name = 'json';
@@ -46,19 +46,25 @@ export class JsonLogFormatter implements ILogFormatter {
     const parsed = JSON.parse(data);
     
     return {
-      id: parsed.id,
+      id: parsed.id ?? toObjectId(parsed.id),
       timestamp: new Date(parsed['@timestamp'] ?? parsed.timestamp),
       level: parsed.level.toLowerCase(),
       message: parsed.message,
       context: parsed.context,
       correlationId: parsed.correlationId,
-      userId: parsed.userId,
-      organizationId: parsed.organizationId,
+      userId: parsed.userId ?? toObjectId(parsed.userId),
+      organizationId: parsed.organizationId ?? toObjectId(parsed.organizationId),
       sessionId: parsed.sessionId,
       requestId: parsed.requestId,
       data: parsed.data,
       error: parsed.error,
-      metadata: parsed.metadata
+      metadata: parsed.metadata ?? {
+        source: 'parsed',
+        version: '1.0.0',
+        environment: 'unknown',
+        hostname: 'unknown',
+        pid: 0
+      }
     };
   }
 }

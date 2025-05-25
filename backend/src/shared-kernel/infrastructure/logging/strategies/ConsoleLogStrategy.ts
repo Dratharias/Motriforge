@@ -1,10 +1,9 @@
-
 import { LogEntry } from '@/types/shared/infrastructure/logging';
 import { LogLevel } from '@/types/shared/enums/common';
 import { ILogStrategy, ILogFormatter } from '../interfaces/ILogger';
 
 /**
- * Console logging strategy - single responsibility for console output
+ * Console logging strategy - Fixed Buffer vs string issue
  */
 export class ConsoleLogStrategy implements ILogStrategy {
   public readonly name = 'console';
@@ -22,7 +21,9 @@ export class ConsoleLogStrategy implements ILogStrategy {
     }
 
     const formatted = this.formatter.format(entry);
-    const colorized = this.enableColors ? this.colorize(entry.level, formatted) : formatted;
+    // Fix: Convert Buffer to string if needed
+    const stringFormatted = typeof formatted === 'string' ? formatted : formatted.toString('utf8');
+    const colorized = this.enableColors ? this.colorize(entry.level, stringFormatted) : stringFormatted;
 
     switch (entry.level) {
       case LogLevel.DEBUG:

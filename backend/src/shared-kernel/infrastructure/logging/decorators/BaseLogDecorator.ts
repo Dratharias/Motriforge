@@ -1,5 +1,6 @@
-import { LogLevel } from "@/types/shared/common";
-import { LogContext, ILogger } from "@/types/shared/infrastructure/logging";
+import { LogLevel } from '@/types/shared/enums/common';
+import { LogContext } from '@/types/shared/infrastructure/logging';
+import { ILogger } from '../interfaces/ILogger';
 
 export abstract class BaseLogDecorator implements ILogger {
   constructor(protected readonly logger: ILogger) {}
@@ -20,12 +21,12 @@ export abstract class BaseLogDecorator implements ILogger {
     return this.logger.warn(message, data, context);
   }
 
-  async logError(message: string, errorInfo?: Error, data?: Record<string, any>, context?: LogContext): Promise<void> {
-    return this.logger.logError(message, errorInfo, data, context);
+  async error(message: string, error?: Error, data?: Record<string, any>, context?: LogContext): Promise<void> {
+    return this.logger.error(message, error, data, context);
   }
 
-  async fatal(message: string, errorInfo?: Error, data?: Record<string, any>, context?: LogContext): Promise<void> {
-    return this.logger.fatal(message, errorInfo, data, context);
+  async fatal(message: string, error?: Error, data?: Record<string, any>, context?: LogContext): Promise<void> {
+    return this.logger.fatal(message, error, data, context);
   }
 
   async log(level: LogLevel, message: string, data?: Record<string, any>, context?: LogContext): Promise<void> {

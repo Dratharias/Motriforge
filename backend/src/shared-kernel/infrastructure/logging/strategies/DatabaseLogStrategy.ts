@@ -1,4 +1,3 @@
-
 import { LogEntry } from '@/types/shared/infrastructure/logging';
 import { MongoClient, Db, Collection } from 'mongodb';
 import { ILogStrategy } from '../interfaces/ILogger';
@@ -85,10 +84,9 @@ export class DatabaseLogStrategy implements ILogStrategy {
       await this.db!.admin().ping();
       return true;
     } catch (error) {
-      // Log the specific error for debugging
       console.error(`Database log strategy health check failed: ${error instanceof Error ? error.message : String(error)}`, {
         strategy: this.name,
-        connectionString: this.connectionString.replace(/\/\/.*@/, '//***@'), // Mask credentials
+        connectionString: this.connectionString.replace(/\/\/.*@/, '//***@'),
         databaseName: this.databaseName,
         error: error instanceof Error ? {
           name: error.name,
@@ -136,4 +134,3 @@ export class DatabaseLogStrategy implements ILogStrategy {
     }, this.flushInterval);
   }
 }
-

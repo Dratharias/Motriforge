@@ -1,7 +1,14 @@
-
+import { Types } from 'mongoose';
 import { LogLevel, ApplicationContext } from '@/types/shared/enums/common';
-import { LogEntry, LogContext, LogConfiguration, AuditLogEntry, PerformanceLogEntry } from '@/types/shared/infrastructure/logging';
-import { ObjectId } from 'mongodb';
+import { 
+  LogEntry, 
+  LogContext, 
+  LogConfiguration, 
+  AuditLogEntry, 
+  PerformanceLogEntry,
+  LogHealthStatus,
+  LogHealthReport
+} from '@/types/shared/infrastructure/logging';
 
 /**
  * Core logger interface - single responsibility for logging operations
@@ -61,8 +68,8 @@ export interface ILogEventListener {
 export interface IContextualLogger extends ILogger {
   withContext(context: Partial<LogContext>): IContextualLogger;
   withCorrelationId(correlationId: string): IContextualLogger;
-  withUserId(userId: ObjectId): IContextualLogger;
-  withOrganizationId(organizationId: ObjectId): IContextualLogger;
+  withUserId(userId: Types.ObjectId): IContextualLogger;
+  withOrganizationId(organizationId: Types.ObjectId): IContextualLogger;
   withSessionId(sessionId: string): IContextualLogger;
   withRequestId(requestId: string): IContextualLogger;
   withApplicationContext(context: ApplicationContext): IContextualLogger;
@@ -75,10 +82,10 @@ export interface IContextualLogger extends ILogger {
 export interface IAuditLogger {
   readonly name: string;
   audit(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): Promise<void>;
-  auditSuccess(action: string, resourceId?: ObjectId, data?: any): Promise<void>;
-  auditFailure(action: string, error: Error, resourceId?: ObjectId, data?: any): Promise<void>;
-  auditAccess(resourceType: string, resourceId: ObjectId, action: string): Promise<void>;
-  auditDataChange(resourceType: string, resourceId: ObjectId, changes: Record<string, any>): Promise<void>;
+  auditSuccess(action: string, resourceId?: Types.ObjectId, data?: any): Promise<void>;
+  auditFailure(action: string, error: Error, resourceId?: Types.ObjectId, data?: any): Promise<void>;
+  auditAccess(resourceType: string, resourceId: Types.ObjectId, action: string): Promise<void>;
+  auditDataChange(resourceType: string, resourceId: Types.ObjectId, changes: Record<string, any>): Promise<void>;
   auditSecurityEvent(eventType: string, severity: string, details: any): Promise<void>;
 }
 
@@ -115,12 +122,15 @@ export interface ILogBuilder {
   withData(data: Record<string, any>): this;
   withError(error: Error): this;
   withCorrelationId(correlationId: string): this;
-  withUserId(userId: ObjectId): this;
+  withUserId(userId: Types.ObjectId): this;
   withTags(tags: Record<string, string>): this;
   build(): LogEntry;
   log(): Promise<void>;
 }
 
+/**
+ * Fluent log builder interface
+ */
 export interface IFluentLogBuilder<T = any> {
   withLevel(level: LogLevel): T;
   withMessage(message: string): T;
@@ -128,10 +138,22 @@ export interface IFluentLogBuilder<T = any> {
   withData(data: Record<string, any>): T;
   withError(error: Error): T;
   withCorrelationId(correlationId: string): T;
-  withUserId(userId: ObjectId): T;
+  withUserId(userId: Types.ObjectId): T;
   withTags(tags: Record<string, string>): T;
+  withDuration(duration: number): T;
+  withMetric(name: string, value: number): T;
+  withHttpStatus(status: number): T;
+  withUserAgent(userAgent: string): T;
+  withIpAddress(ipAddress: string): T;
+  debug(message: string): T;
+  info(message: string): T;
+  warn(message: string): T;
+  error(message: string, error?: Error): T;
+  fatal(message: string, error?: Error): T;
   build(): LogEntry;
   log(): Promise<void>;
+  reset(): T;
+  clone(): T;
 }
 
 /**
@@ -156,49 +178,10 @@ export interface ILogHealthChecker {
 }
 
 /**
- * Log health status
- */
-export interface LogHealthStatus {
-  readonly healthy: boolean;
-  readonly strategies: Record<string, boolean>;
-  readonly errors: string[];
-  readonly timestamp: Date;
-}
-
-/**
- * Log health report
- */
-export interface LogHealthReport {
-  readonly overall: LogHealthStatus;
-  readonly strategies: Record<string, StrategyHealthDetail>;
-  readonly performance: LogPerformanceMetrics;
-}
-
-/**
- * Strategy health detail
- */
-export interface StrategyHealthDetail {
-  readonly healthy: boolean;
-  readonly lastWrite: Date;
-  readonly errorCount: number;
-  readonly latency: number;
-}
-
-/**
- * Log performance metrics
- */
-export interface LogPerformanceMetrics {
-  readonly logsPerSecond: number;
-  readonly averageLatency: number;
-  readonly queueSize: number;
-  readonly memoryUsage: number;
-}
-
-/**
  * Log command interface for operations
  */
 export interface ILogCommand {
-  readonly commandId: ObjectId;
+  readonly commandId: Types.ObjectId;
   readonly commandType: string;
   execute(): Promise<void>;
   undo?(): Promise<void>;

@@ -1,5 +1,5 @@
-import { LogEntry } from "@/types/shared/infrastructure/logging";
-import { ILogEventPublisher, ILogEventListener } from "../interfaces/ILogger";
+import { LogEntry } from '@/types/shared/infrastructure/logging';
+import { ILogEventPublisher, ILogEventListener } from '../interfaces/ILogger';
 
 /**
  * Event publisher for logging events - single responsibility for event management

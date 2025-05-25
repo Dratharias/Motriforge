@@ -1,9 +1,13 @@
-
+import { Types } from 'mongoose';
+import { 
+  AuditLogEntry, 
+  AuditLogType, 
+  AuditResult, 
+  AuditRiskLevel 
+} from '@/types/shared/infrastructure/logging';
+import { IAuditLogger, ILogger } from './interfaces/ILogger';
 import { LogLevel } from '@/types/shared/common';
 import { ApplicationContext } from '@/types/shared/enums/common';
-import { AuditLogEntry, AuditLogType, AuditResult, AuditRiskLevel } from '@/types/shared/infrastructure/logging';
-import { ObjectId } from 'mongoose';
-import { IAuditLogger, ILogger } from './interfaces/ILogger';
 
 /**
  * Audit Logger - single responsibility for compliance and audit logging
@@ -15,11 +19,6 @@ export class AuditLogger implements IAuditLogger {
   ) {}
 
   async audit(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): Promise<void> {
-    const auditEntry: AuditLogEntry = {
-      id: new ObjectId(),
-      timestamp: new Date(),
-      ...entry
-    };
 
     await this.baseLogger.log(
       entry.level,
@@ -47,7 +46,7 @@ export class AuditLogger implements IAuditLogger {
     );
   }
 
-  async auditSuccess(action: string, resourceId?: ObjectId, data?: any): Promise<void> {
+  async auditSuccess(action: string, resourceId?: Types.ObjectId, data?: any): Promise<void> {
     await this.audit({
       level: LogLevel.INFO,
       message: `Successful ${action}`,
@@ -69,7 +68,7 @@ export class AuditLogger implements IAuditLogger {
     });
   }
 
-  async auditFailure(action: string, error: Error, resourceId?: ObjectId, data?: any): Promise<void> {
+  async auditFailure(action: string, error: Error, resourceId?: Types.ObjectId, data?: any): Promise<void> {
     await this.audit({
       level: LogLevel.ERROR,
       message: `Failed ${action}: ${error.message}`,
@@ -96,7 +95,7 @@ export class AuditLogger implements IAuditLogger {
     });
   }
 
-  async auditAccess(resourceType: string, resourceId: ObjectId, action: string): Promise<void> {
+  async auditAccess(resourceType: string, resourceId: Types.ObjectId, action: string): Promise<void> {
     await this.audit({
       level: LogLevel.INFO,
       message: `Data access: ${action} on ${resourceType}`,
@@ -118,7 +117,7 @@ export class AuditLogger implements IAuditLogger {
     });
   }
 
-  async auditDataChange(resourceType: string, resourceId: ObjectId, changes: Record<string, any>): Promise<void> {
+  async auditDataChange(resourceType: string, resourceId: Types.ObjectId, changes: Record<string, any>): Promise<void> {
     await this.audit({
       level: LogLevel.INFO,
       message: `Data modification on ${resourceType}`,
@@ -142,9 +141,14 @@ export class AuditLogger implements IAuditLogger {
   }
 
   async auditSecurityEvent(eventType: string, severity: string, details: any): Promise<void> {
-    const riskLevel = severity === 'critical' ? AuditRiskLevel.CRITICAL :
-                     severity === 'high' ? AuditRiskLevel.HIGH :
-                     severity === 'medium' ? AuditRiskLevel.MEDIUM : AuditRiskLevel.LOW;
+    const severityToRiskLevelMap: Record<string, AuditRiskLevel> = {
+      critical: AuditRiskLevel.CRITICAL,
+      high: AuditRiskLevel.HIGH,
+      medium: AuditRiskLevel.MEDIUM,
+      low: AuditRiskLevel.LOW,
+    };
+    
+    const riskLevel = severityToRiskLevelMap[severity] ?? AuditRiskLevel.LOW;
 
     await this.audit({
       level: severity === 'critical' ? LogLevel.FATAL : LogLevel.ERROR,
@@ -166,4 +170,3 @@ export class AuditLogger implements IAuditLogger {
     });
   }
 }
-

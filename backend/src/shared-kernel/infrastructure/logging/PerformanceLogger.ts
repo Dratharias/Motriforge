@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { LogLevel } from '@/types/shared/common';
 import { ApplicationContext } from '@/types/shared/enums/common';
 import { LogContext, PerformanceLogEntry } from '@/types/shared/infrastructure/logging';
@@ -18,11 +17,6 @@ export class PerformanceLogger implements IPerformanceLogger {
   }
 
   async logPerformance(entry: Omit<PerformanceLogEntry, 'id' | 'timestamp'>): Promise<void> {
-    const performanceEntry: PerformanceLogEntry = {
-      id: new Types.ObjectId(),
-      timestamp: new Date(),
-      ...entry
-    };
 
     await this.baseLogger.log(
       entry.level,

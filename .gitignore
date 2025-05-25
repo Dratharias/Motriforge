@@ -5,3 +5,4 @@ package-lock.json
 public/uploads
 *.zip
 *_old*
+/generated

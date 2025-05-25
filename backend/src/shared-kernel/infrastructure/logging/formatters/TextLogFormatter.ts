@@ -1,6 +1,7 @@
-import { Types } from "mongoose";
-import { LogEntry } from "@/types/shared/infrastructure/logging";
-import { ILogFormatter } from "../interfaces/ILogger";
+import { Types } from 'mongoose';
+import { LogEntry } from '@/types/shared/infrastructure/logging';
+import { ApplicationContext } from '@/types/shared/enums/common';
+import { ILogFormatter } from '../interfaces/ILogger';
 
 /**
  * Text log formatter - single responsibility for human-readable text formatting
@@ -65,16 +66,16 @@ export class TextLogFormatter implements ILogFormatter {
 
   parse(data: string): LogEntry {
     // Basic parsing for text format (simplified)
-    const timestampMatch = data.match(/\[([^\]]+)\]/);
-    const levelMatch = data.match(/\[([A-Z]+)\]/);
-    const messageMatch = data.match(/\] (.+?)(?:\s-\s|$)/);
+    const timestampMatch = RegExp(/\[([^\]]+)\]/).exec(data);
+    const levelMatch = RegExp(/\[([A-Z]+)\]/).exec(data);
+    const messageMatch = RegExp(/\] (.+?)(?:\s-\s|$)/).exec(data);
 
     return {
       id: new Types.ObjectId(),
       timestamp: timestampMatch ? new Date(timestampMatch[1]) : new Date(),
       level: levelMatch ? levelMatch[1].toLowerCase() as any : 'info',
       message: messageMatch ? messageMatch[1] : data,
-      context: 'user' as any,
+      context: ApplicationContext.USER,
       metadata: {
         source: 'text-parser',
         version: '1.0.0',
@@ -85,4 +86,3 @@ export class TextLogFormatter implements ILogFormatter {
     };
   }
 }
-

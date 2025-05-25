@@ -1,14 +1,14 @@
-import { LogLevel } from "@/types/shared/common";
-import { ApplicationContext } from "@/types/shared/enums/common";
-import { LogContext } from "@/types/shared/infrastructure/logging";
-import { ObjectId } from "mongoose";
-import { IContextualLogger, ILogger } from "./interfaces/ILogger";
+import { Types } from 'mongoose';
+import { LogContext } from '@/types/shared/infrastructure/logging';
+import { IContextualLogger, ILogger } from './interfaces/ILogger';
+import { LogLevel } from '@/types/shared/common';
+import { ApplicationContext } from '@/types/shared/enums/common';
 
 /**
  * Contextual Logger - single responsibility for context-aware logging
  */
 export class ContextualLogger implements IContextualLogger {
-  private context: LogContext;
+  private readonly context: LogContext;
 
   constructor(
     private readonly baseLogger: ILogger,
@@ -57,11 +57,11 @@ export class ContextualLogger implements IContextualLogger {
     return this.withContext({ correlationId });
   }
 
-  withUserId(userId: ObjectId): IContextualLogger {
+  withUserId(userId: Types.ObjectId): IContextualLogger {
     return this.withContext({ userId });
   }
 
-  withOrganizationId(organizationId: ObjectId): IContextualLogger {
+  withOrganizationId(organizationId: Types.ObjectId): IContextualLogger {
     return this.withContext({ organizationId });
   }
 
@@ -81,4 +81,3 @@ export class ContextualLogger implements IContextualLogger {
     return { ...this.context };
   }
 }
-

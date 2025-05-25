@@ -1,9 +1,14 @@
 import { ObjectId } from 'mongodb';
+import { Types } from 'mongoose';
 
 /**
  * Common identifier type using MongoDB ObjectId
  */
 export type Id = ObjectId;
+
+export function toObjectId(id?: string): Types.ObjectId {
+  return id && Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : new Types.ObjectId();
+}
 
 /**
  * Generic result type for operations that can succeed or fail

@@ -1,5 +1,5 @@
-import { LogEntry } from "@/types/shared/infrastructure/logging";
-import { ILogStrategy, ILogFormatter } from "../interfaces/ILogger";
+import { LogEntry } from '@/types/shared/infrastructure/logging';
+import { ILogStrategy, ILogFormatter } from '../interfaces/ILogger';
 
 /**
  * Remote logging strategy - single responsibility for remote log shipping

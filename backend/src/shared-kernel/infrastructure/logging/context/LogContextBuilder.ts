@@ -1,6 +1,6 @@
-import { Types } from "mongoose";
-import { ApplicationContext } from "@/types/shared/enums/common";
-import { LogContext } from "@/types/shared/infrastructure/logging";
+import { Types } from 'mongoose';
+import { ApplicationContext } from '@/types/shared/enums/common';
+import { LogContext } from '@/types/shared/infrastructure/logging';
 
 export class LogContextBuilder {
   private context: Partial<LogContext> = {};

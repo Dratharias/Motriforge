@@ -1,5 +1,5 @@
-import { LogEntry } from "@/types/shared/infrastructure/logging";
-import { ILogStrategy } from "../interfaces/ILogger";
+import { LogEntry } from '@/types/shared/infrastructure/logging';
+import { ILogStrategy } from '../interfaces/ILogger';
 
 /**
  * Metrics decorator for log strategies - single responsibility for metrics collection
@@ -100,3 +100,4 @@ export class MetricsLogDecorator implements ILogStrategy {
     console.error(`Metrics decorator recorded error for ${this.decoratedStrategy.name}:`, error);
   }
 }
+
