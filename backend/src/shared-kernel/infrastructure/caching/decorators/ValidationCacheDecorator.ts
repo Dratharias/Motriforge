@@ -1,3 +1,5 @@
+import { CacheOperationResult, CacheOperationOptions } from "@/types/shared/infrastructure/caching";
+import { ICache } from "../interfaces/ICache";
 
 /**
  * Validation cache decorator - adds validation to cache operations
@@ -73,7 +75,7 @@ export class ValidationCacheDecorator implements ICache {
   }
 
   private validateKey(key: string): boolean {
-    return key && key.length > 0 && key.length <= this.maxKeyLength && !key.includes('\n');
+    return Boolean(key && key.length > 0 && key.length <= this.maxKeyLength && !key.includes('\n'));
   }
 
   private validateValue(value: any): boolean {

@@ -7,4 +7,3 @@ export interface ICacheSerializer {
   deserialize<T>(data: string | Buffer): T;
   getSize(data: string | Buffer): number;
 }
-

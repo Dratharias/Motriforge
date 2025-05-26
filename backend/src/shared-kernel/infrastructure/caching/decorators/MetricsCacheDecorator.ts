@@ -19,9 +19,9 @@ export class MetricsCacheDecorator implements ICache {
     const result = await this.cache.get<T>(key);
     
     if (result.success && result.value !== undefined) {
-      this.metricsCollector.recordHit(key, result.operationTime || 0);
+      this.metricsCollector.recordHit(key, result.operationTime ?? 0);
     } else {
-      this.metricsCollector.recordMiss(key, result.operationTime || 0);
+      this.metricsCollector.recordMiss(key, result.operationTime ?? 0);
     }
     
     return result;
@@ -32,7 +32,7 @@ export class MetricsCacheDecorator implements ICache {
     
     if (result.success) {
       const size = this.estimateSize(value);
-      this.metricsCollector.recordSet(key, size, result.operationTime || 0);
+      this.metricsCollector.recordSet(key, size, result.operationTime ?? 0);
     }
     
     return result;
@@ -40,7 +40,7 @@ export class MetricsCacheDecorator implements ICache {
 
   async delete(key: string): Promise<CacheOperationResult<void>> {
     const result = await this.cache.delete(key);
-    this.metricsCollector.recordDelete(key, result.operationTime || 0);
+    this.metricsCollector.recordDelete(key, result.operationTime ?? 0);
     return result;
   }
 

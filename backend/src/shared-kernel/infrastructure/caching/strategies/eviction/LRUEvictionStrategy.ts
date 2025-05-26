@@ -1,4 +1,7 @@
 
+import { CacheEntry } from '@/types/shared/infrastructure/caching';
+import { IEvictionStrategy } from './IEvictionStrategy';
+
 /**
  * LRU (Least Recently Used) eviction strategy
  */
@@ -7,7 +10,7 @@ export class LRUEvictionStrategy implements IEvictionStrategy {
 
   selectKeysToEvict(entries: Array<{ key: string; entry: CacheEntry }>, targetCount: number): string[] {
     // Sort by last accessed time (oldest first)
-    const sorted = entries.sort((a, b) => 
+    const sorted = entries.toSorted((a, b) => 
       a.entry.metadata.lastAccessed.getTime() - b.entry.metadata.lastAccessed.getTime()
     );
 

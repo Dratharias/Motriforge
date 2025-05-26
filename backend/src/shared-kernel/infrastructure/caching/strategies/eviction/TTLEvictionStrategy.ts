@@ -1,3 +1,5 @@
+import { CacheEntry } from "@/types/shared/infrastructure/caching";
+import { IEvictionStrategy } from "./IEvictionStrategy";
 
 /**
  * TTL (Time To Live) eviction strategy

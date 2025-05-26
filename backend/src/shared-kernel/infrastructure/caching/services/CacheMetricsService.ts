@@ -79,7 +79,7 @@ export class CacheMetricsService {
     
     // Sort and limit top keys
     aggregated.topKeys = aggregated.topKeys
-      .sort((a, b) => b.hits - a.hits)
+      .toSorted((a, b) => b.hits - a.hits)
       .slice(0, 10);
 
     return aggregated;

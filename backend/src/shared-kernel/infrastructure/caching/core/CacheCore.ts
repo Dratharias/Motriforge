@@ -1,5 +1,5 @@
 
-import { CacheEntry, CacheOperationResult } from '@/types/shared/infrastructure/caching';
+import { CacheEntry } from '@/types/shared/infrastructure/caching';
 import { ICacheCore } from '../interfaces/ICache';
 
 /**

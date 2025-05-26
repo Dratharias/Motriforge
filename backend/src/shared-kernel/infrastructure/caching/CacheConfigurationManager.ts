@@ -1,10 +1,13 @@
-
-import { CacheConfiguration, CacheEvictionPolicy, CacheSerializationFormat } from '@/types/shared/infrastructure/caching';
+import { 
+  CacheConfiguration, 
+  CacheEvictionPolicy, 
+  CacheSerializationFormat 
+} from '@/types/shared/infrastructure/caching';
 import { CacheStrategy } from '@/types/shared/enums/common';
 import { ICacheConfigurationManager } from './interfaces/ICache';
 
 /**
- * Cache configuration manager - single responsibility for cache configuration
+ * Cache configuration manager - handles configuration management and validation
  */
 export class CacheConfigurationManager implements ICacheConfigurationManager {
   private configuration: CacheConfiguration;
@@ -12,6 +15,10 @@ export class CacheConfigurationManager implements ICacheConfigurationManager {
   constructor(initialConfig?: Partial<CacheConfiguration>) {
     this.configuration = this.createDefaultConfiguration();
     if (initialConfig) {
+      const validation = this.validateConfiguration(initialConfig);
+      if (!validation.isValid) {
+        throw new Error(`Invalid initial configuration: ${validation.errors.join(', ')}`);
+      }
       this.configuration = { ...this.configuration, ...initialConfig };
     }
   }
@@ -21,62 +28,78 @@ export class CacheConfigurationManager implements ICacheConfigurationManager {
   }
 
   async updateConfiguration(config: Partial<CacheConfiguration>): Promise<void> {
-    const newConfig = { ...this.configuration, ...config };
+    const validation = this.validateConfiguration(config);
     
-    if (!this.validateConfiguration(newConfig)) {
-      throw new Error('Invalid cache configuration provided');
+    if (!validation.isValid) {
+      throw new Error(`Invalid cache configuration: ${validation.errors.join(', ')}`);
     }
 
-    this.configuration = newConfig;
+    this.configuration = { ...this.configuration, ...config };
   }
 
-  validateConfiguration(config: CacheConfiguration): boolean {
+  validateConfiguration(config: Partial<CacheConfiguration>): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    
     try {
+      // Create a complete config for validation by merging with current config
+      const completeConfig = { ...this.configuration, ...config };
+      
       // Validate TTL
-      if (config.defaultTtl < 0) {
-        throw new Error('Default TTL must be non-negative');
+      if (completeConfig.defaultTtl < 0) {
+        errors.push('Default TTL must be non-negative');
       }
 
       // Validate max keys
-      if (config.maxKeys < 1) {
-        throw new Error('Max keys must be at least 1');
+      if (completeConfig.maxKeys < 1) {
+        errors.push('Max keys must be at least 1');
       }
 
       // Validate timeouts
-      if (config.connectionTimeout < 1000) {
-        throw new Error('Connection timeout must be at least 1000ms');
+      if (completeConfig.connectionTimeout < 1000) {
+        errors.push('Connection timeout must be at least 1000ms');
       }
 
-      if (config.operationTimeout < 100) {
-        throw new Error('Operation timeout must be at least 100ms');
+      if (completeConfig.operationTimeout < 100) {
+        errors.push('Operation timeout must be at least 100ms');
       }
 
       // Validate retry settings
-      if (config.retryAttempts < 0) {
-        throw new Error('Retry attempts must be non-negative');
+      if (completeConfig.retryAttempts < 0) {
+        errors.push('Retry attempts must be non-negative');
       }
 
-      if (config.retryDelay < 100) {
-        throw new Error('Retry delay must be at least 100ms');
+      if (completeConfig.retryDelay < 100) {
+        errors.push('Retry delay must be at least 100ms');
+      }
+
+      // Validate key prefix
+      if (!completeConfig.keyPrefix || completeConfig.keyPrefix.trim().length === 0) {
+        errors.push('Key prefix must be a non-empty string');
       }
 
       // Validate enums
-      if (!Object.values(CacheStrategy).includes(config.strategy)) {
-        throw new Error(`Invalid cache strategy: ${config.strategy}`);
+      if (!Object.values(CacheStrategy).includes(completeConfig.strategy)) {
+        errors.push(`Invalid cache strategy: ${completeConfig.strategy}`);
       }
 
-      if (!Object.values(CacheEvictionPolicy).includes(config.evictionPolicy)) {
-        throw new Error(`Invalid eviction policy: ${config.evictionPolicy}`);
+      if (!Object.values(CacheEvictionPolicy).includes(completeConfig.evictionPolicy)) {
+        errors.push(`Invalid eviction policy: ${completeConfig.evictionPolicy}`);
       }
 
-      if (!Object.values(CacheSerializationFormat).includes(config.serialization)) {
-        throw new Error(`Invalid serialization format: ${config.serialization}`);
+      if (!Object.values(CacheSerializationFormat).includes(completeConfig.serialization)) {
+        errors.push(`Invalid serialization format: ${completeConfig.serialization}`);
       }
 
-      return true;
+      return {
+        isValid: errors.length === 0,
+        errors
+      };
     } catch (error) {
       console.error('Cache configuration validation failed:', error);
-      return false;
+      return {
+        isValid: false,
+        errors: [`Validation error: ${error}`]
+      };
     }
   }
 
@@ -90,6 +113,65 @@ export class CacheConfigurationManager implements ICacheConfigurationManager {
 
     const envConfig = environmentConfigs[environment as keyof typeof environmentConfigs];
     return envConfig || this.configuration;
+  }
+
+  getCacheTypeConfiguration(cacheType: 'session' | 'user' | 'api' | 'generic'): CacheConfiguration {
+    const typeConfigs: Record<string, Partial<CacheConfiguration>> = {
+      session: {
+        defaultTtl: 1800, // 30 minutes
+        maxKeys: 10000,
+        evictionPolicy: CacheEvictionPolicy.TTL,
+        keyPrefix: 'session',
+        enableEncryption: true
+      },
+      user: {
+        defaultTtl: 3600, // 1 hour
+        maxKeys: 50000,
+        evictionPolicy: CacheEvictionPolicy.LRU,
+        keyPrefix: 'user',
+        enableCompression: true
+      },
+      api: {
+        defaultTtl: 300, // 5 minutes
+        maxKeys: 20000,
+        evictionPolicy: CacheEvictionPolicy.LFU,
+        keyPrefix: 'api',
+        enableCompression: true
+      },
+      generic: {
+        defaultTtl: 1800, // 30 minutes
+        maxKeys: 10000,
+        evictionPolicy: CacheEvictionPolicy.LRU,
+        keyPrefix: 'generic'
+      }
+    };
+
+    const typeConfig = typeConfigs[cacheType] || {};
+    return { ...this.configuration, ...typeConfig };
+  }
+
+  resetToDefaults(): void {
+    this.configuration = this.createDefaultConfiguration();
+  }
+
+  exportConfiguration(): string {
+    return JSON.stringify(this.configuration, null, 2);
+  }
+
+  async importConfiguration(configJson: string): Promise<void> {
+    try {
+      const importedConfig = JSON.parse(configJson) as CacheConfiguration;
+      
+      // Validate the imported configuration
+      const validation = this.validateConfiguration(importedConfig);
+      if (!validation.isValid) {
+        throw new Error(`Invalid imported configuration: ${validation.errors.join(', ')}`);
+      }
+      
+      this.configuration = importedConfig;
+    } catch (error) {
+      throw new Error(`Failed to import configuration: ${error}`);
+    }
   }
 
   private createDefaultConfiguration(): CacheConfiguration {
@@ -115,6 +197,7 @@ export class CacheConfigurationManager implements ICacheConfigurationManager {
       ...this.configuration,
       defaultTtl: 300, // 5 minutes for faster development
       maxKeys: 1000,
+      keyPrefix: 'dev-fitness-app',
       enableCompression: false,
       enableEncryption: false,
       enableMetrics: true,
@@ -127,6 +210,7 @@ export class CacheConfigurationManager implements ICacheConfigurationManager {
       ...this.configuration,
       defaultTtl: 60, // 1 minute for testing
       maxKeys: 100,
+      keyPrefix: 'test-fitness-app',
       enableCompression: false,
       enableEncryption: false,
       enableMetrics: false,
@@ -139,6 +223,7 @@ export class CacheConfigurationManager implements ICacheConfigurationManager {
       ...this.configuration,
       defaultTtl: 1800, // 30 minutes
       maxKeys: 5000,
+      keyPrefix: 'staging-fitness-app',
       enableCompression: true,
       enableEncryption: false,
       enableMetrics: true,
@@ -151,6 +236,7 @@ export class CacheConfigurationManager implements ICacheConfigurationManager {
       ...this.configuration,
       defaultTtl: 3600, // 1 hour
       maxKeys: 50000,
+      keyPrefix: 'prod-fitness-app',
       enableCompression: true,
       enableEncryption: true,
       enableMetrics: true,
@@ -163,3 +249,139 @@ export class CacheConfigurationManager implements ICacheConfigurationManager {
   }
 }
 
+/**
+ * Cache configuration validator - separate responsibility for validation logic
+ */
+export class CacheConfigurationValidator {
+  validate(config: Partial<CacheConfiguration>): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    if (config.defaultTtl !== undefined && (config.defaultTtl < 0 || !Number.isFinite(config.defaultTtl))) {
+      errors.push('defaultTtl must be a non-negative finite number');
+    }
+
+    if (config.maxKeys !== undefined && (config.maxKeys < 1 || !Number.isInteger(config.maxKeys))) {
+      errors.push('maxKeys must be a positive integer');
+    }
+
+    if (config.keyPrefix !== undefined && (!config.keyPrefix || config.keyPrefix.trim().length === 0)) {
+      errors.push('keyPrefix must be a non-empty string');
+    }
+
+    if (config.connectionTimeout !== undefined && (config.connectionTimeout < 1000 || !Number.isFinite(config.connectionTimeout))) {
+      errors.push('connectionTimeout must be at least 1000ms');
+    }
+
+    if (config.operationTimeout !== undefined && (config.operationTimeout < 100 || !Number.isFinite(config.operationTimeout))) {
+      errors.push('operationTimeout must be at least 100ms');
+    }
+
+    if (config.retryAttempts !== undefined && (config.retryAttempts < 0 || !Number.isInteger(config.retryAttempts))) {
+      errors.push('retryAttempts must be a non-negative integer');
+    }
+
+    if (config.retryDelay !== undefined && (config.retryDelay < 100 || !Number.isFinite(config.retryDelay))) {
+      errors.push('retryDelay must be at least 100ms');
+    }
+
+    if (config.strategy !== undefined && !Object.values(CacheStrategy).includes(config.strategy)) {
+      errors.push(`Invalid cache strategy: ${config.strategy}`);
+    }
+
+    if (config.evictionPolicy !== undefined && !Object.values(CacheEvictionPolicy).includes(config.evictionPolicy)) {
+      errors.push(`Invalid eviction policy: ${config.evictionPolicy}`);
+    }
+
+    if (config.serialization !== undefined && !Object.values(CacheSerializationFormat).includes(config.serialization)) {
+      errors.push(`Invalid serialization format: ${config.serialization}`);
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+}
+
+/**
+ * Cache configuration builder for fluent configuration creation
+ */
+export class CacheConfigurationBuilder {
+  private config: Partial<CacheConfiguration> = {};
+
+  static create(): CacheConfigurationBuilder {
+    return new CacheConfigurationBuilder();
+  }
+
+  withDefaultTtl(ttl: number): CacheConfigurationBuilder {
+    this.config.defaultTtl = ttl;
+    return this;
+  }
+
+  withMaxKeys(maxKeys: number): CacheConfigurationBuilder {
+    this.config.maxKeys = maxKeys;
+    return this;
+  }
+
+  withKeyPrefix(prefix: string): CacheConfigurationBuilder {
+    this.config.keyPrefix = prefix;
+    return this;
+  }
+
+  withEvictionPolicy(policy: CacheEvictionPolicy): CacheConfigurationBuilder {
+    this.config.evictionPolicy = policy;
+    return this;
+  }
+
+  withSerialization(format: CacheSerializationFormat): CacheConfigurationBuilder {
+    this.config.serialization = format;
+    return this;
+  }
+
+  withStrategy(strategy: CacheStrategy): CacheConfigurationBuilder {
+    this.config.strategy = strategy;
+    return this;
+  }
+
+  enableMetrics(enabled: boolean = true): CacheConfigurationBuilder {
+    this.config.enableMetrics = enabled;
+    return this;
+  }
+
+  enableCompression(enabled: boolean = true): CacheConfigurationBuilder {
+    this.config.enableCompression = enabled;
+    return this;
+  }
+
+  enableEncryption(enabled: boolean = true): CacheConfigurationBuilder {
+    this.config.enableEncryption = enabled;
+    return this;
+  }
+
+  withRetryPolicy(attempts: number, delay: number): CacheConfigurationBuilder {
+    this.config.retryAttempts = attempts;
+    this.config.retryDelay = delay;
+    return this;
+  }
+
+  withTimeouts(connectionTimeout: number, operationTimeout: number): CacheConfigurationBuilder {
+    this.config.connectionTimeout = connectionTimeout;
+    this.config.operationTimeout = operationTimeout;
+    return this;
+  }
+
+  withConnectionString(connectionString: string): CacheConfigurationBuilder {
+    this.config.connectionString = connectionString;
+    return this;
+  }
+
+  build(): Partial<CacheConfiguration> {
+    return { ...this.config };
+  }
+
+  buildComplete(): CacheConfiguration {
+    const manager = new CacheConfigurationManager();
+    const defaultConfig = manager.getConfiguration();
+    return { ...defaultConfig, ...this.config };
+  }
+}

@@ -6,4 +6,3 @@ export interface IEvictionStrategy {
   selectKeysToEvict(entries: Array<{ key: string; entry: CacheEntry }>, targetCount: number): string[];
   shouldEvict(entry: CacheEntry): boolean;
 }
-

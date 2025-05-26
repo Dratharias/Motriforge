@@ -1,3 +1,5 @@
+import { CacheSerializationFormat } from "@/types/shared/infrastructure/caching";
+import { ICacheSerializer } from "./ICacheSerializer";
 
 /**
  * Binary serializer - converts to Buffer for storage

@@ -13,8 +13,9 @@ import { EvictionStrategyFactory } from '../strategies/eviction/EvictionStrategy
 import { SerializerFactory } from '../strategies/serialization/SerializerFactory';
 import { CleanupScheduler } from '../services/CleanupScheduler';
 import { CacheEventPublisher } from '../events/CacheEventPublisher';
-import { MetricsCacheDecorator, ValidationCacheDecorator, EventCacheDecorator } from '../decorators/MetricsCacheDecorator';
 import { CacheMetricsCollector } from './CacheMetricsCollector';
+import { ValidationCacheDecorator, EventCacheDecorator } from '..';
+import { MetricsCacheDecorator } from '../decorators/MetricsCacheDecorator';
 
 /**
  * Memory cache implementation - composed from specialized components

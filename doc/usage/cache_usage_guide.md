@@ -3,18 +3,19 @@
 ## 🚀 Quick Start
 
 ```typescript
-import { initializeCache, getCache } from '@/shared-kernel/infrastructure/caching';
+import { CacheConfigurationManager, CacheFactory } from '@/shared-kernel/infrastructure/caching';
 
-// Initialize cache system
-await initializeCache({
+// Initialize cache configuration
+const configManager = new CacheConfigurationManager({
   defaultTtl: 3600, // 1 hour
   maxKeys: 10000,
   keyPrefix: 'app-cache',
   evictionPolicy: CacheEvictionPolicy.LRU
 });
 
-// Get cache instance
-const cache = getCache();
+// Create cache instance
+const factory = new CacheFactory();
+const cache = await factory.createCache('default', configManager.getConfiguration());
 
 // Basic usage
 await cache.set('user:123', { name: 'John Doe', email: 'john@example.com' });
@@ -26,7 +27,7 @@ const result = await cache.get('user:123');
 The new cache system is decomposed into specialized components:
 
 ```
-CacheFacade (Lightweight Coordinator)
+CacheFactory (Cache Creation)
 ├── CacheManager (Cache Lifecycle)
 ├── CacheHealthService (Health Monitoring)
 ├── CacheMetricsService (Metrics Aggregation)
@@ -47,12 +48,76 @@ MemoryCache (Composed Implementation)
 
 ## 📋 Component Usage
 
-### 1. **Basic Cache Operations**
+### 1. **Configuration Management**
 ```typescript
-import { getCache } from '@/shared-kernel/infrastructure/caching';
+import { CacheConfigurationManager, CacheConfigurationBuilder } from '@/shared-kernel/infrastructure/caching';
 
-const cache = getCache();
+// Basic configuration
+const configManager = new CacheConfigurationManager();
 
+// Get environment-specific config
+const prodConfig = configManager.getEnvironmentConfiguration('production');
+
+// Get cache type-specific config
+const sessionConfig = configManager.getCacheTypeConfiguration('session');
+const userConfig = configManager.getCacheTypeConfiguration('user');
+const apiConfig = configManager.getCacheTypeConfiguration('api');
+
+// Update configuration
+await configManager.updateConfiguration({
+  defaultTtl: 1800,
+  maxKeys: 20000
+});
+
+// Builder pattern
+const customConfig = CacheConfigurationBuilder
+  .create()
+  .withDefaultTtl(3600)
+  .withMaxKeys(50000)
+  .withKeyPrefix('custom-app')
+  .enableCompression()
+  .enableEncryption()
+  .withRetryPolicy(5, 2000)
+  .buildComplete();
+
+// Export/Import configurations
+const backup = configManager.exportConfiguration();
+await configManager.importConfiguration(backup);
+```
+
+### 2. **Cache Creation and Management**
+```typescript
+import { CacheFactory, CacheManager, CacheHealthService, CacheMetricsService } from '@/shared-kernel/infrastructure/caching';
+
+// Create services
+const healthService = new CacheHealthService();
+const metricsService = new CacheMetricsService();
+const cacheManager = new CacheManager(healthService, metricsService);
+
+// Create different cache types
+const configManager = new CacheConfigurationManager();
+
+// Session cache
+const sessionCache = await cacheManager.createCache(
+  'sessions', 
+  configManager.getCacheTypeConfiguration('session')
+);
+
+// User cache  
+const userCache = await cacheManager.createCache(
+  'users',
+  configManager.getCacheTypeConfiguration('user')
+);
+
+// API cache
+const apiCache = await cacheManager.createCache(
+  'api',
+  configManager.getCacheTypeConfiguration('api')
+);
+```
+
+### 3. **Basic Cache Operations**
+```typescript
 // Set with options
 await cache.set('key', data, {
   ttl: 1800, // 30 minutes
@@ -76,52 +141,36 @@ await cache.delete('key');
 
 // Clear all
 await cache.clear();
+
+// Get keys by pattern
+const keys = await cache.keys('user:*');
 ```
 
-### 2. **Named Caches**
+### 4. **Health Monitoring**
 ```typescript
-import { getCacheFacade } from '@/shared-kernel/infrastructure/caching';
+import { CacheHealthService, CacheMetricsService } from '@/shared-kernel/infrastructure/caching';
 
-const facade = getCacheFacade();
+const healthService = new CacheHealthService();
+const metricsService = new CacheMetricsService();
 
-// Create specialized caches
-const userCache = await facade.createCache('users', {
-  defaultTtl: 3600,
-  maxKeys: 5000,
-  evictionPolicy: CacheEvictionPolicy.LRU
-});
-
-const sessionCache = await facade.createCache('sessions', {
-  defaultTtl: 1800,
-  maxKeys: 1000,
-  evictionPolicy: CacheEvictionPolicy.TTL
-});
-
-// Use named caches
-await userCache.set('user:123', userData);
-await sessionCache.set('session:abc', sessionData);
-```
-
-### 3. **Health Monitoring**
-```typescript
-import { getCacheFacade } from '@/shared-kernel/infrastructure/caching';
-
-const facade = getCacheFacade();
+// Register caches for monitoring
+healthService.registerCache('sessions', sessionCache);
+healthService.registerCache('users', userCache);
 
 // Check overall health
-const health = await facade.getHealthStatus();
+const health = await healthService.checkHealth();
 console.log('Cache healthy:', health.healthy);
 console.log('Response time:', health.responseTime);
 console.log('Memory usage:', health.memoryUsage);
 
 // Get detailed metrics
-const metrics = facade.getMetrics();
+const metrics = metricsService.getAggregatedMetrics();
 console.log('Hit rate:', metrics.hitRate);
 console.log('Total operations:', metrics.operations);
 console.log('Top keys:', metrics.topKeys);
 ```
 
-### 4. **Event Handling**
+### 5. **Event Handling**
 ```typescript
 import { CacheEventType } from '@/shared-kernel/infrastructure/caching';
 
@@ -138,28 +187,29 @@ class CacheEventLogger {
   }
 }
 
-// Subscribe to events (if accessing the underlying memory cache)
-const memoryCache = facade.getNamedCache('default') as any;
+// Subscribe to events (if using MemoryCache directly)
+const memoryCache = cache as any;
 if (memoryCache.getEventPublisher) {
   memoryCache.getEventPublisher().subscribe(new CacheEventLogger());
 }
 ```
 
-### 5. **Environment-Specific Configuration**
+### 6. **Advanced Configuration**
 ```typescript
-import { getCacheFacade } from '@/shared-kernel/infrastructure/caching';
+// Validation
+const configManager = new CacheConfigurationManager();
+const validation = configManager.validateConfiguration({
+  defaultTtl: -1 // Invalid
+});
 
-const facade = getCacheFacade();
-
-// Development configuration
-if (process.env.NODE_ENV === 'development') {
-  await facade.createEnvironmentCache('development');
+if (!validation.isValid) {
+  console.log('Validation errors:', validation.errors);
 }
 
-// Production configuration
-if (process.env.NODE_ENV === 'production') {
-  await facade.createEnvironmentCache('production');
-}
+// Environment-specific setup
+const environment = process.env.NODE_ENV || 'development';
+const envConfig = configManager.getEnvironmentConfiguration(environment);
+const cache = await factory.createCache('env-cache', envConfig);
 ```
 
 ## 🎯 Common Patterns
@@ -167,13 +217,17 @@ if (process.env.NODE_ENV === 'production') {
 ### Application Service Pattern
 ```typescript
 export class UserApplicationService {
-  private readonly cache = getCache();
+  private readonly userCache: ICache;
+  
+  constructor(cacheManager: CacheManager, configManager: CacheConfigurationManager) {
+    this.userCache = cacheManager.getCache('users');
+  }
   
   async getUser(userId: string): Promise<User> {
     const cacheKey = `user:${userId}`;
     
     // Try cache first
-    const cached = await this.cache.get<User>(cacheKey);
+    const cached = await this.userCache.get<User>(cacheKey);
     if (cached.success) {
       return cached.value!;
     }
@@ -182,7 +236,7 @@ export class UserApplicationService {
     const user = await this.userRepository.findById(userId);
     
     // Cache the result
-    await this.cache.set(cacheKey, user, {
+    await this.userCache.set(cacheKey, user, {
       ttl: 3600,
       tags: ['user', 'profile']
     });
@@ -194,42 +248,52 @@ export class UserApplicationService {
     await this.userRepository.update(userId, data);
     
     // Invalidate cache
-    await this.cache.delete(`user:${userId}`);
+    await this.userCache.delete(`user:${userId}`);
   }
 }
 ```
 
-### Bulk Operations Pattern
+### Multi-Cache Setup Pattern
 ```typescript
-export class DataService {
-  private readonly cache = getCache();
-  
-  async getMultipleUsers(userIds: string[]): Promise<User[]> {
-    const users: User[] = [];
-    const uncachedIds: string[] = [];
-    
-    // Check cache for each user
-    for (const userId of userIds) {
-      const cached = await this.cache.get<User>(`user:${userId}`);
-      if (cached.success) {
-        users.push(cached.value!);
-      } else {
-        uncachedIds.push(userId);
-      }
-    }
-    
-    // Load uncached users from database
-    if (uncachedIds.length > 0) {
-      const uncachedUsers = await this.userRepository.findByIds(uncachedIds);
-      
-      // Cache loaded users
-      for (const user of uncachedUsers) {
-        await this.cache.set(`user:${user.id}`, user, { ttl: 3600 });
-        users.push(user);
-      }
-    }
-    
-    return users;
+export class CacheSetupService {
+  private cacheManager: CacheManager;
+  private configManager: CacheConfigurationManager;
+
+  constructor() {
+    this.configManager = new CacheConfigurationManager();
+    const healthService = new CacheHealthService();
+    const metricsService = new CacheMetricsService();
+    this.cacheManager = new CacheManager(healthService, metricsService);
+  }
+
+  async initializeCaches(): Promise<void> {
+    // Create specialized caches
+    await this.cacheManager.createCache(
+      'sessions',
+      this.configManager.getCacheTypeConfiguration('session')
+    );
+
+    await this.cacheManager.createCache(
+      'users', 
+      this.configManager.getCacheTypeConfiguration('user')
+    );
+
+    await this.cacheManager.createCache(
+      'api',
+      this.configManager.getCacheTypeConfiguration('api')
+    );
+  }
+
+  getSessionCache(): ICache {
+    return this.cacheManager.getCache('sessions');
+  }
+
+  getUserCache(): ICache {
+    return this.cacheManager.getCache('users');
+  }
+
+  getApiCache(): ICache {
+    return this.cacheManager.getCache('api');
   }
 }
 ```
@@ -237,7 +301,7 @@ export class DataService {
 ### Cache-Aside Pattern with Fallback
 ```typescript
 export class CacheService {
-  private readonly cache = getCache();
+  constructor(private readonly cache: ICache) {}
   
   async getWithFallback<T>(
     key: string,
@@ -272,26 +336,47 @@ export class CacheService {
 
 ### Development
 ```typescript
-await initializeCache({
-  defaultTtl: 300, // 5 minutes
-  maxKeys: 1000,
-  keyPrefix: 'dev-cache',
-  evictionPolicy: CacheEvictionPolicy.LRU,
-  enableMetrics: true
-});
+const configManager = new CacheConfigurationManager();
+const devConfig = configManager.getEnvironmentConfiguration('development');
+// - defaultTtl: 300 (5 minutes)
+// - maxKeys: 1000
+// - enableCompression: false
+// - enableEncryption: false
+// - enableMetrics: true
 ```
 
 ### Production
 ```typescript
-await initializeCache({
-  defaultTtl: 3600, // 1 hour
-  maxKeys: 50000,
-  keyPrefix: 'prod-cache',
-  evictionPolicy: CacheEvictionPolicy.LRU,
-  enableMetrics: true,
-  enableCompression: false, // JSON serialization is fast enough
-  serialization: CacheSerializationFormat.JSON
-});
+const configManager = new CacheConfigurationManager();
+const prodConfig = configManager.getEnvironmentConfiguration('production');
+// - defaultTtl: 3600 (1 hour)
+// - maxKeys: 50000
+// - enableCompression: true
+// - enableEncryption: true
+// - enableMetrics: true
+```
+
+### Cache Type Optimizations
+```typescript
+const configManager = new CacheConfigurationManager();
+
+// Session cache - security focused
+const sessionConfig = configManager.getCacheTypeConfiguration('session');
+// - TTL-based eviction
+// - Encryption enabled
+// - 30 minute TTL
+
+// User cache - performance focused  
+const userConfig = configManager.getCacheTypeConfiguration('user');
+// - LRU eviction
+// - Compression enabled
+// - 1 hour TTL
+
+// API cache - frequency focused
+const apiConfig = configManager.getCacheTypeConfiguration('api');
+// - LFU eviction
+// - Compression enabled
+// - 5 minute TTL
 ```
 
 ## ⚡ Key Benefits
@@ -303,6 +388,7 @@ await initializeCache({
 - **Observer Pattern** - Event-driven architecture for monitoring and debugging
 - **Memory-Only** - Simple, fast, no Redis dependency
 - **Type-Safe** - Full TypeScript support with proper interfaces
+- **Configuration Flexibility** - Environment and cache-type specific configurations
 - **Health Monitoring** - Built-in health checks and metrics
 - **Background Cleanup** - Automatic expired entry cleanup and capacity management
 - **Testable** - Clear interfaces and dependency injection support
@@ -316,6 +402,6 @@ The cache system includes automatic cleanup:
 
 ```typescript
 // Manual cleanup
-const facade = getCacheFacade();
-await facade.shutdown();
+const cacheManager = new CacheManager(healthService, metricsService);
+await cacheManager.shutdown();
 ```

@@ -1,15 +1,6 @@
-
-// Main facade and convenience functions
-export { 
-  CacheFacade, 
-  initializeCache, 
-  getCache, 
-  getCacheFacade, 
-  shutdownCache 
-} from './CacheFacade';
-
 // Configuration
 export { CacheConfigurationManager } from './CacheConfigurationManager';
+export type { ICacheConfigurationManager } from './interfaces/ICache';
 
 // Core interfaces
 export type { 
@@ -20,7 +11,23 @@ export type {
   ICacheEventListener,
   ICacheEventPublisher,
   ICacheMetricsCollector,
-  ICacheFactory
+  ICacheFactory,
+  ICacheHealthChecker,
+  ICacheConfigurationProvider,
+  ICacheCleanupService,
+  ICacheManager,
+  ICacheHealthService,
+  ICacheMetricsService,
+  ICacheEvictionStrategy,
+  ICacheDecorator,
+  ICacheEntryBuilder,
+  ICacheOperationContext,
+  ICacheMiddleware,
+  ICachePipeline,
+  ICacheTransaction,
+  ICacheBatchOperations,
+  ICacheConfigurationValidator,
+  ICacheWarmer
 } from './interfaces/ICache';
 
 // Core components
@@ -36,20 +43,20 @@ export {
 
 // Decorators
 export { MetricsCacheDecorator } from './decorators/MetricsCacheDecorator';
-export { ValidationCacheDecorator } from './decorators/MetricsCacheDecorator';
-export { EventCacheDecorator } from './decorators/MetricsCacheDecorator';
+export { ValidationCacheDecorator } from './decorators/ValidationCacheDecorator';
+export { EventCacheDecorator } from './decorators/EventCacheDecorator';
 
 // Strategies
 export type { IEvictionStrategy } from './strategies/eviction/IEvictionStrategy';
 export { LRUEvictionStrategy } from './strategies/eviction/LRUEvictionStrategy';
-export { LFUEvictionStrategy } from './strategies/eviction/LRUEvictionStrategy';
-export { TTLEvictionStrategy } from './strategies/eviction/LRUEvictionStrategy';
-export { EvictionStrategyFactory } from './strategies/eviction/LRUEvictionStrategy';
+export { LFUEvictionStrategy } from './strategies/eviction/LFUEvictionStrategy';
+export { TTLEvictionStrategy } from './strategies/eviction/TTLEvictionStrategy';
+export { EvictionStrategyFactory } from './strategies/eviction/EvictionStrategyFactory';
 
 export type { ICacheSerializer } from './strategies/serialization/ICacheSerializer';
 export { JsonSerializer } from './strategies/serialization/JsonSerializer';
-export { BinarySerializer } from './strategies/serialization/JsonSerializer';
-export { SerializerFactory } from './strategies/serialization/JsonSerializer';
+export { BinarySerializer } from './strategies/serialization/BinarySerializer';
+export { SerializerFactory } from './strategies/serialization/SerializerFactory';
 
 // Services
 export { CacheHealthService } from './services/CacheHealthService';
@@ -59,7 +66,7 @@ export { CleanupScheduler } from './services/CleanupScheduler';
 
 // Events
 export { CacheEventPublisher } from './events/CacheEventPublisher';
-export { CacheEventTypes } from './events/CacheEventPublisher';
+export { CacheEventTypes } from './events/CacheEventTypes';
 
 // Factory and implementations
 export { CacheFactory } from './config/CacheFactory';

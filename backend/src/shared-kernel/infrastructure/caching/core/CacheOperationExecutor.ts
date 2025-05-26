@@ -1,5 +1,5 @@
 
-import { CacheEntry, CacheOperationResult, CacheOperationOptions } from '@/types/shared/infrastructure/caching';
+import { CacheEntry, CacheOperationResult } from '@/types/shared/infrastructure/caching';
 import { ICacheCore, ICacheOperationExecutor, ICacheCommand } from '../interfaces/ICache';
 
 /**
@@ -93,8 +93,6 @@ export class DeleteCommand implements ICacheCommand<void> {
  * Clear command
  */
 export class ClearCommand implements ICacheCommand<void> {
-  constructor() {}
-
   async execute(core: ICacheCore): Promise<CacheOperationResult<void>> {
     await core.clear();
     

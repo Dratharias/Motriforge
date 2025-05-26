@@ -1,5 +1,8 @@
 
 import { CacheSerializationFormat } from '@/types/shared/infrastructure/caching';
+import { BinarySerializer } from './BinarySerializer';
+import { ICacheSerializer } from './ICacheSerializer';
+import { JsonSerializer } from './JsonSerializer';
 
 export class SerializerFactory {
   static createSerializer(format: CacheSerializationFormat): ICacheSerializer {

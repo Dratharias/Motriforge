@@ -1,6 +1,6 @@
 
-import { CacheEvent, CacheEventType } from '@/types/shared/infrastructure/caching';
-import { ICacheEventPublisher } from '../interfaces/ICache';
+import { CacheEventType, CacheOperationOptions, CacheOperationResult } from '@/types/shared/infrastructure/caching';
+import { ICache, ICacheEventPublisher } from '../interfaces/ICache';
 
 /**
  * Event cache decorator - adds event publishing to cache operations
@@ -23,7 +23,7 @@ export class EventCacheDecorator implements ICache {
       type: eventType,
       key,
       timestamp: new Date(),
-      operationTime: result.operationTime || 0,
+      operationTime: result.operationTime ?? 0,
       ...(result.success && { value: result.value, metadata: result.metadata })
     });
     
@@ -38,7 +38,7 @@ export class EventCacheDecorator implements ICache {
       key,
       value,
       timestamp: new Date(),
-      operationTime: result.operationTime || 0,
+      operationTime: result.operationTime ?? 0,
       metadata: result.metadata
     });
     
@@ -52,7 +52,7 @@ export class EventCacheDecorator implements ICache {
       type: CacheEventType.DELETE,
       key,
       timestamp: new Date(),
-      operationTime: result.operationTime || 0
+      operationTime: result.operationTime ?? 0
     });
     
     return result;
@@ -68,7 +68,7 @@ export class EventCacheDecorator implements ICache {
     await this.eventPublisher.publish({
       type: CacheEventType.FLUSH,
       timestamp: new Date(),
-      operationTime: result.operationTime || 0
+      operationTime: result.operationTime ?? 0
     });
     
     return result;

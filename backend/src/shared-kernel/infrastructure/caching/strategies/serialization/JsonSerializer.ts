@@ -1,4 +1,7 @@
 
+import { CacheSerializationFormat } from '@/types/shared/infrastructure/caching';
+import { ICacheSerializer } from './ICacheSerializer';
+
 /**
  * JSON serializer - simple JSON serialization
  */

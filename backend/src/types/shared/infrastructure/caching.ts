@@ -26,20 +26,20 @@ export enum CacheEventType {
 }
 
 export interface CacheConfiguration {
-  readonly defaultTtl: number;
-  readonly maxKeys: number;
-  readonly keyPrefix: string;
-  readonly enableCompression: boolean;
-  readonly enableEncryption: boolean;
-  readonly enableMetrics: boolean;
-  readonly strategy: CacheStrategy;
-  readonly evictionPolicy: CacheEvictionPolicy;
-  readonly serialization: CacheSerializationFormat;
-  readonly retryAttempts: number;
-  readonly retryDelay: number;
-  readonly connectionTimeout: number;
-  readonly operationTimeout: number;
-  readonly connectionString?: string;
+  defaultTtl: number;
+  maxKeys: number;
+  keyPrefix: string;
+  enableCompression: boolean;
+  enableEncryption: boolean;
+  enableMetrics: boolean;
+  strategy: CacheStrategy;
+  evictionPolicy: CacheEvictionPolicy;
+  serialization: CacheSerializationFormat;
+  retryAttempts: number;
+  retryDelay: number;
+  connectionTimeout: number;
+  operationTimeout: number;
+  connectionString?: string;
 }
 
 export interface CacheEntryMetadata {
@@ -106,21 +106,21 @@ export interface CacheKeyStats {
 }
 
 export interface CacheStatistics {
-  readonly totalKeys: number;
-  readonly totalHits: number;
-  readonly totalMisses: number;
-  readonly hitRate: number;
-  readonly totalSize: number;
-  readonly averageKeySize: number;
-  readonly evictions: number;
-  readonly operations: {
-    readonly gets: number;
-    readonly sets: number;
-    readonly deletes: number;
-    readonly flushes: number;
-    readonly averageGetTime: number;
-    readonly averageSetTime: number;
-    readonly averageDeleteTime: number;
+  totalKeys: number;
+  totalHits: number;
+  totalMisses: number;
+  hitRate: number;
+  totalSize: number;
+  averageKeySize: number;
+  evictions: number;
+  operations: {
+    gets: number;
+    sets: number;
+    deletes: number;
+    flushes: number;
+    averageGetTime: number;
+    averageSetTime: number;
+    averageDeleteTime: number;
   };
-  readonly topKeys: CacheKeyStats[];
+  topKeys: CacheKeyStats[];
 }

@@ -1,3 +1,5 @@
+import { CacheEntry } from "@/types/shared/infrastructure/caching";
+import { IEvictionStrategy } from "./IEvictionStrategy";
 
 /**
  * LFU (Least Frequently Used) eviction strategy
@@ -7,7 +9,7 @@ export class LFUEvictionStrategy implements IEvictionStrategy {
 
   selectKeysToEvict(entries: Array<{ key: string; entry: CacheEntry }>, targetCount: number): string[] {
     // Sort by hit count (lowest first)
-    const sorted = entries.sort((a, b) => a.entry.metadata.hits - b.entry.metadata.hits);
+    const sorted = entries.toSorted((a, b) => a.entry.metadata.hits - b.entry.metadata.hits);
     return sorted.slice(0, targetCount).map(item => item.key);
   }
 
