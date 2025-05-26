@@ -1,23 +1,14 @@
-import { Types, Model } from 'mongoose';
+
+import { Types } from 'mongoose';
 import { Policy } from '@/types/iam/interfaces';
 import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
-
-interface PolicyDocument {
-  _id: Types.ObjectId;
-  name: string;
-  description: string;
-  target: any;
-  rules: any[];
-  isActive: boolean;
-  priority: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { PolicyDocument } from '../repositories/types/DocumentInterfaces';
+import { IPolicyModel } from '../repositories/types/ModelInterfaces';
 
 export class PolicyAdministrationPoint {
   private readonly logger = LoggerFactory.getContextualLogger('PolicyAdministrationPoint');
 
-  constructor(private readonly policyModel: Model<PolicyDocument>) {}
+  constructor(private readonly policyModel: IPolicyModel) {}
 
   async createPolicy(policy: Omit<Policy, 'id' | 'createdAt' | 'updatedAt'>): Promise<Policy> {
     try {
@@ -202,4 +193,3 @@ export class PolicyAdministrationPoint {
     };
   }
 }
-

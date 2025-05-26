@@ -1,24 +1,15 @@
-import { Types, Model } from 'mongoose';
+
+import { Types } from 'mongoose';
 import { IAuditLogger } from '@/domain/iam/ports/IAuditLogger';
 import { EventType, RiskLevel } from '@/types/iam/interfaces';
 import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
-
-interface AuditLogDocument {
-  _id: Types.ObjectId;
-  eventType: EventType;
-  identityId?: Types.ObjectId;
-  ipAddress?: string;
-  userAgent?: string;
-  details: Record<string, unknown>;
-  riskLevel: RiskLevel;
-  timestamp: Date;
-  correlationId?: string;
-}
+import { AuditLogDocument } from '../repositories/types/DocumentInterfaces';
+import { IAuditLogModel } from '../repositories/types/ModelInterfaces';
 
 export class SecurityAuditAdapter implements IAuditLogger {
   private readonly logger = LoggerFactory.getContextualLogger('SecurityAuditAdapter');
 
-  constructor(private readonly model: Model<AuditLogDocument>) {}
+  constructor(private readonly model: IAuditLogModel) {}
 
   async logSecurityEvent(
     type: EventType,
@@ -119,4 +110,3 @@ export class SecurityAuditAdapter implements IAuditLogger {
     }
   }
 }
-

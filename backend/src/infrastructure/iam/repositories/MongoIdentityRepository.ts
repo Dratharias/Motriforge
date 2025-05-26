@@ -1,29 +1,15 @@
-import { Types, Model } from 'mongoose';
+
+import { Types } from 'mongoose';
 import { Identity } from '@/domain/iam/entities/Identity';
 import { IdentityAggregate } from '@/domain/iam/aggregates/IdentityAggregate';
 import { IIdentityRepository } from '@/domain/iam/ports/IIdentityRepository';
 import { Username } from '@/domain/iam/value-objects/Username';
 import { IdentityStatus } from '@/types/iam/interfaces';
-
-interface IdentityDocument {
-  _id: Types.ObjectId;
-  username: string;
-  usernameDomain?: string;
-  email: string;
-  status: IdentityStatus;
-  createdAt: Date;
-  updatedAt: Date;
-  lastLoginAt?: Date;
-  failedLoginAttempts: number;
-  lockedUntil?: Date;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  mfaEnabled: boolean;
-  attributes: Record<string, unknown>;
-}
+import { IdentityDocument } from './types/DocumentInterfaces';
+import { IIdentityModel } from './types/ModelInterfaces';
 
 export class MongoIdentityRepository implements IIdentityRepository {
-  constructor(private readonly model: Model<IdentityDocument>) {}
+  constructor(private readonly model: IIdentityModel) {}
 
   async findById(id: Types.ObjectId): Promise<Identity | null> {
     const doc = await this.model.findById(id).lean();
@@ -130,4 +116,3 @@ export class MongoIdentityRepository implements IIdentityRepository {
     };
   }
 }
-

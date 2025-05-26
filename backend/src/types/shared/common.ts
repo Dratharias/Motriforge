@@ -1,3 +1,4 @@
+
 import { ObjectId } from 'mongodb';
 import { Types } from 'mongoose';
 
@@ -6,8 +7,28 @@ import { Types } from 'mongoose';
  */
 export type Id = ObjectId;
 
-export function toObjectId(id?: string): Types.ObjectId {
-  return id && Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : new Types.ObjectId();
+/**
+ * Converts a string or ObjectId to a proper ObjectId
+ * Enhanced version with better validation
+ */
+export function toObjectId(value?: string | Types.ObjectId): Types.ObjectId {
+  if (!value) {
+    return new Types.ObjectId();
+  }
+  if (value instanceof Types.ObjectId) {
+    return value;
+  }
+  if (typeof value === 'string' && Types.ObjectId.isValid(value)) {
+    return new Types.ObjectId(value);
+  }
+  throw new Error(`Invalid ObjectId: ${value}`);
+}
+
+/**
+ * Validates if a string is a valid ObjectId
+ */
+export function isValidObjectId(value: string): boolean {
+  return Types.ObjectId.isValid(value);
 }
 
 /**
@@ -88,6 +109,34 @@ export interface QueryParams {
   readonly sort?: SortParams[];
   readonly filters?: FilterParams;
   readonly search?: string;
+}
+
+/**
+ * Common API response wrapper
+ */
+export interface ApiResponse<T> {
+  readonly success: boolean;
+  readonly data?: T;
+  readonly error?: string;
+  readonly code?: string;
+  readonly timestamp: string;
+}
+
+/**
+ * Base query interface for CQRS
+ */
+export interface BaseQuery {
+  readonly correlationId?: string;
+  readonly requestId?: string;
+}
+
+/**
+ * Base command interface for CQRS
+ */
+export interface BaseCommand {
+  readonly correlationId: string;
+  readonly requestId?: string;
+  readonly userId?: Types.ObjectId;
 }
 
 /**

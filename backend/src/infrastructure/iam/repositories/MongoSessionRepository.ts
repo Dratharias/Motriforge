@@ -1,28 +1,15 @@
-import { Types, Model } from 'mongoose';
+
+import { Types } from 'mongoose';
 import { Session } from '@/domain/iam/entities/Session';
 import { ISessionRepository } from '@/domain/iam/ports/ISessionRepository';
 import { SessionId } from '@/domain/iam/value-objects/SessionId';
 import { IPAddress } from '@/domain/iam/value-objects/IPAddress';
 import { SessionStatus, AuthenticationMethod } from '@/types/iam/interfaces';
-
-interface SessionDocument {
-  _id: Types.ObjectId;
-  sessionId: string;
-  identityId: Types.ObjectId;
-  deviceId: Types.ObjectId;
-  status: SessionStatus;
-  createdAt: Date;
-  expiresAt: Date;
-  lastAccessedAt: Date;
-  ipAddress: string;
-  userAgent: string;
-  authenticationMethod: AuthenticationMethod;
-  riskScore: number;
-  metadata: Record<string, unknown>;
-}
+import { SessionDocument } from './types/DocumentInterfaces';
+import { ISessionModel } from './types/ModelInterfaces';
 
 export class MongoSessionRepository implements ISessionRepository {
-  constructor(private readonly model: Model<SessionDocument>) {}
+  constructor(private readonly model: ISessionModel) {}
 
   async findById(id: Types.ObjectId): Promise<Session | null> {
     const doc = await this.model.findById(id).lean();
@@ -127,4 +114,3 @@ export class MongoSessionRepository implements ISessionRepository {
     };
   }
 }
-

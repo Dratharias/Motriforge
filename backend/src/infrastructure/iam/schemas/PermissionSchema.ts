@@ -1,6 +1,8 @@
-import { Schema, model } from 'mongoose';
 
-const PermissionSchema = new Schema({
+import { Schema, model } from 'mongoose';
+import { PermissionDocument } from '../repositories/types/DocumentInterfaces';
+
+const PermissionSchema = new Schema<PermissionDocument>({
   name: {
     value: {
       type: String,
@@ -42,10 +44,6 @@ const PermissionSchema = new Schema({
   isSystemPermission: {
     type: Boolean,
     default: false
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true,
@@ -57,5 +55,4 @@ PermissionSchema.index({ 'name.value': 1 });
 PermissionSchema.index({ resource: 1, action: 1 });
 PermissionSchema.index({ isSystemPermission: 1 });
 
-export const PermissionModel = model('Permission', PermissionSchema);
-
+export const PermissionModel = model<PermissionDocument>('Permission', PermissionSchema);

@@ -1,4 +1,6 @@
+
 import { Schema, model } from 'mongoose';
+import { PolicyDocument } from '../repositories/types/DocumentInterfaces';
 
 const PolicyConditionSchema = new Schema({
   operator: {
@@ -31,7 +33,7 @@ const PolicyTargetSchema = new Schema({
   environments: Schema.Types.Mixed
 }, { _id: false });
 
-const PolicySchema = new Schema({
+const PolicySchema = new Schema<PolicyDocument>({
   name: {
     type: String,
     required: true,
@@ -60,14 +62,6 @@ const PolicySchema = new Schema({
     type: Number,
     default: 0,
     index: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true,
@@ -81,5 +75,4 @@ PolicySchema.index({ 'target.subjects': 1 });
 PolicySchema.index({ 'target.resources': 1 });
 PolicySchema.index({ 'target.actions': 1 });
 
-export const PolicyModel = model('Policy', PolicySchema);
-
+export const PolicyModel = model<PolicyDocument>('Policy', PolicySchema);

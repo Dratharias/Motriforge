@@ -1,27 +1,18 @@
-import { Types, Model } from 'mongoose';
+
+import { Types } from 'mongoose';
 import { 
   PolicyRequest, 
   Policy, 
   PolicyTarget 
 } from '@/types/iam/interfaces';
 import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
-
-interface PolicyDocument {
-  _id: Types.ObjectId;
-  name: string;
-  description: string;
-  target: PolicyTarget;
-  rules: any[];
-  isActive: boolean;
-  priority: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { PolicyDocument } from '../repositories/types/DocumentInterfaces';
+import { IPolicyModel } from '../repositories/types/ModelInterfaces';
 
 export class PolicyInformationPoint {
   private readonly logger = LoggerFactory.getContextualLogger('PolicyInformationPoint');
 
-  constructor(private readonly policyModel: Model<PolicyDocument>) {}
+  constructor(private readonly policyModel: IPolicyModel) {}
 
   async getApplicablePolicies(request: PolicyRequest): Promise<Policy[]> {
     try {
@@ -31,19 +22,15 @@ export class PolicyInformationPoint {
         action: request.action
       });
 
-      // Build query for potentially applicable policies
       const query: any = {
         isActive: true,
         $or: [
-          // Policies that target this specific subject
           { 'target.subjects': { $in: [request.subject.toString(), '*'] } },
-          // Policies with no specific subject targeting (apply to all)
           { 'target.subjects': { $exists: false } },
           { 'target.subjects': { $size: 0 } }
         ]
       };
 
-      // Add resource matching
       if (request.resource) {
         query.$and = query.$and ?? [];
         query.$and.push({
@@ -56,7 +43,6 @@ export class PolicyInformationPoint {
         });
       }
 
-      // Add action matching
       if (request.action) {
         query.$and = query.$and ?? [];
         query.$and.push({
@@ -85,8 +71,6 @@ export class PolicyInformationPoint {
   }
 
   async getSubjectAttributes(subjectId: Types.ObjectId): Promise<Record<string, unknown>> {
-    // In a full implementation, this would query user/identity attributes
-    // For now, return basic attributes
     return {
       id: subjectId.toString(),
       timestamp: new Date().toISOString()
@@ -94,7 +78,6 @@ export class PolicyInformationPoint {
   }
 
   async getResourceAttributes(resource: string): Promise<Record<string, unknown>> {
-    // In a full implementation, this would query resource metadata
     return {
       resource,
       timestamp: new Date().toISOString()
@@ -110,7 +93,6 @@ export class PolicyInformationPoint {
   }
 
   private createWildcardRegex(pattern: string): string {
-    // Convert simple wildcards to regex
     return pattern.replace(/\*/g, '.*');
   }
 

@@ -1,7 +1,9 @@
+
 import { Schema, model } from 'mongoose';
 import { AccessLevel } from '@/types/iam/enums';
+import { AccessControlDocument } from '../repositories/types/DocumentInterfaces';
 
-const AccessControlSchema = new Schema({
+const AccessControlSchema = new Schema<AccessControlDocument>({
   identityId: {
     type: Schema.Types.ObjectId,
     ref: 'Identity',
@@ -35,14 +37,6 @@ const AccessControlSchema = new Schema({
     type: Boolean,
     default: true,
     index: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true,
@@ -55,5 +49,4 @@ AccessControlSchema.index({ roles: 1 });
 AccessControlSchema.index({ permissions: 1 });
 AccessControlSchema.index({ isActive: 1, effectiveFrom: 1, effectiveUntil: 1 });
 
-export const AccessControlModel = model('AccessControl', AccessControlSchema);
-
+export const AccessControlModel = model<AccessControlDocument>('AccessControl', AccessControlSchema);

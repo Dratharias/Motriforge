@@ -1,7 +1,9 @@
+
 import { Schema, model } from 'mongoose';
 import { EventType, RiskLevel } from '@/types/iam/enums';
+import { AuditLogDocument } from '../repositories/types/DocumentInterfaces';
 
-const AuditLogSchema = new Schema({
+const AuditLogSchema = new Schema<AuditLogDocument>({
   eventType: {
     type: String,
     enum: Object.values(EventType),
@@ -50,5 +52,4 @@ AuditLogSchema.index({ identityId: 1, timestamp: -1 });
 AuditLogSchema.index({ riskLevel: 1, timestamp: -1 });
 AuditLogSchema.index({ correlationId: 1 });
 
-export const AuditLogModel = model('AuditLog', AuditLogSchema);
-
+export const AuditLogModel = model<AuditLogDocument>('AuditLog', AuditLogSchema);

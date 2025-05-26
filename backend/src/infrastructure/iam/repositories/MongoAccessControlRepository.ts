@@ -1,23 +1,13 @@
-import { Types, Model } from 'mongoose';
+
+import { Types } from 'mongoose';
 import { AccessControl } from '@/domain/iam/entities/AccessControl';
 import { IAccessControlRepository } from '@/domain/iam/ports/IAccessControlRepository';
 import { AccessLevel } from '@/types/iam/interfaces';
-
-interface AccessControlDocument {
-  _id: Types.ObjectId;
-  identityId: Types.ObjectId;
-  roles: Types.ObjectId[];
-  permissions: Types.ObjectId[];
-  accessLevel: AccessLevel;
-  effectiveFrom: Date;
-  effectiveUntil?: Date;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { AccessControlDocument } from './types/DocumentInterfaces';
+import { IAccessControlModel } from './types/ModelInterfaces';
 
 export class MongoAccessControlRepository implements IAccessControlRepository {
-  constructor(private readonly model: Model<AccessControlDocument>) {}
+  constructor(private readonly model: IAccessControlModel) {}
 
   async findById(id: Types.ObjectId): Promise<AccessControl | null> {
     const doc = await this.model.findById(id).lean();
@@ -103,4 +93,3 @@ export class MongoAccessControlRepository implements IAccessControlRepository {
     };
   }
 }
-

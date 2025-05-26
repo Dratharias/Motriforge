@@ -1,6 +1,8 @@
-import { Schema, model } from 'mongoose';
 
-const RoleSchema = new Schema({
+import { Schema, model } from 'mongoose';
+import { RoleDocument } from '../repositories/types/DocumentInterfaces';
+
+const RoleSchema = new Schema<RoleDocument>({
   name: {
     value: {
       type: String,
@@ -33,14 +35,6 @@ const RoleSchema = new Schema({
   isSystemRole: {
     type: Boolean,
     default: false
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true,
@@ -52,5 +46,4 @@ RoleSchema.index({ 'name.value': 1 });
 RoleSchema.index({ isSystemRole: 1 });
 RoleSchema.index({ permissions: 1 });
 
-export const RoleModel = model('Role', RoleSchema);
-
+export const RoleModel = model<RoleDocument>('Role', RoleSchema);

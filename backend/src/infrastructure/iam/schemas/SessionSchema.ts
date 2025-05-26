@@ -1,7 +1,9 @@
+
 import { Schema, model } from 'mongoose';
 import { SessionStatus, AuthenticationMethod } from '@/types/iam/enums';
+import { SessionDocument } from '../repositories/types/DocumentInterfaces';
 
-const SessionSchema = new Schema({
+const SessionSchema = new Schema<SessionDocument>({
   sessionId: {
     type: String,
     required: true,
@@ -23,11 +25,6 @@ const SessionSchema = new Schema({
     type: String,
     enum: Object.values(SessionStatus),
     default: SessionStatus.ACTIVE,
-    index: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
     index: true
   },
   expiresAt: {
@@ -70,14 +67,7 @@ const SessionSchema = new Schema({
 // Indexes
 SessionSchema.index({ sessionId: 1 });
 SessionSchema.index({ identityId: 1, status: 1 });
-SessionSchema.index({ expiresAt: 1 }); // For cleanup
-SessionSchema.index({ createdAt: 1 });
-SessionSchema.index({ ipAddress: 1 });
-SessionSchema.index({ riskScore: 1 });
-
-// Compound indexes
 SessionSchema.index({ identityId: 1, status: 1, expiresAt: 1 });
 SessionSchema.index({ status: 1, expiresAt: 1 });
 
-export const SessionModel = model('Session', SessionSchema);
-
+export const SessionModel = model<SessionDocument>('Session', SessionSchema);

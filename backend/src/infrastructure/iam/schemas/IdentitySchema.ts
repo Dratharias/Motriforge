@@ -1,7 +1,9 @@
+
 import { Schema, model } from 'mongoose';
 import { IdentityStatus } from '@/types/iam/enums';
+import { IdentityDocument } from '../repositories/types/DocumentInterfaces';
 
-const IdentitySchema = new Schema({
+const IdentitySchema = new Schema<IdentityDocument>({
   username: {
     type: String,
     required: true,
@@ -26,14 +28,6 @@ const IdentitySchema = new Schema({
     type: String,
     enum: Object.values(IdentityStatus),
     default: IdentityStatus.PENDING_VERIFICATION
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   },
   lastLoginAt: {
     type: Date
@@ -71,12 +65,7 @@ const IdentitySchema = new Schema({
 IdentitySchema.index({ username: 1 });
 IdentitySchema.index({ email: 1 });
 IdentitySchema.index({ status: 1 });
-IdentitySchema.index({ createdAt: 1 });
-IdentitySchema.index({ lastLoginAt: 1 });
-
-// Compound indexes
 IdentitySchema.index({ username: 1, status: 1 });
 IdentitySchema.index({ email: 1, status: 1 });
 
-export const IdentityModel = model('Identity', IdentitySchema);
-
+export const IdentityModel = model<IdentityDocument>('Identity', IdentitySchema);

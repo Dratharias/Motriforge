@@ -9,7 +9,6 @@ import {
   PolicyDecision,
   EventType 
 } from './enums';
-import { Secret } from 'jsonwebtoken';
 
 // ===== VALUE OBJECTS =====
 export interface IdentityId {

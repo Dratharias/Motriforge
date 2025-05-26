@@ -1,7 +1,9 @@
+
 import { Schema, model } from 'mongoose';
 import { DeviceType } from '@/types/iam/enums';
+import { DeviceDocument } from '../repositories/types/DocumentInterfaces';
 
-const DeviceSchema = new Schema({
+const DeviceSchema = new Schema<DeviceDocument>({
   fingerprint: {
     value: {
       type: String,
@@ -51,5 +53,4 @@ DeviceSchema.index({ 'fingerprint.value': 1 });
 DeviceSchema.index({ type: 1 });
 DeviceSchema.index({ isTrusted: 1 });
 
-export const DeviceModel = model('Device', DeviceSchema);
-
+export const DeviceModel = model<DeviceDocument>('Device', DeviceSchema);
