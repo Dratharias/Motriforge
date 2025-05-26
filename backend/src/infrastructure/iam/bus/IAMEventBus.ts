@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { DomainEvent, EventType } from '@/types/iam/interfaces';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export interface IEventHandler<TEvent extends DomainEvent> {
   handle(event: TEvent): Promise<void>;

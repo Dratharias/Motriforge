@@ -1,6 +1,6 @@
 import { Context } from 'hono';
 import { Types } from 'mongoose';
-import { SessionApplicationService } from '@/application/iam/SessionApplicationService';
+import { SessionApplicationService, SessionService } from '@/application/iam/SessionApplicationService';
 import { IAMCommandBus } from '@/infrastructure/iam/bus/IAMCommandBus';
 import { IAMQueryBus } from '@/infrastructure/iam/bus/IAMQueryBus';
 import { 
@@ -8,10 +8,11 @@ import {
   RefreshSessionCommand, 
   RevokeSessionCommand,
   GetActiveSessionsQuery,
-  AuthenticationMethod 
+  AuthenticationMethod, 
 } from '@/types/iam/interfaces';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 import { randomUUID } from 'crypto';
+import { toObjectId } from '@/types/shared/common';
 
 export class SessionController {
   private readonly logger = LoggerFactory.getContextualLogger('SessionController');
@@ -24,8 +25,8 @@ export class SessionController {
 
   async createSession(c: Context) {
     const correlationId = c.req.header('x-correlation-id') ?? randomUUID();
-    const ipAddress = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown';
-    const userAgent = c.req.header('user-agent') || 'unknown';
+    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? 'unknown';
+    const userAgent = c.req.header('user-agent') ?? 'unknown';
     
     const requestLogger = this.logger
       .withCorrelationId(correlationId)
@@ -53,14 +54,14 @@ export class SessionController {
 
       const command: CreateSessionCommand = {
         correlationId,
-        identityId: new Types.ObjectId(identityId),
+        identityId: toObjectId(identityId),
         deviceFingerprint: this.extractDeviceFingerprint(c),
         ipAddress,
         userAgent,
-        authenticationMethod: authenticationMethod || AuthenticationMethod.PASSWORD
+        authenticationMethod: authenticationMethod ?? AuthenticationMethod.PASSWORD
       };
 
-      const result = await this.commandBus.createSession(command);
+      const result = await this.commandBus.createSession(command) as SessionService;
 
       requestLogger.info('Session created successfully', { 
         sessionId: result.session.sessionId.value 
@@ -251,7 +252,7 @@ export class SessionController {
         data: {
           sessionId: session.sessionId.value,
           identityId: session.identityId.toString(),
-          isActive: session.isActive(),
+          isActive: session,
           expiresAt: session.expiresAt,
           lastAccessedAt: session.lastAccessedAt,
           riskScore: session.riskScore

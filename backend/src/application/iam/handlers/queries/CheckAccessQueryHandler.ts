@@ -1,7 +1,7 @@
 import { CheckAccessQuery } from '@/types/iam/interfaces';
 import { AccessApplicationService } from '../../AccessApplicationService';
 import { IQueryHandler } from './GetIdentityQueryHandler';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export class CheckAccessQueryHandler implements IQueryHandler<CheckAccessQuery, boolean> {
   private readonly logger = LoggerFactory.getContextualLogger('CheckAccessQueryHandler');

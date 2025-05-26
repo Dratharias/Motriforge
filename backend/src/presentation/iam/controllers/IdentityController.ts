@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 import { IdentityApplicationService } from '@/application/iam/IdentityApplicationService';
 import { IAMCommandBus } from '@/infrastructure/iam/bus/IAMCommandBus';
 import { IAMQueryBus } from '@/infrastructure/iam/bus/IAMQueryBus';
-import { CreateIdentityCommand, UpdateIdentityCommand, GetIdentityQuery } from '@/types/iam/interfaces';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { CreateIdentityCommand, UpdateIdentityCommand, GetIdentityQuery, Identity } from '@/types/iam/interfaces';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 import { randomUUID } from 'crypto';
 
 export class IdentityController {
@@ -20,8 +20,8 @@ export class IdentityController {
     const correlationId = c.req.header('x-correlation-id') ?? randomUUID();
     const requestLogger = this.logger
       .withCorrelationId(correlationId)
-      .withRequestId(c.req.header('x-request-id'))
-      .withIpAddress(c.req.header('x-forwarded-for') || 'unknown');
+      .withRequestId(c.req.header('x-request-id') ?? '')
+      .withIpAddress(c.req.header('x-forwarded-for') ?? 'unknown');
 
     try {
       requestLogger.info('Identity creation request received');
@@ -44,11 +44,11 @@ export class IdentityController {
         username,
         email,
         password,
-        attributes: attributes || {}
+        attributes: attributes ?? {}
       };
 
       // Execute via command bus
-      const identity = await this.commandBus.createIdentity(command);
+      const identity = await this.commandBus.createIdentity(command) as Identity;
 
       requestLogger.info('Identity created successfully', { 
         identityId: identity.id.toString() 

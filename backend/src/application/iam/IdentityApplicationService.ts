@@ -3,15 +3,14 @@ import { IIdentityRepository } from '@/domain/iam/ports/IIdentityRepository';
 import { IPasswordHasher } from '@/domain/iam/ports/IPasswordHasher';
 import { IdentityManagementService } from '@/domain/iam/services/IdentityManagementService';
 import { IAuditLogger } from '@/domain/iam/ports/IAuditLogger';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 import {
   CreateIdentityCommand,
   UpdateIdentityCommand,
   GetIdentityQuery,
-  IdentityProfileReadModel,
-  Identity,
-  IdentityStatus
+  IdentityProfileReadModel
 } from '@/types/iam/interfaces';
+import { Identity } from '@/domain/iam/entities/Identity';
 
 export class IdentityApplicationService {
   private readonly logger = LoggerFactory.getContextualLogger('IdentityApplicationService');
@@ -48,7 +47,7 @@ export class IdentityApplicationService {
       );
 
       // Audit successful creation
-      await this.auditLogger.auditSuccess('identity_created', identity.id.toString());
+      await this.auditLogger.auditSuccess('identity_created', identity.id);
       
       contextLogger.info('Identity created successfully', { 
         identityId: identity.id.toString() 
@@ -113,7 +112,7 @@ export class IdentityApplicationService {
 
       await this.auditLogger.auditDataChange(
         'identity',
-        command.identityId.toString(),
+        command.identityId,
         {
           oldEmail: existingIdentity.email,
           newEmail: command.email,
@@ -178,7 +177,7 @@ export class IdentityApplicationService {
 
       await this.identityManagementService.verifyEmail(identityId);
 
-      await this.auditLogger.auditSuccess('email_verified', identityId.toString());
+      await this.auditLogger.auditSuccess('email_verified', identityId);
       contextLogger.info('Email verified successfully');
 
     } catch (error) {
@@ -198,7 +197,7 @@ export class IdentityApplicationService {
 
       await this.identityManagementService.enableMFA(identityId);
 
-      await this.auditLogger.auditSuccess('mfa_enabled', identityId.toString());
+      await this.auditLogger.auditSuccess('mfa_enabled', identityId);
       contextLogger.info('MFA enabled successfully');
 
     } catch (error) {

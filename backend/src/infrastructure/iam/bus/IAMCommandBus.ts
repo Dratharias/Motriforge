@@ -1,6 +1,6 @@
 import { ICommandHandler } from '@/application/iam/handlers/commands/CreateIdentityCommandHandler';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 import { CreateIdentityCommand, AssignRoleCommand, CreateSessionCommand } from '@/types/iam/interfaces';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export class IAMCommandBus {
   private readonly logger = LoggerFactory.getContextualLogger('IAMCommandBus');

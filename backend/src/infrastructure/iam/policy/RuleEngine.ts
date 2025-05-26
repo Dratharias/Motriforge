@@ -1,11 +1,10 @@
-import { Types } from 'mongoose';
 import { 
   PolicyCondition, 
   PolicyAttribute, 
   PolicyRequest 
 } from '@/types/iam/interfaces';
 import { PolicyInformationPoint } from './PolicyInformationPoint';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export class RuleEngine {
   private readonly logger = LoggerFactory.getContextualLogger('RuleEngine');
@@ -171,19 +170,25 @@ export class RuleEngine {
     // Otherwise, resolve the attribute from context
     switch (attribute.category) {
       case 'subject':
-        const subjectAttrs = await this.policyInformationPoint.getSubjectAttributes(request.subject);
-        return this.getNestedValue(subjectAttrs, attribute.attribute);
+        return this.getNestedValue(
+          await this.policyInformationPoint.getSubjectAttributes(request.subject),
+          attribute.attribute
+        );
 
       case 'resource':
-        const resourceAttrs = await this.policyInformationPoint.getResourceAttributes(request.resource);
-        return this.getNestedValue(resourceAttrs, attribute.attribute);
+        return this.getNestedValue(
+          await this.policyInformationPoint.getResourceAttributes(request.resource),
+          attribute.attribute
+        );
 
       case 'action':
         return request.action;
 
-      case 'environment':
-        const envAttrs = await this.policyInformationPoint.getEnvironmentAttributes();
-        const envValue = this.getNestedValue(envAttrs, attribute.attribute);
+      case 'environment':{
+        const envValue = this.getNestedValue(
+          await this.policyInformationPoint.getEnvironmentAttributes(),
+          attribute.attribute
+        );
         
         // Also check request environment
         if (envValue === undefined && request.environment) {
@@ -191,6 +196,7 @@ export class RuleEngine {
         }
         
         return envValue;
+      }
 
       default:
         this.logger.warn('Unknown attribute category', { 
@@ -202,7 +208,7 @@ export class RuleEngine {
 
   private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
     return path.split('.').reduce((current: any, key: string) => {
-      return current && current[key];
+      return current[key] ?? undefined;
     }, obj);
   }
 }

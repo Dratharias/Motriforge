@@ -4,7 +4,7 @@ import { IAccessControlRepository } from '../ports/IAccessControlRepository';
 import { IRoleRepository } from '../ports/IRoleRepository';
 import { IPermissionRepository } from '../ports/IPermissionRepository';
 import { IAuditLogger } from '../ports/IAuditLogger';
-import { Permission, Role, AccessLevel, EventType, RiskLevel } from '@/types/iam/interfaces';
+import { Permission, AccessLevel, EventType, RiskLevel } from '@/types/iam/interfaces';
 
 export class AccessControlService {
   constructor(
@@ -27,9 +27,7 @@ export class AccessControlService {
 
     // Get or create access control
     let accessControl = await this.accessControlRepository.findByIdentityId(identityId);
-    if (!accessControl) {
-      accessControl = AccessControl.create(identityId);
-    }
+    accessControl ??= AccessControl.create(identityId);
 
     // Assign role
     const updatedAccessControl = accessControl.assignRole(roleId);
@@ -81,9 +79,7 @@ export class AccessControlService {
     }
 
     let accessControl = await this.accessControlRepository.findByIdentityId(identityId);
-    if (!accessControl) {
-      accessControl = AccessControl.create(identityId);
-    }
+    accessControl ??= AccessControl.create(identityId);
 
     const updatedAccessControl = accessControl.grantPermission(permissionId);
     await this.accessControlRepository.save(updatedAccessControl);

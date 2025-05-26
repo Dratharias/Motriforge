@@ -1,30 +1,43 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload, Secret, SignOptions} from 'jsonwebtoken';
 import { ITokenGenerator } from '@/domain/iam/ports/ITokenGenerator';
 import { ITokenValidator } from '@/domain/iam/ports/ITokenValidator';
 import { randomBytes } from 'crypto';
+
+export type AccessTokenPayload = JwtPayload & {
+  sub: string;
+  role?: string;
+};
+
 
 export class JWTTokenAdapter implements ITokenGenerator, ITokenValidator {
   private readonly revokedTokens = new Set<string>(); // In production, use Redis
 
   constructor(
-    private readonly accessTokenSecret: string,
-    private readonly refreshTokenSecret: string,
+    private readonly accessTokenSecret: Secret,
+    private readonly refreshTokenSecret: Secret,
     private readonly issuer: string = 'iam-service'
   ) {}
 
-  async generateAccessToken(payload: Record<string, unknown>, expiresIn: string): Promise<string> {
-    const tokenPayload = {
+  async generateAccessToken(
+    payload: AccessTokenPayload,
+    expiresIn: SignOptions['expiresIn']
+  ): Promise<string> {
+    const tokenPayload: jwt.JwtPayload = {
       ...payload,
       iss: this.issuer,
       iat: Math.floor(Date.now() / 1000),
-      jti: randomBytes(16).toString('hex') // Unique token ID
+      jti: randomBytes(16).toString('hex')
     };
 
-    return jwt.sign(tokenPayload, this.accessTokenSecret, {
-      expiresIn,
-      algorithm: 'HS256'
-    });
+    const options: jwt.SignOptions = {
+      expiresIn, 
+      algorithm: 'HS256',
+      issuer: this.issuer
+    };
+
+    return jwt.sign(tokenPayload, this.accessTokenSecret, options);
   }
+
 
   async generateRefreshToken(sessionId: string): Promise<string> {
     const payload = {

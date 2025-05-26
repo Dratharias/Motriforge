@@ -3,7 +3,7 @@
 ## 🚀 Quick Start
 
 ```typescript
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 // Initialize once in your application
 LoggerFactory.initialize({

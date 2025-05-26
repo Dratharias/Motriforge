@@ -5,13 +5,12 @@ import { IAMCommandBus } from '@/infrastructure/iam/bus/IAMCommandBus';
 import { IAMQueryBus } from '@/infrastructure/iam/bus/IAMQueryBus';
 import { 
   AssignRoleCommand, 
-  GrantPermissionCommand, 
-  ValidateAccessCommand,
+  GrantPermissionCommand,
   CheckAccessQuery,
   GetPermissionsQuery,
   GetRolesQuery 
 } from '@/types/iam/interfaces';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 import { randomUUID } from 'crypto';
 
 export class AccessController {

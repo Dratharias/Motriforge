@@ -4,7 +4,7 @@ import { IRoleRepository } from '@/domain/iam/ports/IRoleRepository';
 import { IPermissionRepository } from '@/domain/iam/ports/IPermissionRepository';
 import { AccessControlService } from '@/domain/iam/services/AccessControlService';
 import { IAuditLogger } from '@/domain/iam/ports/IAuditLogger';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 import {
   AssignRoleCommand,
   GrantPermissionCommand,
@@ -48,7 +48,7 @@ export class AccessApplicationService {
         new Types.ObjectId() // Should come from current user context
       );
 
-      await this.auditLogger.auditSuccess('role_assigned', command.identityId.toString());
+      await this.auditLogger.auditSuccess('role_assigned', command.identityId);
       contextLogger.info('Role assigned successfully');
 
     } catch (error) {
@@ -75,7 +75,7 @@ export class AccessApplicationService {
         new Types.ObjectId() // Should come from current user context
       );
 
-      await this.auditLogger.auditSuccess('permission_granted', command.identityId.toString());
+      await this.auditLogger.auditSuccess('permission_granted', command.identityId);
       contextLogger.info('Permission granted successfully');
 
     } catch (error) {
@@ -105,7 +105,7 @@ export class AccessApplicationService {
 
       await this.auditLogger.auditSecurityEvent(
         hasAccess ? 'access_granted' : 'access_denied',
-        command.subject,
+        command.subject.toString(),
         {
           resource: command.resource,
           action: command.action,

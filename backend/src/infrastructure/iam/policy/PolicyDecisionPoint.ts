@@ -39,7 +39,7 @@ export class PolicyDecisionPoint {
       }
 
       // Sort policies by priority (higher priority first)
-      const sortedPolicies = applicablePolicies.sort((a, b) => b.priority - a.priority);
+      const sortedPolicies = applicablePolicies.toSorted((a, b) => b.priority - a.priority);
 
       // Evaluate policies in order
       for (const policy of sortedPolicies) {

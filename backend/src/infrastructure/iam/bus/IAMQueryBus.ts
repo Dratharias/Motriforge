@@ -1,6 +1,6 @@
 import { IQueryHandler } from '@/application/iam/handlers/queries/GetIdentityQueryHandler';
 import { GetIdentityQuery, CheckAccessQuery } from '@/types/iam/interfaces';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export class IAMQueryBus {
   private readonly logger = LoggerFactory.getContextualLogger('IAMQueryBus');

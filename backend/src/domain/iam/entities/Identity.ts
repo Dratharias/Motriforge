@@ -1,7 +1,6 @@
 import { Types } from 'mongoose';
-import { Identity as IIdentity, IdentityStatus, AuthenticationMethod } from '@/types/iam/interfaces';
+import { Identity as IIdentity, IdentityStatus } from '@/types/iam/interfaces';
 import { Username } from '../value-objects/Username';
-import { IdentityId } from '../value-objects/IdentityId';
 
 export class Identity implements IIdentity {
   constructor(
@@ -47,8 +46,8 @@ export class Identity implements IIdentity {
   }
 
   isLocked(): boolean {
-    return this.status === IdentityStatus.LOCKED || 
-           (this.lockedUntil && this.lockedUntil > new Date());
+    return Boolean(this.status === IdentityStatus.LOCKED || 
+           (this.lockedUntil && this.lockedUntil > new Date()));
   }
 
   canAuthenticate(): boolean {

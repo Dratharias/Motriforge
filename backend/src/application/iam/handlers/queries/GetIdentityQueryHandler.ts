@@ -1,6 +1,6 @@
 import { GetIdentityQuery, IdentityProfileReadModel } from '@/types/iam/interfaces';
 import { IdentityApplicationService } from '../../IdentityApplicationService';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export interface IQueryHandler<TQuery, TResult> {
   handle(query: TQuery): Promise<TResult>;

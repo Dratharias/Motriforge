@@ -1,7 +1,7 @@
 import { CreateSessionCommand, Session } from '@/types/iam/interfaces';
 import { SessionApplicationService } from '../../SessionApplicationService';
 import { ICommandHandler } from './CreateIdentityCommandHandler';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export class CreateSessionCommandHandler implements ICommandHandler<CreateSessionCommand, {
   session: Session;

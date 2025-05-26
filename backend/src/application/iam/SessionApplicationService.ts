@@ -1,10 +1,9 @@
-import { Types } from 'mongoose';
 import { ISessionRepository } from '@/domain/iam/ports/ISessionRepository';
 import { ITokenGenerator } from '@/domain/iam/ports/ITokenGenerator';
 import { ITokenValidator } from '@/domain/iam/ports/ITokenValidator';
 import { SessionManagementService } from '@/domain/iam/services/SessionManagementService';
 import { IAuditLogger } from '@/domain/iam/ports/IAuditLogger';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 import {
   CreateSessionCommand,
   RefreshSessionCommand,
@@ -12,9 +11,14 @@ import {
   GetActiveSessionsQuery,
   Session,
   ActiveSessionsReadModel,
-  SessionItem,
-  AuthenticationMethod
+  SessionItem
 } from '@/types/iam/interfaces';
+
+export interface SessionService {
+    session: Session;
+    accessToken: string;
+    refreshToken: string;
+  }
 
 export class SessionApplicationService {
   private readonly logger = LoggerFactory.getContextualLogger('SessionApplicationService');
@@ -28,11 +32,7 @@ export class SessionApplicationService {
     private readonly domainAuditLogger: IAuditLogger
   ) {}
 
-  async createSession(command: CreateSessionCommand): Promise<{
-    session: Session;
-    accessToken: string;
-    refreshToken: string;
-  }> {
+  async createSession(command: CreateSessionCommand): Promise<SessionService> {
     const contextLogger = this.logger
       .withCorrelationId(command.correlationId)
       .withData({ 
@@ -74,7 +74,7 @@ export class SessionApplicationService {
         session.sessionId.value
       );
 
-      await this.auditLogger.auditSuccess('session_created', command.identityId.toString());
+      await this.auditLogger.auditSuccess('session_created', command.identityId);
       contextLogger.info('Session created successfully', { 
         sessionId: session.sessionId.value 
       });
@@ -114,7 +114,7 @@ export class SessionApplicationService {
 
       // Find and validate session
       const session = await this.sessionRepository.findBySessionId(tokenValidation.sessionId);
-      if (!session || !session.isActive()) {
+      if (!session?.isActive()) {
         throw new Error('Session not found or inactive');
       }
 
@@ -135,7 +135,7 @@ export class SessionApplicationService {
       // Revoke old refresh token
       await this.tokenValidator.revokeToken(command.refreshToken);
 
-      await this.auditLogger.auditSuccess('session_refreshed', session.identityId.toString());
+      await this.auditLogger.auditSuccess('session_refreshed', session.identityId);
       contextLogger.info('Session refreshed successfully', { 
         sessionId: session.sessionId.value 
       });
@@ -167,7 +167,7 @@ export class SessionApplicationService {
 
       const session = await this.sessionRepository.findBySessionId(command.sessionId);
       if (session) {
-        await this.auditLogger.auditSuccess('session_revoked', session.identityId.toString());
+        await this.auditLogger.auditSuccess('session_revoked', session.identityId);
       }
 
       contextLogger.info('Session revoked successfully');

@@ -1,7 +1,7 @@
 import { Context, Next } from 'hono';
 import { ITokenValidator } from '@/domain/iam/ports/ITokenValidator';
 import { SessionApplicationService } from '@/application/iam/SessionApplicationService';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export class AuthenticationMiddleware {
   private readonly logger = LoggerFactory.getContextualLogger('AuthenticationMiddleware');
@@ -25,7 +25,7 @@ export class AuthenticationMiddleware {
       }
 
       const authHeader = c.req.header('Authorization');
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      if (!authHeader?.startsWith('Bearer ')) {
         requestLogger.debug('Missing or invalid authorization header');
         return c.json({
           error: 'Missing or invalid authorization header',

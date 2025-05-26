@@ -73,7 +73,10 @@ export interface IContextualLogger extends ILogger {
   withSessionId(sessionId: string): IContextualLogger;
   withRequestId(requestId: string): IContextualLogger;
   withApplicationContext(context: ApplicationContext): IContextualLogger;
+  withData(data: Record<string, any>): IContextualLogger;
+  withIpAddress(ipAddress: string): IContextualLogger;
   getContext(): LogContext;
+  getData(): Record<string, any>;
 }
 
 /**

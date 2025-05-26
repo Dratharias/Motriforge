@@ -5,8 +5,8 @@ export class AccessControl implements IAccessControl {
   constructor(
     public readonly id: Types.ObjectId,
     public readonly identityId: Types.ObjectId,
-    public readonly roles: readonly Types.ObjectId[],
-    public readonly permissions: readonly Types.ObjectId[],
+    public readonly roles: Types.ObjectId[],
+    public readonly permissions: Types.ObjectId[],
     public readonly accessLevel: AccessLevel,
     public readonly effectiveFrom: Date,
     public readonly effectiveUntil: Date | undefined,

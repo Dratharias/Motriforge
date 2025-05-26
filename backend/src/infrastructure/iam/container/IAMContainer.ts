@@ -195,7 +195,7 @@ export class IAMContainer {
     this.accessApplicationService = new AccessApplicationService(
       this.accessControlRepository,
       new (class {
-        constructor(private model: any) {}
+        constructor(private readonly model: any) {}
         async findById(id: any) { 
           const doc = await this.model.findById(id);
           return doc ? { id: doc._id, name: { value: doc.name.value }, ...doc.toObject() } : null;
@@ -206,14 +206,14 @@ export class IAMContainer {
         }
       })(RoleModel),
       new (class {
-        constructor(private model: any) {}
+        constructor(private readonly model: any) {}
         async findById(id: any) {
           const doc = await this.model.findById(id);
           return doc ? { id: doc._id, name: { value: doc.name.value }, ...doc.toObject() } : null;
         }
         async findByIds(ids: any[]) {
           const docs = await this.model.find({ _id: { $in: ids } });
-          return docs.map(doc => ({ id: doc._id, name: { value: doc.name.value }, ...doc.toObject() }));
+          return docs.map((doc: { _id: any; name: { value: any; }; toObject: () => any; }) => ({ id: doc._id, name: { value: doc.name.value }, ...doc.toObject() }));
         }
       })(PermissionModel),
       this.accessControlService,
@@ -260,7 +260,7 @@ export class IAMContainer {
     );
   }
 
-  private setupCQRSHandlers(): void {
+  private async setupCQRSHandlers(): Promise<void> {
     // Register Command Handlers
     this.commandBus.registerHandler(
       'CreateIdentityCommand',
@@ -290,17 +290,17 @@ export class IAMContainer {
 
     // Register Event Handlers
     this.eventBus.registerHandler(
-      import('@/types/iam/enums').then(m => m.EventType.IDENTITY_CREATED),
+      await import('@/types/iam/enums').then(m => m.EventType.IDENTITY_CREATED),
       new IdentityCreatedEventHandler()
     );
 
     this.eventBus.registerHandler(
-      import('@/types/iam/enums').then(m => m.EventType.SESSION_CREATED),
+      await import('@/types/iam/enums').then(m => m.EventType.SESSION_CREATED),
       new SessionCreatedEventHandler()
     );
 
     this.eventBus.registerHandler(
-      import('@/types/iam/enums').then(m => m.EventType.ACCESS_DENIED),
+      await import('@/types/iam/enums').then(m => m.EventType.ACCESS_DENIED),
       new AccessDeniedEventHandler()
     );
   }

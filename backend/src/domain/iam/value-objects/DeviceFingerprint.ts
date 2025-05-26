@@ -13,7 +13,7 @@ export class DeviceFingerprint implements IDeviceFingerprint {
 
   static fromComponents(components: Record<string, string>): DeviceFingerprint {
     const sortedComponents = Object.keys(components)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .reduce((result, key) => {
         result[key] = components[key];
         return result;

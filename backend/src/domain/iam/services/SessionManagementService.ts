@@ -5,7 +5,7 @@ import { IDeviceRepository } from '../ports/IDeviceRepository';
 import { IRiskAssessmentService } from '../ports/IRiskAssessmentService';
 import { IAuditLogger } from '../ports/IAuditLogger';
 import { DeviceFingerprint } from '../value-objects/DeviceFingerprint';
-import { Device, AuthenticationMethod, DeviceType, EventType, RiskLevel } from '@/types/iam/interfaces';
+import { AuthenticationMethod, DeviceType, EventType, RiskLevel } from '@/types/iam/interfaces';
 
 export class SessionManagementService {
   constructor(
@@ -116,7 +116,7 @@ export class SessionManagementService {
   async validateSession(sessionId: string): Promise<Session | null> {
     const session = await this.sessionRepository.findBySessionId(sessionId);
     
-    if (!session || !session.isActive()) {
+    if (!session?.isActive()) {
       return null;
     }
 

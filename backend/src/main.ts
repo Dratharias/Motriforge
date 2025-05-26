@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { IAMModule } from '@/infrastructure/iam/IAMModule';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 import { serve } from '@hono/node-server';
 import mongoose from 'mongoose';
 

@@ -154,7 +154,7 @@ export class RiskAssessmentAdapter implements IRiskAssessmentService {
   private isPrivateIP(ipAddress: string): boolean {
     const privateRanges = [
       /^10\./,
-      /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+      /^172\.(1[6-9]|2\d|3[0-1])\./,
       /^192\.168\./,
       /^127\./
     ];
@@ -211,7 +211,7 @@ export class RiskAssessmentAdapter implements IRiskAssessmentService {
     
     activities.forEach(activity => {
       const action = activity.action as string;
-      actionCounts.set(action, (actionCounts.get(action) || 0) + 1);
+      actionCounts.set(action, (actionCounts.get(action) ?? 0) + 1);
     });
     
     const maxCount = Math.max(...Array.from(actionCounts.values()));

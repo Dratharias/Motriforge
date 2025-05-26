@@ -9,6 +9,7 @@ import {
   PolicyDecision,
   EventType 
 } from './enums';
+import { Secret } from 'jsonwebtoken';
 
 // ===== VALUE OBJECTS =====
 export interface IdentityId {
@@ -413,3 +414,5 @@ export interface SecurityAlert {
   readonly message: string;
   readonly timestamp: Date;
 }
+
+export { RiskLevel, EventType, PolicyDecision, SessionStatus, AuthenticationMethod, IdentityStatus, AccessLevel, DeviceType };

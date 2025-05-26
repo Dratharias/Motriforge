@@ -1,7 +1,7 @@
 import { AssignRoleCommand } from '@/types/iam/interfaces';
 import { AccessApplicationService } from '../../AccessApplicationService';
 import { ICommandHandler } from './CreateIdentityCommandHandler';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export class AssignRoleCommandHandler implements ICommandHandler<AssignRoleCommand, void> {
   private readonly logger = LoggerFactory.getContextualLogger('AssignRoleCommandHandler');

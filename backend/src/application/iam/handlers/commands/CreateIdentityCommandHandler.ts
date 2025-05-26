@@ -1,7 +1,6 @@
-import { Types } from 'mongoose';
 import { IdentityApplicationService } from '../../IdentityApplicationService';
 import { CreateIdentityCommand, Identity } from '@/types/iam/interfaces';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 export interface ICommandHandler<TCommand, TResult> {
   handle(command: TCommand): Promise<TResult>;

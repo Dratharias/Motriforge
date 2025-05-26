@@ -4,7 +4,7 @@ import {
   Policy, 
   PolicyTarget 
 } from '@/types/iam/interfaces';
-import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/LoggerFactory';
+import { LoggerFactory } from '@/shared-kernel/infrastructure/logging/factory/LoggerFactory';
 
 interface PolicyDocument {
   _id: Types.ObjectId;
@@ -45,7 +45,7 @@ export class PolicyInformationPoint {
 
       // Add resource matching
       if (request.resource) {
-        query.$and = query.$and || [];
+        query.$and = query.$and ?? [];
         query.$and.push({
           $or: [
             { 'target.resources': { $in: [request.resource, '*'] } },
@@ -58,7 +58,7 @@ export class PolicyInformationPoint {
 
       // Add action matching
       if (request.action) {
-        query.$and = query.$and || [];
+        query.$and = query.$and ?? [];
         query.$and.push({
           $or: [
             { 'target.actions': { $in: [request.action, '*'] } },
