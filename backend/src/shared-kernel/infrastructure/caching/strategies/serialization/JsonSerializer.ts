@@ -1,11 +1,8 @@
 
-import { CacheSerializationFormat } from '@/types/shared/infrastructure/caching';
-import { ICacheSerializer } from '../interfaces/ICache';
-
 /**
- * JSON cache serializer - single responsibility for JSON serialization
+ * JSON serializer - simple JSON serialization
  */
-export class JsonCacheSerializer implements ICacheSerializer {
+export class JsonSerializer implements ICacheSerializer {
   public readonly format = CacheSerializationFormat.JSON;
 
   serialize<T>(data: T): string {

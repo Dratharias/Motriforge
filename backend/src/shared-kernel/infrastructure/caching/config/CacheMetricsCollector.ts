@@ -3,7 +3,7 @@ import { CacheStatistics, CacheKeyStats } from '@/types/shared/infrastructure/ca
 import { ICacheMetricsCollector } from '../interfaces/ICache';
 
 /**
- * Cache metrics collector - single responsibility for metrics collection
+ * Cache metrics collector implementation
  */
 export class CacheMetricsCollector implements ICacheMetricsCollector {
   private stats: CacheStatistics = {
@@ -26,12 +26,8 @@ export class CacheMetricsCollector implements ICacheMetricsCollector {
     topKeys: []
   };
 
-  private readonly keyStats: Map<string, CacheKeyStats> = new Map();
-  private operationTimes: {
-    gets: number[];
-    sets: number[];
-    deletes: number[];
-  } = { gets: [], sets: [], deletes: [] };
+  private readonly keyStats = new Map<string, CacheKeyStats>();
+  private operationTimes: { gets: number[]; sets: number[]; deletes: number[] } = { gets: [], sets: [], deletes: [] };
 
   recordHit(key: string, operationTime: number): void {
     this.stats.totalHits++;
@@ -69,7 +65,6 @@ export class CacheMetricsCollector implements ICacheMetricsCollector {
   }
 
   recordError(operation: string, error: Error): void {
-    // Log error for monitoring
     console.error(`Cache operation '${operation}' failed:`, error);
   }
 
@@ -105,12 +100,10 @@ export class CacheMetricsCollector implements ICacheMetricsCollector {
   private recordOperationTime(operation: 'gets' | 'sets' | 'deletes', time: number): void {
     this.operationTimes[operation].push(time);
     
-    // Keep only last 1000 operation times
     if (this.operationTimes[operation].length > 1000) {
       this.operationTimes[operation].shift();
     }
 
-    // Update average
     const times = this.operationTimes[operation];
     const average = times.reduce((sum, t) => sum + t, 0) / times.length;
     

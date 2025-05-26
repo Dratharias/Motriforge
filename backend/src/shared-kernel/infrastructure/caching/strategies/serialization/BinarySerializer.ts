@@ -1,10 +1,8 @@
-import { CacheSerializationFormat } from "@/types/shared/infrastructure/caching";
-import { ICacheSerializer } from "../interfaces/ICache";
 
 /**
- * Binary cache serializer - single responsibility for binary serialization
+ * Binary serializer - converts to Buffer for storage
  */
-export class BinaryCacheSerializer implements ICacheSerializer {
+export class BinarySerializer implements ICacheSerializer {
   public readonly format = CacheSerializationFormat.BINARY;
 
   serialize<T>(data: T): Buffer {
