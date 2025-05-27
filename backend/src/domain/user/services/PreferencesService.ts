@@ -1,0 +1,162 @@
+import { Types } from 'mongoose';
+import { UserPreferences } from '../entities/UserPreferences.js';
+import { 
+  IUserPreferencesRepository, 
+  IReminderSettings, 
+  IPrivacySettings, 
+  IAccessibilitySettings 
+} from '../interfaces/UserInterfaces.js';
+import { MeasurementUnit } from '../../../types/fitness/enums/progress.js';
+import { WorkoutType } from '../../../types/fitness/enums/workout.js';
+
+/**
+ * Service for managing user preferences
+ */
+export class PreferencesService {
+  constructor(
+    private readonly preferencesRepository: IUserPreferencesRepository
+  ) {}
+
+  /**
+   * Create default preferences for a new user
+   */
+  async createDefaultPreferences(
+    userId: Types.ObjectId, 
+    createdBy: Types.ObjectId
+  ): Promise<UserPreferences> {
+    const now = new Date();
+    const preferencesId = new Types.ObjectId();
+
+    const preferences = new UserPreferences({
+      id: preferencesId,
+      userId,
+      createdAt: now,
+      updatedAt: now,
+      createdBy,
+      isActive: true,
+    });
+
+    return await this.preferencesRepository.create(preferences);
+  }
+
+  /**
+   * Get preferences by user ID
+   */
+  async getPreferencesByUserId(userId: Types.ObjectId): Promise<UserPreferences | null> {
+    return await this.preferencesRepository.findByUserId(userId);
+  }
+
+  /**
+   * Update user preferences
+   */
+  async updatePreferences(
+    preferencesId: Types.ObjectId,
+    updates: {
+      preferredUnits?: MeasurementUnit;
+      defaultWorkoutType?: WorkoutType;
+      reminderSettings?: Partial<IReminderSettings>;
+      privacySettings?: Partial<IPrivacySettings>;
+      accessibilitySettings?: Partial<IAccessibilitySettings>;
+    }
+  ): Promise<UserPreferences | null> {
+    return await this.preferencesRepository.update(preferencesId, updates);
+  }
+
+  /**
+   * Update reminder settings
+   */
+  async updateReminderSettings(
+    preferencesId: Types.ObjectId,
+    reminderSettings: Partial<IReminderSettings>
+  ): Promise<UserPreferences | null> {
+    return await this.updatePreferences(preferencesId, { reminderSettings });
+  }
+
+  /**
+   * Update privacy settings
+   */
+  async updatePrivacySettings(
+    preferencesId: Types.ObjectId,
+    privacySettings: Partial<IPrivacySettings>
+  ): Promise<UserPreferences | null> {
+    return await this.updatePreferences(preferencesId, { privacySettings });
+  }
+
+  /**
+   * Update accessibility settings
+   */
+  async updateAccessibilitySettings(
+    preferencesId: Types.ObjectId,
+    accessibilitySettings: Partial<IAccessibilitySettings>
+  ): Promise<UserPreferences | null> {
+    return await this.updatePreferences(preferencesId, { accessibilitySettings });
+  }
+
+  /**
+   * Get users with reminders enabled
+   */
+  async getUsersWithRemindersEnabled(): Promise<readonly UserPreferences[]> {
+    return await this.preferencesRepository.findWithRemindersEnabled();
+  }
+
+  /**
+   * Get users with specific measurement units
+   */
+  async getUsersByPreferredUnits(unit: MeasurementUnit): Promise<readonly UserPreferences[]> {
+    return await this.preferencesRepository.findByPreferredUnits(unit);
+  }
+
+  /**
+   * Get notification summary for user
+   */
+  async getNotificationSummary(userId: Types.ObjectId): Promise<{
+    hasReminders: boolean;
+    channels: string[];
+    frequency: string;
+  } | null> {
+    const preferences = await this.preferencesRepository.findByUserId(userId);
+    return preferences?.getNotificationSummary() ?? null;
+  }
+
+  /**
+   * Check if user allows data sharing
+   */
+  async userAllowsDataSharing(userId: Types.ObjectId): Promise<boolean> {
+    const preferences = await this.preferencesRepository.findByUserId(userId);
+    return preferences?.allowsDataSharing() ?? false;
+  }
+
+  /**
+   * Check if user has accessibility needs
+   */
+  async userHasAccessibilityNeeds(userId: Types.ObjectId): Promise<boolean> {
+    const preferences = await this.preferencesRepository.findByUserId(userId);
+    return preferences?.hasAccessibilityNeeds() ?? false;
+  }
+
+  /**
+   * Get users who need accessibility features
+   */
+  async getUsersWithAccessibilityNeeds(): Promise<readonly UserPreferences[]> {
+    const allPreferences = await this.preferencesRepository.findWithRemindersEnabled(); // Placeholder
+    return allPreferences.filter(p => p.hasAccessibilityNeeds());
+  }
+
+  /**
+   * Export user preferences (for data portability)
+   */
+  async exportUserPreferences(userId: Types.ObjectId): Promise<Record<string, unknown> | null> {
+    const preferences = await this.preferencesRepository.findByUserId(userId);
+    
+    if (!preferences) return null;
+
+    return {
+      preferredUnits: preferences.preferredUnits,
+      defaultWorkoutType: preferences.defaultWorkoutType,
+      reminderSettings: preferences.reminderSettings,
+      privacySettings: preferences.privacySettings,
+      accessibilitySettings: preferences.accessibilitySettings,
+      exportedAt: new Date().toISOString()
+    };
+  }
+}

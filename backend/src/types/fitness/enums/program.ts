@@ -1,0 +1,42 @@
+/**
+ * Types of fitness programs
+ */
+export enum ProgramType {
+  REHABILITATION = 'REHABILITATION',
+  FITNESS = 'FITNESS',
+  STRENGTH = 'STRENGTH',
+  WEIGHT_LOSS = 'WEIGHT_LOSS',
+  MUSCLE_GAIN = 'MUSCLE_GAIN',
+  ENDURANCE = 'ENDURANCE',
+  SPORT_SPECIFIC = 'SPORT_SPECIFIC',
+  MAINTENANCE = 'MAINTENANCE',
+  INJURY_PREVENTION = 'INJURY_PREVENTION'
+}
+
+/**
+ * Program status with lifecycle management
+ */
+export enum ProgramStatus {
+  DRAFT = 'DRAFT',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  PAUSED = 'PAUSED',
+  CANCELLED = 'CANCELLED',
+  ARCHIVED = 'ARCHIVED',
+  PUBLISHED = 'PUBLISHED',
+  TEMPLATE = 'TEMPLATE',
+  UNDER_REVIEW = 'UNDER_REVIEW'
+}
+
+/**
+ * Phases of program progression
+ */
+export enum ProgramPhase {
+  FOUNDATION = 'FOUNDATION',
+  BUILDING = 'BUILDING',
+  INTENSIFICATION = 'INTENSIFICATION',
+  PEAK = 'PEAK',
+  RECOVERY = 'RECOVERY',
+  MAINTENANCE = 'MAINTENANCE'
+}
+
