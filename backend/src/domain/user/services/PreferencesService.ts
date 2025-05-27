@@ -46,31 +46,58 @@ export class PreferencesService {
     return await this.preferencesRepository.findByUserId(userId);
   }
 
-  /**
-   * Update user preferences
-   */
-  async updatePreferences(
-    preferencesId: Types.ObjectId,
-    updates: {
-      preferredUnits?: MeasurementUnit;
-      defaultWorkoutType?: WorkoutType;
-      reminderSettings?: Partial<IReminderSettings>;
-      privacySettings?: Partial<IPrivacySettings>;
-      accessibilitySettings?: Partial<IAccessibilitySettings>;
-    }
-  ): Promise<UserPreferences | null> {
-    return await this.preferencesRepository.update(preferencesId, updates);
+
+/**
+ * Update user preferences
+ */
+async updatePreferences(
+  preferencesId: Types.ObjectId,
+  updates: {
+    preferredUnits?: MeasurementUnit;
+    defaultWorkoutType?: WorkoutType;
+    reminderSettings?: Partial<IReminderSettings>;
+    privacySettings?: Partial<IPrivacySettings>;
+    accessibilitySettings?: Partial<IAccessibilitySettings>;
+  }
+): Promise<UserPreferences | null> {
+  // Get current preferences to merge partial updates
+  const currentPreferences = await this.preferencesRepository.findById(preferencesId);
+  if (!currentPreferences) return null;
+
+  // Build the update object with merged nested objects
+  const updateData: Partial<UserPreferences> = {};
+  
+  if (updates.preferredUnits !== undefined) {
+    updateData.preferredUnits = updates.preferredUnits;
+  }
+  
+  if (updates.defaultWorkoutType !== undefined) {
+    updateData.defaultWorkoutType = updates.defaultWorkoutType;
+  }
+  
+  if (updates.reminderSettings) {
+    updateData.reminderSettings = {
+      ...currentPreferences.reminderSettings,
+      ...updates.reminderSettings
+    };
+  }
+  
+  if (updates.privacySettings) {
+    updateData.privacySettings = {
+      ...currentPreferences.privacySettings,
+      ...updates.privacySettings
+    };
+  }
+  
+  if (updates.accessibilitySettings) {
+    updateData.accessibilitySettings = {
+      ...currentPreferences.accessibilitySettings,
+      ...updates.accessibilitySettings
+    };
   }
 
-  /**
-   * Update reminder settings
-   */
-  async updateReminderSettings(
-    preferencesId: Types.ObjectId,
-    reminderSettings: Partial<IReminderSettings>
-  ): Promise<UserPreferences | null> {
-    return await this.updatePreferences(preferencesId, { reminderSettings });
-  }
+  return await this.preferencesRepository.update(preferencesId, updateData);
+}
 
   /**
    * Update privacy settings
