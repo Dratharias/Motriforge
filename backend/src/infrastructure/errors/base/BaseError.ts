@@ -1,5 +1,5 @@
-import { IError, IErrorWrapper } from '../../../types/core/interfaces.js';
-import { ErrorType, Severity } from '../../../types/core/enums.js';
+import { IError, IErrorWrapper } from '../../../types/core/interfaces';
+import { ErrorType, Severity } from '../../../types/core/enums';
 
 /**
  * Base error class that all application errors extend

@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
-import { IUser } from './interfaces.js';
-import { Action } from './enums.js';
+import { IUser } from './interfaces';
+import { Action } from './enums';
 
 /**
  * Severity levels for validation issues
@@ -71,8 +71,8 @@ export interface ICloneable<T> {
  */
 export interface IDraftPreview {
   readonly completionPercentage: number;
-  readonly missingRequiredFields: readonly string[];
-  readonly optionalFieldsCompleted: readonly string[];
+  readonly missingRequiredFields: string[];
+  readonly optionalFieldsCompleted: string[];
   readonly estimatedTimeToComplete: number;
   readonly lastModified: Date;
 }

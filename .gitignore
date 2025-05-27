@@ -6,3 +6,4 @@ public/uploads
 *.zip
 *_old*
 /generated
+/flatten

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { ValidationError } from '../types/ValidationError.js';
-import { Severity } from '../../../types/core/enums.js';
+import { ValidationError } from '../types/ValidationError';
+import { Severity } from '../../../types/core/enums';
 
 describe('ValidationError', () => {
   it('should create validation error with field details', () => {

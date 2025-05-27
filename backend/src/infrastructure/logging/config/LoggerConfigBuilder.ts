@@ -4,8 +4,8 @@ import {
   FileLoggerConfiguration,
   DatabaseLoggerConfiguration,
   CompositeLoggerConfiguration 
-} from './LoggingConfig.js';
-import { LogLevel } from '../base/Logger.js';
+} from './LoggingConfig';
+import { LogLevel } from '../base/Logger';
 
 /**
  * Builder for creating logging configurations

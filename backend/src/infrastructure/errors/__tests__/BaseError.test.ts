@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { BaseError } from '../base/BaseError.js';
-import { Severity, ErrorType } from '../../../types/core/enums.js';
+import { BaseError } from '../base/BaseError';
+import { Severity, ErrorType } from '../../../types/core/enums';
 
 class TestError extends BaseError {
   constructor(message: string, code: string = 'TEST_ERROR') {

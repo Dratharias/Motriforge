@@ -1,6 +1,6 @@
-import { LoggerConfigBuilder } from './LoggerConfigBuilder.js';
-import { LoggingConfig } from './LoggingConfig.js';
-import { LogLevel } from '../base/Logger.js';
+import { LoggerConfigBuilder } from './LoggerConfigBuilder';
+import { LoggingConfig } from './LoggingConfig';
+import { LogLevel } from '../base/Logger';
 
 /**
  * Environment variable mappings for logging configuration

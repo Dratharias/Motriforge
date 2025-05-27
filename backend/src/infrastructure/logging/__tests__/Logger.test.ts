@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Logger, LogLevel, LogEntry } from '../base/Logger.js';
-import { EventType, Severity } from '../../../types/core/enums.js';
+import { Logger, LogLevel, LogEntry } from '../base/Logger';
+import { EventType, Severity } from '../../../types/core/enums';
 
 class TestLogger extends Logger {
   public logEntries: LogEntry[] = [];

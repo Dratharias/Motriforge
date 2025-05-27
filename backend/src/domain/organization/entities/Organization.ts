@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
-import { IEntity, IUser } from '../../../types/core/interfaces.js';
-import { IArchivable } from '../../../types/core/behaviors.js';
-import { Status } from '../../../types/core/enums.js';
-import { IOrganizationSettings, ISubscriptionInfo } from '../interfaces/OrganizationInterfaces.js';
+import { IEntity, IUser } from '../../../types/core/interfaces';
+import { IArchivable } from '../../../types/core/behaviors';
+import { Status } from '../../../types/core/enums';
+import { IOrganizationSettings, ISubscriptionInfo } from '../interfaces/OrganizationInterfaces';
 
 /**
  * Organization entity representing companies, gyms, or other fitness facilities

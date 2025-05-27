@@ -1,10 +1,10 @@
-import { BaseError } from './BaseError.js';
-import { Severity } from '../../../types/core/enums.js';
-import { ValidationError } from '../types/ValidationError.js';
-import { AuthenticationError } from '../types/AuthenticationError.js';
-import { AuthorizationError } from '../types/AuthorizationError.js';
-import { DatabaseError } from '../types/DatabaseError.js';
-import { NetworkError } from '../types/NetworkError.js';
+import { BaseError } from './BaseError';
+import { Severity } from '../../../types/core/enums';
+import { ValidationError } from '../types/ValidationError';
+import { AuthenticationError } from '../types/AuthenticationError';
+import { AuthorizationError } from '../types/AuthorizationError';
+import { DatabaseError } from '../types/DatabaseError';
+import { NetworkError } from '../types/NetworkError';
 
 /**
  * Factory for creating typed errors

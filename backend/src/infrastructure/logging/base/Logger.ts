@@ -1,5 +1,5 @@
-import { Severity } from '../../../types/core/enums.js';
-import { IError, IEvent } from '../../../types/core/interfaces.js';
+import { Severity } from '../../../types/core/enums';
+import { IError, IEvent } from '../../../types/core/interfaces';
 
 /**
  * Log levels for controlling logging output

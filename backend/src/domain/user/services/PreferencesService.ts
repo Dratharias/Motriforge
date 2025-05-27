@@ -1,13 +1,13 @@
 import { Types } from 'mongoose';
-import { UserPreferences } from '../entities/UserPreferences.js';
+import { UserPreferences } from '../entities/UserPreferences';
 import { 
   IUserPreferencesRepository, 
   IReminderSettings, 
   IPrivacySettings, 
   IAccessibilitySettings 
-} from '../interfaces/UserInterfaces.js';
-import { MeasurementUnit } from '../../../types/fitness/enums/progress.js';
-import { WorkoutType } from '../../../types/fitness/enums/workout.js';
+} from '../interfaces/UserInterfaces';
+import { MeasurementUnit } from '../../../types/fitness/enums/progress';
+import { WorkoutType } from '../../../types/fitness/enums/workout';
 
 /**
  * Service for managing user preferences

@@ -1,6 +1,6 @@
-import { Logger, LogLevel } from '../base/Logger.js';
-import { ConsoleFormatter, ConsoleLogger } from './ConsoleLogger.js';
-import { FileLogger } from './FileLogger.js';
+import { Logger, LogLevel } from '../base/Logger';
+import { ConsoleFormatter, ConsoleLogger } from './ConsoleLogger';
+import { FileLogger } from './FileLogger';
 
 /**
  * Logger configuration options

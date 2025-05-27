@@ -1,6 +1,6 @@
-import { BaseError } from '../base/BaseError.js';
-import { ValidationError } from '../types/ValidationError.js';
-import { Severity } from '../../../types/core/enums.js';
+import { BaseError } from '../base/BaseError';
+import { ValidationError } from '../types/ValidationError';
+import { Severity } from '../../../types/core/enums';
 
 /**
  * Utility for aggregating and analyzing collections of errors

@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { Logger, LogEntry, LogFormatter } from '../base/Logger.js';
+import { Logger, LogEntry, LogFormatter } from '../base/Logger';
 
 /**
  * JSON formatter for file logging

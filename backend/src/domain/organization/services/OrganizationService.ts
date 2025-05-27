@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
-import { Organization } from '../entities/Organization.js';
-import { IOrganizationRepository, IOrganizationSettings, ISubscriptionInfo } from '../interfaces/OrganizationInterfaces.js';
-import { Status } from '../../../types/core/enums.js';
-import { ValidationError } from '../../../infrastructure/errors/types/ValidationError.js';
+import { Organization } from '../entities/Organization';
+import { IOrganizationRepository, IOrganizationSettings, ISubscriptionInfo } from '../interfaces/OrganizationInterfaces';
+import { Status } from '../../../types/core/enums';
+import { ValidationError } from '../../../infrastructure/errors/types/ValidationError';
 
 /**
  * Service for managing organization operations

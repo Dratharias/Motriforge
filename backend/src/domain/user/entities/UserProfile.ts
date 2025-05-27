@@ -1,13 +1,13 @@
 import { Types } from 'mongoose';
-import { IEntity } from '../../../types/core/interfaces.js';
-import { MuscleZone } from '../../../types/fitness/enums/exercise.js';
-import { MeasurementUnit } from '../../../types/fitness/enums/progress.js';
+import { IEntity } from '../../../types/core/interfaces';
+import { MuscleZone } from '../../../types/fitness/enums/exercise';
+import { MeasurementUnit } from '../../../types/fitness/enums/progress';
 import { 
   IMeasurement, 
   InjuryRecord, 
   FitnessGoal, 
   IEmergencyContact 
-} from '../interfaces/UserInterfaces.js';
+} from '../interfaces/UserInterfaces';
 
 /**
  * User profile containing personal and fitness information

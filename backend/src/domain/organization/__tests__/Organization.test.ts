@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
-import { Organization } from '../entities/Organization.js';
-import { Status } from '../../../types/core/enums.js';
+import { Organization } from '../entities/Organization';
+import { Status } from '../../../types/core/enums';
 
 describe('Organization Entity', () => {
   let orgData: any;

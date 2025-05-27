@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ConsoleLogger } from '../implementations/ConsoleLogger.js';
-import { Severity } from '../../../types/core/enums.js';
-import { LogLevel } from '../base/Logger.js';
+import { ConsoleLogger } from '../implementations/ConsoleLogger';
+import { Severity } from '../../../types/core/enums';
+import { LogLevel } from '../base/Logger';
 
 describe('ConsoleLogger', () => {
   let logger: ConsoleLogger;

@@ -1,9 +1,9 @@
 import { Types } from 'mongoose';
-import { IEntity, IUser } from '../../../types/core/interfaces.js';
-import { IArchivable } from '../../../types/core/behaviors.js';
-import { Role, Status, ResourceType, Action } from '../../../types/core/enums.js';
-import { UserProfile } from './UserProfile.js';
-import { UserPreferences } from './UserPreferences.js';
+import { IEntity, IUser } from '../../../types/core/interfaces';
+import { IArchivable } from '../../../types/core/behaviors';
+import { Role, Status, ResourceType, Action } from '../../../types/core/enums';
+import { UserProfile } from './UserProfile';
+import { UserPreferences } from './UserPreferences';
 
 /**
  * Core user entity representing system users

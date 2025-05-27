@@ -1,5 +1,5 @@
-import { BaseError } from '../base/BaseError.js';
-import { Severity, ResourceType, Action } from '../../../types/core/enums.js';
+import { BaseError } from '../base/BaseError';
+import { Severity, ResourceType, Action } from '../../../types/core/enums';
 
 /**
  * Error for authorization failures

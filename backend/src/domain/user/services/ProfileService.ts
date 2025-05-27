@@ -1,12 +1,12 @@
 import { Types } from 'mongoose';
-import { UserProfile } from '../entities/UserProfile.js';
+import { UserProfile } from '../entities/UserProfile';
 import { 
   IUserProfileRepository, 
   IMeasurement, 
   IEmergencyContact 
-} from '../interfaces/UserInterfaces.js';
-import { MeasurementUnit } from '../../../types/fitness/enums/progress.js';
-import { ValidationError } from '../../../infrastructure/errors/types/ValidationError.js';
+} from '../interfaces/UserInterfaces';
+import { MeasurementUnit } from '../../../types/fitness/enums/progress';
+import { ValidationError } from '../../../infrastructure/errors/types/ValidationError';
 
 /**
  * Service for managing user profiles

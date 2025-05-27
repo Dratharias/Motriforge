@@ -1,5 +1,5 @@
-import { BaseError } from '../base/BaseError.js';
-import { Severity } from '../../../types/core/enums.js';
+import { BaseError } from '../base/BaseError';
+import { Severity } from '../../../types/core/enums';
 
 /**
  * Error for validation failures

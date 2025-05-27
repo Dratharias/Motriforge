@@ -1,4 +1,4 @@
-import { LogLevel } from '../base/Logger.js';
+import { LogLevel } from '../base/Logger';
 
 /**
  * Configuration for individual loggers

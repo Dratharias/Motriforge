@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
-import { User } from '../entities/User.js';
-import { Role, Status, ResourceType, Action } from '../../../types/core/enums.js';
+import { User } from '../entities/User';
+import { Role, Status, ResourceType, Action } from '../../../types/core/enums';
 
 describe('User Entity', () => {
   let userData: any;

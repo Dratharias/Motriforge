@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, MockedFunction } from 'vitest';
 import { Types } from 'mongoose';
-import { UserService } from '../services/UserService.js';
-import { IUserRepository, IUserCreationData } from '../interfaces/UserInterfaces.js';
-import { User } from '../entities/User.js';
-import { Role } from '../../../types/core/enums.js';
-import { ValidationError } from '../../../infrastructure/errors/types/ValidationError.js';
+import { UserService } from '../services/UserService';
+import { IUserRepository, IUserCreationData } from '../interfaces/UserInterfaces';
+import { User } from '../entities/User';
+import { Role } from '../../../types/core/enums';
+import { ValidationError } from '../../../infrastructure/errors/types/ValidationError';
 
 describe('UserService', () => {
   let userService: UserService;

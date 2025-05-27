@@ -1,13 +1,13 @@
 import { Types } from 'mongoose';
-import { User } from '../entities/User.js';
+import { User } from '../entities/User';
 import { 
   IUserRepository, 
   IUserCreationData, 
   IUserSearchCriteria, 
   IUserStatistics 
-} from '../interfaces/UserInterfaces.js';
-import { Role, Status } from '../../../types/core/enums.js';
-import { ValidationError } from '../../../infrastructure/errors/types/ValidationError.js';
+} from '../interfaces/UserInterfaces';
+import { Role, Status } from '../../../types/core/enums';
+import { ValidationError } from '../../../infrastructure/errors/types/ValidationError';
 
 /**
  * Service for managing user operations

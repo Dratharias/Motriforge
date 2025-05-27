@@ -1,12 +1,12 @@
 import { Types } from 'mongoose';
-import { IEntity } from '../../../types/core/interfaces.js';
-import { MeasurementUnit } from '../../../types/fitness/enums/progress.js';
-import { WorkoutType } from '../../../types/fitness/enums/workout.js';
+import { IEntity } from '../../../types/core/interfaces';
+import { MeasurementUnit } from '../../../types/fitness/enums/progress';
+import { WorkoutType } from '../../../types/fitness/enums/workout';
 import { 
   IReminderSettings, 
   IPrivacySettings, 
   IAccessibilitySettings 
-} from '../interfaces/UserInterfaces.js';
+} from '../interfaces/UserInterfaces';
 
 /**
  * User preferences for application behavior and defaults

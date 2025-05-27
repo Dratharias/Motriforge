@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { Role, Action, ResourceType, Severity, EventType, ErrorType } from './enums.js';
+import { Role, Action, ResourceType, Severity, EventType, ErrorType } from './enums';
 
 /**
  * Core user interface representing essential user information
@@ -13,6 +13,8 @@ export interface IUser {
   readonly createdAt: Date;
   readonly lastActiveAt?: Date;
 }
+
+export type NewEntity = 'id' | 'createdAt' | 'updatedAt'
 
 /**
  * Base entity interface that all domain entities implement

@@ -1,6 +1,6 @@
-import { BaseError } from './BaseError.js';
-import { IError, IErrorWrapper } from '../../../types/core/interfaces.js';
-import { ErrorType } from '../../../types/core/enums.js';
+import { BaseError } from './BaseError';
+import { IError, IErrorWrapper } from '../../../types/core/interfaces';
+import { ErrorType } from '../../../types/core/enums';
 
 /**
  * Maps errors to different formats and structures

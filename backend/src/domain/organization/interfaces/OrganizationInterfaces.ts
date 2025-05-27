@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { Organization } from '../entities/Organization';
+import { NewEntity } from '../../../types/core/interfaces';
 
 /**
  * Organization settings configuration
@@ -60,7 +61,7 @@ export interface IOrganizationRepository {
   /**
    * Create a new organization
    */
-  create(organization: Omit<Organization, 'id' | 'createdAt' | 'updatedAt'>): Promise<Organization>;
+  create(organization: Omit<Organization, NewEntity>): Promise<Organization>;
 
   /**
    * Update organization

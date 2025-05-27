@@ -1,9 +1,10 @@
 import { Types } from 'mongoose';
-import { MeasurementUnit } from '../../../types/fitness/enums/progress.js';
-import { MuscleZone } from '../../../types/fitness/enums/exercise.js';
-import { User } from '../entities/User.js';
-import { UserProfile } from '../entities/UserProfile.js';
-import { UserPreferences } from '../entities/UserPreferences.js';
+import { MeasurementUnit } from '../../../types/fitness/enums/progress';
+import { MuscleZone } from '../../../types/fitness/enums/exercise';
+import { User } from '../entities/User';
+import { UserProfile } from '../entities/UserProfile';
+import { UserPreferences } from '../entities/UserPreferences';
+import { NewEntity } from '@/types/core/interfaces';
 
 /**
  * Measurement value with unit
@@ -199,8 +200,6 @@ export interface FitnessGoal {
   getDaysRemaining(): number;
 }
 
-export type NewInstance = 'id' | 'createdAt' | 'updatedAt'
-
 /**
  * Repository interface for User operations
  */
@@ -233,7 +232,7 @@ export interface IUserRepository {
   /**
    * Create a new user
    */
-  create(user: Omit<User, NewInstance>): Promise<User>;
+  create(user: Omit<User, NewEntity>): Promise<User>;
 
   /**
    * Update user
@@ -283,7 +282,7 @@ export interface IUserProfileRepository {
   /**
    * Create a new profile
    */
-  create(profile: Omit<UserProfile, NewInstance>): Promise<UserProfile>;
+  create(profile: Omit<UserProfile, NewEntity>): Promise<UserProfile>;
 
   /**
    * Update profile
@@ -328,7 +327,7 @@ export interface IUserPreferencesRepository {
   /**
    * Create new preferences
    */
-  create(preferences: Omit<UserPreferences, NewInstance>): Promise<UserPreferences>;
+  create(preferences: Omit<UserPreferences, NewEntity>): Promise<UserPreferences>;
 
   /**
    * Update preferences
