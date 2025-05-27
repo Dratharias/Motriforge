@@ -9,13 +9,14 @@ def extract_segments(generated_file: Path):
     Supports comments // or # before the path.
     Interprets paths starting with '@/...' as 'src/...'
     """
-    # Regex to match comment-based file path, e.g. // src/.../file.ext or # src/.../file.ext
     path_pattern = re.compile(r'^[ \t]*(?://|#)\s*(?P<path>@?[\w\-./]+\.[\w]+)')
     segments = []  # List of (relative_path, code_lines)
     current_path = None
     current_lines = []
-
-    for line in generated_file.read_text(encoding='utf-8').splitlines(keepends=True):
+    lines = generated_file.read_text(encoding='utf-8').splitlines(keepends=True)
+    i = 0
+    while i < len(lines):
+        line = lines[i]
         m = path_pattern.match(line)
         if m:
             # Normalize path
@@ -25,12 +26,23 @@ def extract_segments(generated_file: Path):
             # Save previous segment
             if current_path and current_lines:
                 segments.append((current_path, ''.join(current_lines)))
+
             # Start new segment
             current_path = normalized_path
             current_lines = []
-        else:
-            if current_path:
-                current_lines.append(line)
+
+            # Skip the current annotation line
+            i += 1
+
+            # Also skip the next line if it's blank (just newline or whitespace)
+            if i < len(lines) and lines[i].strip() == '':
+                i += 1
+            continue
+
+        if current_path:
+            current_lines.append(line)
+        i += 1
+
     # Save last segment
     if current_path and current_lines:
         segments.append((current_path, ''.join(current_lines)))
