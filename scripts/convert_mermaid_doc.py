@@ -1,6 +1,6 @@
 import os
 
-def wrap_and_rename_mermaid_files(doc_dir='./doc'):
+def wrap_and_rename_mermaid_files(doc_dir='../doc'):
     if not os.path.isdir(doc_dir):
         print(f"Directory '{doc_dir}' does not exist.")
         return
