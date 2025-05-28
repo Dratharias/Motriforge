@@ -2,6 +2,7 @@ import os
 import shutil
 import glob
 import re
+import argparse
 
 # Constants
 BASE_DIR = os.path.dirname(__file__)
@@ -15,10 +16,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def remove_comments(content: str) -> str:
     """Remove all single-line (//...) and multi-line docblock (/** ... */) comments."""
-    # Remove multiline doc comments (/** ... */)
     content = re.sub(r'/\*\*[\s\S]*?\*/', '', content)
-
-    # Remove // comments that are not in strings
     lines = content.splitlines()
     cleaned_lines = []
     for line in lines:
@@ -43,7 +41,6 @@ def remove_comments(content: str) -> str:
     return '\n'.join(cleaned_lines)
 
 def get_relative_path_comment(full_path: str, base: str) -> str:
-    """Get a formatted relative path comment."""
     try:
         rel_path = os.path.relpath(full_path, base).replace(os.sep, '/')
         return f"// {rel_path}\n\n"
@@ -51,7 +48,6 @@ def get_relative_path_comment(full_path: str, base: str) -> str:
         return "// <unknown path>\n\n"
 
 def copy_and_clean_file(src_path: str, dest_path: str, comment_base: str):
-    """Copy file content after removing comments and prepending relative path comment."""
     try:
         with open(src_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -63,8 +59,9 @@ def copy_and_clean_file(src_path: str, dest_path: str, comment_base: str):
     except Exception as e:
         print(f"❌ Failed to process {src_path}: {e}")
 
-# Process files listed in to-flatten.txt
-if os.path.exists(INPUT_FILE):
+def flatten_from_file():
+    if not os.path.exists(INPUT_FILE):
+        return
     with open(INPUT_FILE, 'r', encoding='utf-8') as f:
         lines = [line.strip() for line in f if line.strip()]
     for full_path in lines:
@@ -78,12 +75,33 @@ if os.path.exists(INPUT_FILE):
             continue
         copy_and_clean_file(full_path, destination_path, SRC_DIR)
 
-# Process all TypeScript files under ./backend/src/types/**/*.ts
-ts_files = glob.glob(os.path.join(TYPES_DIR, '**', '*.ts'), recursive=True)
-for ts_path in ts_files:
-    file_name = os.path.basename(ts_path)
-    destination_path = os.path.join(OUTPUT_DIR, file_name)
-    if os.path.exists(destination_path):
-        print(f"⚠️ Skipping {file_name}: already exists in flatten/")
-        continue
-    copy_and_clean_file(ts_path, destination_path, SRC_DIR)
+def flatten_types():
+    ts_files = glob.glob(os.path.join(TYPES_DIR, '**', '*.ts'), recursive=True)
+    for ts_path in ts_files:
+        file_name = os.path.basename(ts_path)
+        destination_path = os.path.join(OUTPUT_DIR, file_name)
+        if os.path.exists(destination_path):
+            print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+            continue
+        copy_and_clean_file(ts_path, destination_path, SRC_DIR)
+
+def flatten_all_src():
+    ts_files = glob.glob(os.path.join(SRC_DIR, '**', '*.ts'), recursive=True)
+    for ts_path in ts_files:
+        file_name = os.path.basename(ts_path)
+        destination_path = os.path.join(OUTPUT_DIR, file_name)
+        if os.path.exists(destination_path):
+            print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+            continue
+        copy_and_clean_file(ts_path, destination_path, SRC_DIR)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Flatten files from backend/src.")
+    parser.add_argument('--flatten-all', action='store_true', help="Flatten everything from backend/src/**/*.ts")
+    args = parser.parse_args()
+
+    if args.flatten_all:
+        flatten_all_src()
+    else:
+        flatten_from_file()
+        flatten_types()
