@@ -1,0 +1,385 @@
+classDiagram
+    %% ===== ORGANIZATION ENTITY =====
+    class Organization {
+        +id: Types.ObjectId
+        +name: string
+        +type: string
+        +status: Status
+        +settings: IOrganizationSettings
+        +subscription: ISubscriptionInfo
+        +createdAt: Date
+        +updatedAt: Date
+        +createdBy: Types.ObjectId
+        +isActive: boolean
+        +isDraft: boolean
+        +constructor(data)
+        +addMember(user: IUser): void
+        +removeMember(userId: Types.ObjectId): void
+        +getMemberCount(): number
+        +isOrganizationActive(): boolean
+        +isSubscriptionActive(): boolean
+        +canAddMember(): boolean
+        +getRemainingMemberSlots(): number
+        +hasFeature(feature: string): boolean
+        +getSubscriptionDaysRemaining(): number | null
+        +isSubscriptionExpiringSoon(): boolean
+        +archive(): void
+        +restore(): void
+        +canBeDeleted(): boolean
+        +getAssociationCount(): number
+        +updateSettings(newSettings: Partial~IOrganizationSettings~): Organization
+        +updateSubscription(newSubscription: Partial~ISubscriptionInfo~): Organization
+        +createDefaultSettings(): IOrganizationSettings
+        +createFreeSubscription(): ISubscriptionInfo
+    }
+
+    %% ===== ORGANIZATION SETTINGS =====
+    class IOrganizationSettings {
+        <<interface>>
+        +allowPublicSharing: boolean
+        +dataRetentionDays: number
+        +requireMedicalClearance: boolean
+        +defaultPrivacyLevel: 'public' | 'organization' | 'private'
+        +maxMembersAllowed: number
+        +enableGuestAccess: boolean
+        +autoApproveMembers: boolean
+        +allowTrainerAssignment: boolean
+        +enableProgressSharing: boolean
+        +workoutReminders: boolean
+    }
+
+    %% ===== SUBSCRIPTION INFO =====
+    class ISubscriptionInfo {
+        <<interface>>
+        +plan: 'free' | 'basic' | 'premium' | 'enterprise'
+        +startDate: Date
+        +endDate?: Date
+        +features: readonly string[]
+        +memberLimit: number
+        +storageLimit: number
+        +isActive: boolean
+        +autoRenew: boolean
+        +billingCycle: 'monthly' | 'yearly'
+        +customFeatures?: readonly string[]
+    }
+
+    %% ===== ORGANIZATION SERVICE =====
+    class OrganizationService {
+        -organizationRepository: IOrganizationRepository
+        +constructor(organizationRepository: IOrganizationRepository)
+        +createOrganization(data: (name, type, createdBy, settings?, subscriptionPlan?)): Promise~Organization~
+        +getOrganizationById(id: Types.ObjectId): Promise~Organization | null~
+        +updateOrganization(id: Types.ObjectId, updates: (name?, type?, settings?)): Promise~Organization | null~
+        +archiveOrganization(id: Types.ObjectId): Promise~boolean~
+        +restoreOrganization(id: Types.ObjectId): Promise~boolean~
+        +getExpiredSubscriptions(): Promise~readonly Organization[]~
+        +canAddMember(organizationId: Types.ObjectId): Promise~boolean~
+        +getOrganizationStats(organizationId: Types.ObjectId): Promise~(memberCount, remainingSlots, subscriptionDaysRemaining, isExpiringSoon, activeFeatures) | null~
+        -validateOrganizationName(name: string, excludeId?: Types.ObjectId): Promise~void~
+        -createSubscriptionForPlan(plan: 'free' | 'basic' | 'premium' | 'enterprise'): ISubscriptionInfo
+    }
+
+    %% ===== REPOSITORY INTERFACE =====
+    class IOrganizationRepository {
+        <<interface>>
+        +findById(id: Types.ObjectId): Promise~Organization | null~
+        +findByName(name: string): Promise~Organization | null~
+        +findByType(type: string): Promise~readonly Organization[]~
+        +findActive(): Promise~readonly Organization[]~
+        +create(organization: Omit~Organization, NewEntity~): Promise~Organization~
+        +update(id: Types.ObjectId, updates: Partial~Organization~): Promise~Organization | null~
+        +archive(id: Types.ObjectId): Promise~boolean~
+        +restore(id: Types.ObjectId): Promise~boolean~
+        +getMemberCount(organizationId: Types.ObjectId): Promise~number~
+        +isNameAvailable(name: string, excludeId?: Types.ObjectId): Promise~boolean~
+        +findWithExpiredSubscriptions(): Promise~readonly Organization[]~
+    }
+
+    %% ===== ORGANIZATION ANALYTICS =====
+    class OrganizationAnalyticsService {
+        -organizationRepository: IOrganizationRepository
+        -userRepository: IUserRepository
+        -mediaRepository: IMediaRepository
+        +constructor(organizationRepository, userRepository, mediaRepository)
+        +getOrganizationOverview(organizationId: Types.ObjectId): Promise~IOrganizationOverview~
+        +getSubscriptionAnalytics(): Promise~ISubscriptionAnalytics~
+        +getUsageAnalytics(organizationId: Types.ObjectId, startDate: Date, endDate: Date): Promise~IUsageAnalytics~
+        +getStorageAnalytics(organizationId: Types.ObjectId): Promise~IStorageAnalytics~
+        +getGrowthAnalytics(organizationId: Types.ObjectId): Promise~IGrowthAnalytics~
+        +getFeatureUsage(organizationId: Types.ObjectId): Promise~IFeatureUsageStats~
+        +generateHealthReport(organizationId: Types.ObjectId): Promise~IOrganizationHealthReport~
+        +compareOrganizations(organizationIds: readonly Types.ObjectId[]): Promise~IOrganizationComparison~
+        +predictSubscriptionRenewal(organizationId: Types.ObjectId): Promise~IRenewalPrediction~
+        +getChurnRiskAnalysis(): Promise~IChurnRiskAnalysis~
+    }
+
+    %% ===== SUBSCRIPTION MANAGEMENT =====
+    class SubscriptionService {
+        -organizationRepository: IOrganizationRepository
+        -billingService: IBillingService
+        -notificationService: INotificationService
+        +constructor(organizationRepository, billingService, notificationService)
+        +upgradeSubscription(organizationId: Types.ObjectId, newPlan: string): Promise~Organization~
+        +downgradeSubscription(organizationId: Types.ObjectId, newPlan: string): Promise~Organization~
+        +renewSubscription(organizationId: Types.ObjectId): Promise~Organization~
+        +cancelSubscription(organizationId: Types.ObjectId): Promise~Organization~
+        +addCustomFeature(organizationId: Types.ObjectId, feature: string): Promise~Organization~
+        +removeCustomFeature(organizationId: Types.ObjectId, feature: string): Promise~Organization~
+        +validateSubscriptionLimits(organizationId: Types.ObjectId): Promise~ISubscriptionValidation~
+        +getSubscriptionUsage(organizationId: Types.ObjectId): Promise~ISubscriptionUsage~
+        +processExpiringSubscriptions(): Promise~(processed: number, errors: string[])~
+        +calculateProrationCredit(organizationId: Types.ObjectId, newPlan: string): Promise~number~
+        +previewSubscriptionChange(organizationId: Types.ObjectId, newPlan: string): Promise~ISubscriptionPreview~
+        -validateSubscriptionDowngrade(current: ISubscriptionInfo, target: ISubscriptionInfo, usage: ISubscriptionUsage): Promise~ISubscriptionValidation~
+        -notifySubscriptionChange(organizationId: Types.ObjectId, changeType: string): Promise~void~
+    }
+
+    %% ===== MEMBER MANAGEMENT =====
+    class MemberManagementService {
+        -organizationRepository: IOrganizationRepository
+        -userRepository: IUserRepository
+        -iamService: IAMService
+        +constructor(organizationRepository, userRepository, iamService)
+        +addMember(organizationId: Types.ObjectId, userData: IUserCreationData): Promise~User~
+        +removeMember(organizationId: Types.ObjectId, userId: Types.ObjectId): Promise~boolean~
+        +updateMemberRole(organizationId: Types.ObjectId, userId: Types.ObjectId, newRole: Role): Promise~User~
+        +getOrganizationMembers(organizationId: Types.ObjectId): Promise~readonly User[]~
+        +getMembersByRole(organizationId: Types.ObjectId, role: Role): Promise~readonly User[]~
+        +validateMembershipCapacity(organizationId: Types.ObjectId): Promise~(canAdd: boolean, remaining: number, limit: number)~
+        +inviteMember(organizationId: Types.ObjectId, email: string, role: Role, invitedBy: Types.ObjectId): Promise~IInvitation~
+        +acceptInvitation(invitationId: Types.ObjectId, userData: IUserCreationData): Promise~User~
+        +cancelInvitation(invitationId: Types.ObjectId): Promise~boolean~
+        +getPendingInvitations(organizationId: Types.ObjectId): Promise~readonly IInvitation[]~
+        +bulkImportMembers(organizationId: Types.ObjectId, memberData: readonly IUserCreationData[]): Promise~(success: User[], errors: string[])~
+        +exportMemberList(organizationId: Types.ObjectId): Promise~IOrganizationMemberExport~
+        -validateMemberAddition(organizationId: Types.ObjectId, userData: IUserCreationData): Promise~void~
+        -notifyMemberAdded(organizationId: Types.ObjectId, user: User): Promise~void~
+    }
+
+    %% ===== DATA TRANSFER OBJECTS =====
+    class IOrganizationOverview {
+        <<interface>>
+        +organization: Organization
+        +memberCount: number
+        +activeMemberCount: number
+        +storageUsed: number
+        +storageLimit: number
+        +subscriptionStatus: string
+        +featuresUsed: readonly string[]
+        +recentActivity: readonly IActivitySummary[]
+        +healthScore: number
+    }
+
+    class ISubscriptionAnalytics {
+        <<interface>>
+        +totalOrganizations: number
+        +subscriptionDistribution: Record~string, number~
+        +revenueByPlan: Record~string, number~
+        +churnRate: number
+        +averageLifetime: number
+        +upgrades: number
+        +downgrades: number
+        +cancellations: number
+    }
+
+    class IUsageAnalytics {
+        <<interface>>
+        +totalSessions: number
+        +averageSessionDuration: number
+        +activeUsers: number
+        +featureUsage: Record~string, number~
+        +workoutsCreated: number
+        +exercisesPerformed: number
+        +progressRecorded: number
+        +peakUsageHours: readonly (hour: number, sessions: number)[]
+    }
+
+    class IStorageAnalytics {
+        <<interface>>
+        +totalStorage: number
+        +storageByType: Record~string, number~
+        +storageGrowth: readonly (date: string, storage: number)[]
+        +largestFiles: readonly (name: string, size: number, type: string)[]
+        +duplicateFiles: number
+        +unusedFiles: number
+        +storageEfficiency: number
+    }
+
+    class IGrowthAnalytics {
+        <<interface>>
+        +memberGrowth: readonly (date: string, count: number)[]
+        +subscriptionGrowth: readonly (date: string, revenue: number)[]
+        +featureAdoption: Record~string, (adoptionRate: number, timeToAdopt: number)~
+        +retentionRates: (day30: number, day60: number, day90: number)
+        +engagementTrends: readonly (date: string, engagement: number)[]
+    }
+
+    class IFeatureUsageStats {
+        <<interface>>
+        +featuresUsed: readonly string[]
+        +usageFrequency: Record~string, number~
+        +userAdoption: Record~string, number~
+        +featureValue: Record~string, number~
+        +underutilizedFeatures: readonly string[]
+        +recommendedFeatures: readonly string[]
+    }
+
+    class IOrganizationHealthReport {
+        <<interface>>
+        +overallScore: number
+        +subscriptionHealth: number
+        +userEngagement: number
+        +storageHealth: number
+        +featureUtilization: number
+        +recommendations: readonly string[]
+        +warnings: readonly string[]
+        +strengths: readonly string[]
+    }
+
+    class ISubscriptionValidation {
+        <<interface>>
+        +isValid: boolean
+        +errors: readonly string[]
+        +warnings: readonly string[]
+        +limitViolations: readonly string[]
+        +requiredActions: readonly string[]
+    }
+
+    class ISubscriptionUsage {
+        <<interface>>
+        +membersUsed: number
+        +memberLimit: number
+        +storageUsed: number
+        +storageLimit: number
+        +featuresUsed: readonly string[]
+        +apiCalls: number
+        +apiLimit: number
+        +customFeatures: readonly string[]
+    }
+
+    class ISubscriptionPreview {
+        <<interface>>
+        +currentPlan: string
+        +newPlan: string
+        +costDifference: number
+        +featureChanges: (added: string[], removed: string[])
+        +limitChanges: Record~string, (old: number, new: number)~
+        +effectiveDate: Date
+        +prorationCredit: number
+        +nextBillingAmount: number
+    }
+
+    class IInvitation {
+        <<interface>>
+        +id: Types.ObjectId
+        +organizationId: Types.ObjectId
+        +email: string
+        +role: Role
+        +invitedBy: Types.ObjectId
+        +invitedAt: Date
+        +expiresAt: Date
+        +status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED'
+        +token: string
+    }
+
+    class IOrganizationMemberExport {
+        <<interface>>
+        +organizationName: string
+        +exportedAt: Date
+        +totalMembers: number
+        +members: readonly (email: string, name: string, role: string, joinedAt: Date, lastActive?: Date)[]
+        +membersByRole: Record~string, number~
+        +averageTenure: number
+    }
+
+    class IActivitySummary {
+        <<interface>>
+        +type: string
+        +count: number
+        +date: Date
+        +users: readonly Types.ObjectId[]
+    }
+
+    class IOrganizationComparison {
+        <<interface>>
+        +organizations: readonly (id: Types.ObjectId, name: string, metrics: Record~string, number~)[]
+        +averages: Record~string, number~
+        +benchmarks: Record~string, (top25: number, median: number, bottom25: number)~
+        +rankings: Record~string, readonly (orgId: Types.ObjectId, rank: number, value: number)[]~
+    }
+
+    class IRenewalPrediction {
+        <<interface>>
+        +organizationId: Types.ObjectId
+        +renewalProbability: number
+        +riskFactors: readonly string[]
+        +positiveIndicators: readonly string[]
+        +recommendedActions: readonly string[]
+        +predictionConfidence: number
+        +timeToRenewal: number
+    }
+
+    class IChurnRiskAnalysis {
+        <<interface>>
+        +highRiskOrganizations: readonly (organization: Organization, riskScore: number, reasons: string[])[]
+        +mediumRiskOrganizations: readonly (organization: Organization, riskScore: number, reasons: string[])[]
+        +overallChurnRate: number
+        +churnPredictions: readonly (month: string, predictedChurn: number)[]
+        +retentionStrategies: readonly string[]
+    }
+
+    %% ===== SERVICE INTERFACES =====
+    class IBillingService {
+        <<interface>>
+        +processSubscriptionChange(organizationId: Types.ObjectId, newPlan: string): Promise~IBillingResult~
+        +calculateProration(organizationId: Types.ObjectId, newPlan: string): Promise~number~
+        +refundSubscription(organizationId: Types.ObjectId): Promise~IBillingResult~
+        +getInvoiceHistory(organizationId: Types.ObjectId): Promise~readonly IInvoice[]~
+    }
+
+    class INotificationService {
+        <<interface>>
+        +sendSubscriptionExpiredNotification(organizationId: Types.ObjectId): Promise~void~
+        +sendSubscriptionUpgradeNotification(organizationId: Types.ObjectId): Promise~void~
+        +sendMemberAddedNotification(organizationId: Types.ObjectId, newMember: User): Promise~void~
+        +sendInvitationNotification(invitation: IInvitation): Promise~void~
+    }
+
+    %% ===== RELATIONSHIPS =====
+    Organization ..|> IEntity
+    Organization ..|> IArchivable
+    Organization --> IOrganizationSettings : has
+    Organization --> ISubscriptionInfo : has
+    Organization --> IUser : contains
+
+    OrganizationService --> IOrganizationRepository : uses
+    OrganizationService --> Organization : manages
+    OrganizationService --> IOrganizationSettings : configures
+    OrganizationService --> ISubscriptionInfo : manages
+
+    OrganizationAnalyticsService --> IOrganizationRepository : uses
+    OrganizationAnalyticsService --> IOrganizationOverview : returns
+    OrganizationAnalyticsService --> ISubscriptionAnalytics : returns
+    OrganizationAnalyticsService --> IUsageAnalytics : returns
+    OrganizationAnalyticsService --> IStorageAnalytics : returns
+    OrganizationAnalyticsService --> IGrowthAnalytics : returns
+    OrganizationAnalyticsService --> IFeatureUsageStats : returns
+    OrganizationAnalyticsService --> IOrganizationHealthReport : returns
+
+    SubscriptionService --> IOrganizationRepository : uses
+    SubscriptionService --> IBillingService : uses
+    SubscriptionService --> INotificationService : uses
+    SubscriptionService --> ISubscriptionValidation : returns
+    SubscriptionService --> ISubscriptionUsage : returns
+    SubscriptionService --> ISubscriptionPreview : returns
+
+    MemberManagementService --> IOrganizationRepository : uses
+    MemberManagementService --> IInvitation : manages
+    MemberManagementService --> IOrganizationMemberExport : creates
+
+    IOrganizationRepository --> Organization : manages
+
+    %% ===== ENUM USAGE NOTES =====
+    note for Organization "Uses: Status enum"
+    note for IInvitation "Uses: Role enum"
+    note for MemberManagementService "Uses: Role enum"

@@ -1,0 +1,396 @@
+classDiagram
+    %% ===== MUSCLE ENTITY =====
+    class Muscle {
+        +id: Types.ObjectId
+        +name: string
+        +conventionalName: string
+        +latinTerm: string
+        +zone: MuscleZone
+        +type: MuscleType
+        +level: MuscleLevel
+        +parentMuscle?: Types.ObjectId
+        +subMuscles: readonly Types.ObjectId[]
+        +description: string
+        +createdAt: Date
+        +updatedAt: Date
+        +createdBy: Types.ObjectId
+        +isActive: boolean
+        +isDraft: boolean
+        +constructor(data)
+        +getHierarchy(): Promise~Muscle[]~
+        +isPartOf(muscle: Muscle): boolean
+        +hasSubMuscles(): boolean
+        +isCommonMuscle(): boolean
+        +isPrimaryMuscle(): boolean
+        +archive(): void
+        +restore(): void
+        +canBeDeleted(): boolean
+        +getAssociationCount(): number
+        +update(updates): Muscle
+    }
+
+    %% ===== MUSCLE GROUP ENTITY =====
+    class MuscleGroup {
+        +id: Types.ObjectId
+        +name: string
+        +muscles: readonly Types.ObjectId[]
+        +primaryZones: readonly MuscleZone[]
+        +description: string
+        +createdAt: Date
+        +updatedAt: Date
+        +createdBy: Types.ObjectId
+        +isActive: boolean
+        +isDraft: boolean
+        +constructor(data)
+        +getMuscles(): Promise~Muscle[]~
+        +contains(muscle: Muscle): boolean
+        +getOverlapWith(other: MuscleGroup): number
+        +getMuscleCount(): number
+        +hasPrimaryZone(zone: MuscleZone): boolean
+        +addMuscle(muscleId: Types.ObjectId): MuscleGroup
+        +removeMuscle(muscleId: Types.ObjectId): MuscleGroup
+        +archive(): void
+        +restore(): void
+        +canBeDeleted(): boolean
+        +getAssociationCount(): number
+        +update(updates): MuscleGroup
+    }
+
+    %% ===== TARGET MUSCLE ENTITY =====
+    class TargetMuscle {
+        +primaryTargets: readonly Types.ObjectId[]
+        +secondaryTargets: readonly Types.ObjectId[]
+        +stabilizers: readonly Types.ObjectId[]
+        +synergists: readonly Types.ObjectId[]
+        +constructor(data)
+        +getPrimaryMuscles(): Promise~Muscle[]~
+        +getSecondaryMuscles(): Promise~Muscle[]~
+        +getTotalMuscleEngagement(): number
+        +hasOverlapWith(other: TargetMuscle): boolean
+        +getEngagementLevel(muscleId: Types.ObjectId): 'primary' | 'secondary' | 'stabilizer' | 'synergist' | null
+        +getAllTargetedMuscles(): readonly Types.ObjectId[]
+        +hasPrimaryTarget(muscleId: Types.ObjectId): boolean
+        +update(updates): TargetMuscle
+    }
+
+    %% ===== MUSCLE SERVICE =====
+    class MuscleService {
+        -muscleRepository: IMuscleRepository
+        +constructor(muscleRepository: IMuscleRepository)
+        +createMuscle(data: IMuscleCreationData, createdBy: Types.ObjectId): Promise~Muscle~
+        +getMuscleById(id: Types.ObjectId): Promise~Muscle | null~
+        +getMuscleByName(name: string): Promise~Muscle | null~
+        +getMusclesByZone(zone: MuscleZone): Promise~readonly Muscle[]~
+        +getMusclesByType(type: MuscleType): Promise~readonly Muscle[]~
+        +getMusclesByLevel(level: MuscleLevel): Promise~readonly Muscle[]~
+        +updateMuscle(id: Types.ObjectId, updates): Promise~Muscle | null~
+        +searchMuscles(criteria: IMuscleSearchCriteria): Promise~readonly Muscle[]~
+        +getMuscleHierarchy(muscleId: Types.ObjectId): Promise~IMuscleHierarchy~
+        +getMuscleChildren(parentId: Types.ObjectId): Promise~readonly Muscle[]~
+        +getMuscleParent(childId: Types.ObjectId): Promise~Muscle | null~
+        +getRootMuscles(): Promise~readonly Muscle[]~
+        +archiveMuscle(id: Types.ObjectId): Promise~boolean~
+        +restoreMuscle(id: Types.ObjectId): Promise~boolean~
+        +getMuscleStatistics(): Promise~IMuscleStatistics~
+        +getCommonMuscles(): Promise~readonly Muscle[]~
+        +getMedicalMuscles(): Promise~readonly Muscle[]~
+        +validateMuscleHierarchy(parentId: Types.ObjectId, childId: Types.ObjectId): Promise~boolean~
+        -validateMuscleCreation(data: IMuscleCreationData): Promise~void~
+        -validateMuscleName(name: string, excludeId?: Types.ObjectId): Promise~void~
+    }
+
+    %% ===== MUSCLE GROUP SERVICE =====
+    class MuscleGroupService {
+        -muscleGroupRepository: IMuscleGroupRepository
+        -muscleRepository: IMuscleRepository
+        +constructor(muscleGroupRepository, muscleRepository)
+        +createMuscleGroup(data: IMuscleGroupCreationData, createdBy: Types.ObjectId): Promise~MuscleGroup~
+        +getMuscleGroupById(id: Types.ObjectId): Promise~MuscleGroup | null~
+        +getMuscleGroupByName(name: string): Promise~MuscleGroup | null~
+        +getMuscleGroupsByZone(zone: MuscleZone): Promise~readonly MuscleGroup[]~
+        +getGroupsContainingMuscle(muscleId: Types.ObjectId): Promise~readonly MuscleGroup[]~
+        +updateMuscleGroup(id: Types.ObjectId, updates): Promise~MuscleGroup | null~
+        +addMuscleToGroup(groupId: Types.ObjectId, muscleId: Types.ObjectId): Promise~MuscleGroup | null~
+        +removeMuscleFromGroup(groupId: Types.ObjectId, muscleId: Types.ObjectId): Promise~MuscleGroup | null~
+        +searchMuscleGroups(criteria: IMuscleGroupSearchCriteria): Promise~readonly MuscleGroup[]~
+        +findOverlappingGroups(groupId: Types.ObjectId, minOverlap: number): Promise~readonly (group: MuscleGroup, overlapPercentage: number)[]~
+        +getMuscleGroupStatistics(): Promise~IMuscleGroupStatistics~
+        +archiveMuscleGroup(id: Types.ObjectId): Promise~boolean~
+        +restoreMuscleGroup(id: Types.ObjectId): Promise~boolean~
+        -validateMuscleGroupCreation(data: IMuscleGroupCreationData): Promise~void~
+        -validateMuscleGroupName(name: string, excludeId?: Types.ObjectId): Promise~void~
+    }
+
+    %% ===== ANATOMY QUERY SERVICE =====
+    class AnatomyQueryService {
+        -muscleRepository: IMuscleRepository
+        -muscleGroupRepository: IMuscleGroupRepository
+        -targetMuscleRepository: ITargetMuscleRepository
+        +constructor(muscleRepository, muscleGroupRepository, targetMuscleRepository)
+        +createTargetMuscle(exerciseId: Types.ObjectId, data: ITargetMuscleCreationData): Promise~TargetMuscle~
+        +getTargetMuscleByExercise(exerciseId: Types.ObjectId): Promise~TargetMuscle | null~
+        +getExercisesByMuscle(muscleId: Types.ObjectId): Promise~readonly TargetMuscle[]~
+        +getExercisesByPrimaryMuscle(muscleId: Types.ObjectId): Promise~readonly TargetMuscle[]~
+        +findSimilarExercises(exerciseId: Types.ObjectId, threshold: number): Promise~readonly (exerciseId: Types.ObjectId, similarity: number)[]~
+        +updateTargetMuscle(exerciseId: Types.ObjectId, updates: Partial~TargetMuscle~): Promise~TargetMuscle | null~
+        +deleteTargetMuscle(exerciseId: Types.ObjectId): Promise~boolean~
+        +getMuscleAnalytics(): Promise~IMuscleAnalytics~
+        +getMuscleGroupAnalytics(): Promise~IMuscleGroupAnalytics~
+        +getMuscleRecommendations(currentMuscles: readonly Types.ObjectId[], targetZones: readonly MuscleZone[]): Promise~readonly Muscle[]~
+        -validateTargetMuscleCreation(data: ITargetMuscleCreationData): Promise~void~
+    }
+
+    %% ===== REPOSITORY INTERFACES =====
+    class IMuscleRepository {
+        <<interface>>
+        +findById(id: Types.ObjectId): Promise~Muscle | null~
+        +findByName(name: string): Promise~Muscle | null~
+        +findByZone(zone: MuscleZone): Promise~readonly Muscle[]~
+        +findByType(type: MuscleType): Promise~readonly Muscle[]~
+        +findByLevel(level: MuscleLevel): Promise~readonly Muscle[]~
+        +findChildren(parentId: Types.ObjectId): Promise~readonly Muscle[]~
+        +findParent(childId: Types.ObjectId): Promise~Muscle | null~
+        +findRootMuscles(): Promise~readonly Muscle[]~
+        +search(criteria: IMuscleSearchCriteria): Promise~readonly Muscle[]~
+        +create(muscle: Omit~Muscle, NewEntity~): Promise~Muscle~
+        +update(id: Types.ObjectId, updates: Partial~Muscle~): Promise~Muscle | null~
+        +archive(id: Types.ObjectId): Promise~boolean~
+        +restore(id: Types.ObjectId): Promise~boolean~
+        +isNameAvailable(name: string, excludeId?: Types.ObjectId): Promise~boolean~
+        +getHierarchy(muscleId: Types.ObjectId): Promise~IMuscleHierarchy~
+        +getStatistics(): Promise~IMuscleStatistics~
+    }
+
+    class IMuscleGroupRepository {
+        <<interface>>
+        +findById(id: Types.ObjectId): Promise~MuscleGroup | null~
+        +findByName(name: string): Promise~MuscleGroup | null~
+        +findByZone(zone: MuscleZone): Promise~readonly MuscleGroup[]~
+        +findContainingMuscle(muscleId: Types.ObjectId): Promise~readonly MuscleGroup[]~
+        +search(criteria: IMuscleGroupSearchCriteria): Promise~readonly MuscleGroup[]~
+        +create(group: Omit~MuscleGroup, NewEntity~): Promise~MuscleGroup~
+        +update(id: Types.ObjectId, updates: Partial~MuscleGroup~): Promise~MuscleGroup | null~
+        +archive(id: Types.ObjectId): Promise~boolean~
+        +restore(id: Types.ObjectId): Promise~boolean~
+        +isNameAvailable(name: string, excludeId?: Types.ObjectId): Promise~boolean~
+        +getStatistics(): Promise~IMuscleGroupStatistics~
+        +findOverlappingGroups(groupId: Types.ObjectId, minOverlap: number): Promise~readonly (group: MuscleGroup, overlapPercentage: number)[]~
+    }
+
+    class ITargetMuscleRepository {
+        <<interface>>
+        +findByExerciseId(exerciseId: Types.ObjectId): Promise~TargetMuscle | null~
+        +findByMuscle(muscleId: Types.ObjectId): Promise~readonly TargetMuscle[]~
+        +findByPrimaryMuscle(muscleId: Types.ObjectId): Promise~readonly TargetMuscle[]~
+        +create(exerciseId: Types.ObjectId, targetMuscle: TargetMuscle): Promise~TargetMuscle~
+        +update(exerciseId: Types.ObjectId, updates: Partial~TargetMuscle~): Promise~TargetMuscle | null~
+        +delete(exerciseId: Types.ObjectId): Promise~boolean~
+        +findSimilarTargeting(targetMuscle: TargetMuscle, threshold: number): Promise~readonly (exerciseId: Types.ObjectId, similarity: number)[]~
+    }
+
+    %% ===== UTILITY CLASSES =====
+    class MuscleHierarchyBuilder {
+        -muscles: Map~string, Muscle~
+        -children: Map~string, Muscle[]~
+        -hierarchies: Map~string, IMuscleHierarchy~
+        +constructor(muscles: readonly Muscle[])
+        +buildHierarchy(muscleId: Types.ObjectId): IMuscleHierarchy
+        +getAllHierarchies(): readonly IMuscleHierarchy[]
+        +getRootMuscles(): readonly Muscle[]
+        +getLeafMuscles(): readonly Muscle[]
+        +getMaxDepth(): number
+        +validateHierarchy(): (isValid: boolean, errors: readonly string[], orphans: readonly Muscle[], cycles: readonly string[])
+        -buildMaps(muscles: readonly Muscle[]): void
+        -buildHierarchyRecursive(muscle: Muscle, visitedIds: string[]): IMuscleHierarchy
+    }
+
+    class EngagementCalculator {
+        <<static>>
+        +calculateTotalEngagement(targetMuscle: TargetMuscle): number
+        +calculateEngagementScore(targetMuscle1: TargetMuscle, targetMuscle2: TargetMuscle): number
+        +calculateOverlap(targetMuscle1: TargetMuscle, targetMuscle2: TargetMuscle): number
+        +generateEngagementProfile(targetMuscle: TargetMuscle): readonly IMuscleEngagement[]
+        +findComplementaryMuscles(currentTargets: readonly TargetMuscle[], availableTargets: readonly TargetMuscle[]): readonly TargetMuscle[]
+        -getEngagementWeight(level: string | null): number
+    }
+
+    class AnatomyValidator {
+        <<static>>
+        +validateMuscleName(name: string): IMuscleValidationResult
+        +validateMuscleHierarchy(childZone: MuscleZone, childType: MuscleType, parentZone?: MuscleZone, parentType?: MuscleType): IMuscleValidationResult
+        +validateMuscleGroup(name: string, muscleCount: number, zones: readonly MuscleZone[]): IMuscleValidationResult
+        +validateTargetMuscle(primaryCount: number, secondaryCount: number, stabilizerCount: number, synergistCount: number): IMuscleValidationResult
+        +validateAnatomicalConsistency(muscles: readonly (zone: MuscleZone, type: MuscleType, level: MuscleLevel)[]): IMuscleValidationResult
+        -toTitleCase(str: string): string
+    }
+
+    %% ===== DATA STRUCTURES & INTERFACES =====
+    class IMuscleHierarchy {
+        <<interface>>
+        +muscle: Muscle
+        +parent?: Muscle
+        +children: readonly Muscle[]
+        +depth: number
+        +path: readonly Muscle[]
+    }
+
+    class IMuscleEngagement {
+        <<interface>>
+        +muscleId: Types.ObjectId
+        +engagementType: 'primary' | 'secondary' | 'stabilizer' | 'synergist'
+        +intensityLevel: number
+        +isRequired: boolean
+    }
+
+    class IAnatomyReference {
+        <<interface>>
+        +muscleId: Types.ObjectId
+        +anatomicalTerms: readonly string[]
+        +commonNames: readonly string[]
+        +relatedMuscles: readonly Types.ObjectId[]
+        +opposingMuscles: readonly Types.ObjectId[]
+    }
+
+    class IMuscleValidationResult {
+        <<interface>>
+        +isValid: boolean
+        +errors: readonly string[]
+        +warnings: readonly string[]
+        +suggestions: readonly string[]
+    }
+
+    %% ===== SEARCH CRITERIA =====
+    class IMuscleSearchCriteria {
+        <<interface>>
+        +name?: string
+        +zone?: MuscleZone
+        +type?: MuscleType
+        +level?: MuscleLevel
+        +hasParent?: boolean
+        +hasChildren?: boolean
+        +isActive?: boolean
+    }
+
+    class IMuscleGroupSearchCriteria {
+        <<interface>>
+        +name?: string
+        +primaryZone?: MuscleZone
+        +minimumMuscles?: number
+        +maximumMuscles?: number
+        +isActive?: boolean
+    }
+
+    %% ===== CREATION DATA =====
+    class IMuscleCreationData {
+        <<interface>>
+        +name: string
+        +conventionalName: string
+        +latinTerm: string
+        +zone: MuscleZone
+        +type: MuscleType
+        +level: MuscleLevel
+        +parentMuscleId?: Types.ObjectId
+        +description: string
+    }
+
+    class IMuscleGroupCreationData {
+        <<interface>>
+        +name: string
+        +description: string
+        +muscleIds: readonly Types.ObjectId[]
+        +primaryZones: readonly MuscleZone[]
+    }
+
+    class ITargetMuscleCreationData {
+        <<interface>>
+        +primaryTargets: readonly Types.ObjectId[]
+        +secondaryTargets?: readonly Types.ObjectId[]
+        +stabilizers?: readonly Types.ObjectId[]
+        +synergists?: readonly Types.ObjectId[]
+    }
+
+    %% ===== STATISTICS =====
+    class IMuscleStatistics {
+        <<interface>>
+        +totalMuscles: number
+        +musclesByZone: Record~MuscleZone, number~
+        +musclesByType: Record~MuscleType, number~
+        +musclesByLevel: Record~MuscleLevel, number~
+        +hierarchicalDepth: number
+        +orphanMuscles: number
+    }
+
+    class IMuscleGroupStatistics {
+        <<interface>>
+        +totalGroups: number
+        +averageMusclesPerGroup: number
+        +groupsByZone: Record~MuscleZone, number~
+        +largestGroup: (id: Types.ObjectId, name: string, muscleCount: number)
+        +overlap: (totalOverlaps: number, averageOverlapPercentage: number)
+    }
+
+    class IMuscleAnalytics {
+        <<interface>>
+        +muscleUsageFrequency: Record~string, number~
+        +popularCombinations: readonly (muscles: readonly Types.ObjectId[], frequency: number)[]
+        +zoneDistribution: Record~MuscleZone, number~
+        +hierarchyDepthAnalysis: (averageDepth: number, maxDepth: number, leafNodeCount: number)
+    }
+
+    class IMuscleGroupAnalytics {
+        <<interface>>
+        +groupSizeDistribution: Record~number, number~
+        +overlapAnalysis: (totalOverlaps: number, averageOverlap: number, highlyOverlappingPairs: readonly (group1: Types.ObjectId, group2: Types.ObjectId, overlapPercentage: number)[])
+        +zoneRepresentation: Record~MuscleZone, number~
+    }
+
+    %% ===== RELATIONSHIPS =====
+    Muscle ..|> IEntity
+    Muscle ..|> IArchivable
+    MuscleGroup ..|> IEntity
+    MuscleGroup ..|> IArchivable
+    MuscleGroup --> Muscle : contains
+    TargetMuscle --> Muscle : targets
+
+    MuscleService --> IMuscleRepository : uses
+    MuscleService --> Muscle : manages
+    MuscleService --> IMuscleCreationData : uses
+    MuscleService --> IMuscleSearchCriteria : uses
+    MuscleService --> IMuscleHierarchy : returns
+    MuscleService --> IMuscleStatistics : returns
+
+    MuscleGroupService --> IMuscleGroupRepository : uses
+    MuscleGroupService --> IMuscleRepository : uses
+    MuscleGroupService --> MuscleGroup : manages
+    MuscleGroupService --> IMuscleGroupCreationData : uses
+    MuscleGroupService --> IMuscleGroupSearchCriteria : uses
+    MuscleGroupService --> IMuscleGroupStatistics : returns
+
+    AnatomyQueryService --> IMuscleRepository : uses
+    AnatomyQueryService --> IMuscleGroupRepository : uses
+    AnatomyQueryService --> ITargetMuscleRepository : uses
+    AnatomyQueryService --> TargetMuscle : manages
+    AnatomyQueryService --> ITargetMuscleCreationData : uses
+    AnatomyQueryService --> IMuscleAnalytics : returns
+    AnatomyQueryService --> IMuscleGroupAnalytics : returns
+
+    MuscleHierarchyBuilder --> Muscle : analyzes
+    MuscleHierarchyBuilder --> IMuscleHierarchy : builds
+    EngagementCalculator --> TargetMuscle : analyzes
+    EngagementCalculator --> IMuscleEngagement : creates
+    AnatomyValidator --> IMuscleValidationResult : returns
+
+    IMuscleRepository --> Muscle : manages
+    IMuscleRepository --> IMuscleHierarchy : returns
+    IMuscleGroupRepository --> MuscleGroup : manages
+    ITargetMuscleRepository --> TargetMuscle : manages
+
+    %% ===== ENUM USAGE NOTES =====
+    note for Muscle "Uses: MuscleZone, MuscleType, MuscleLevel enums"
+    note for MuscleGroup "Uses: MuscleZone enum"
+    note for IMuscleSearchCriteria "Uses: MuscleZone, MuscleType, MuscleLevel enums"
+    note for IMuscleGroupSearchCriteria "Uses: MuscleZone enum"
+    note for IMuscleStatistics "Uses: MuscleZone, MuscleType, MuscleLevel enums"
+    note for IMuscleGroupStatistics "Uses: MuscleZone enum"
+    note for IMuscleAnalytics "Uses: MuscleZone enum"
+    note for IMuscleGroupAnalytics "Uses: MuscleZone enum"

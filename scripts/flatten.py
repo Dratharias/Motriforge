@@ -98,10 +98,13 @@ def flatten_all_src():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flatten files from backend/src.")
     parser.add_argument('--flatten-all', action='store_true', help="Flatten everything from backend/src/**/*.ts")
+    parser.add_argument('--types', action='store_true', help="Only flatten types from backend/src/types/**/*.ts")
     args = parser.parse_args()
 
     if args.flatten_all:
         flatten_all_src()
+    elif args.types:
+        flatten_types()
     else:
         flatten_from_file()
         flatten_types()

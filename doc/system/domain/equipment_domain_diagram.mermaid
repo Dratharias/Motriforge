@@ -1,0 +1,286 @@
+classDiagram
+    %% ===== EQUIPMENT ENTITY =====
+    class Equipment {
+        +id: Types.ObjectId
+        +name: string
+        +category: EquipmentCategory
+        +description: string
+        +media: readonly Types.ObjectId[]
+        +specifications: IEquipmentSpecs
+        +alternatives: readonly Types.ObjectId[]
+        +isAvailable: boolean
+        +status: Status
+        +organization: Types.ObjectId
+        +createdAt: Date
+        +updatedAt: Date
+        +createdBy: Types.ObjectId
+        +isActive: boolean
+        +isDraft: boolean
+        +constructor(data)
+        +getAlternatives(): Promise~Equipment[]~
+        +isCompatibleWith(exerciseId: Types.ObjectId): boolean
+        +isEquipmentAvailable(): boolean
+        +setAvailability(isAvailable: boolean): Equipment
+        +addAlternative(equipmentId: Types.ObjectId): Equipment
+        +removeAlternative(equipmentId: Types.ObjectId): Equipment
+        +update(updates): Equipment
+        +archive(): void
+        +restore(): void
+        +canBeDeleted(): boolean
+        +getAssociationCount(): number
+        +canBeSharedWith(user: any): boolean
+        +share(targetUser: any, permissions: readonly any[]): Promise~void~
+    }
+
+    %% ===== EQUIPMENT SPECIFICATIONS =====
+    class IEquipmentSpecs {
+        <<interface>>
+        +weight?: IMeasurement
+        +dimensions?: IDimensions
+        +capacity?: IMeasurement
+        +features?: readonly string[]
+        +safetyFeatures?: readonly string[]
+        +powerRequirements?: string
+        +material?: string
+        +manufacturer?: string
+        +model?: string
+        +serialNumber?: string
+        +warrantyInfo?: string
+    }
+
+    class IMeasurement {
+        <<interface>>
+        +value: number
+        +unit: MeasurementUnit
+    }
+
+    class IDimensions {
+        <<interface>>
+        +length: number
+        +width: number
+        +height: number
+        +unit: MeasurementUnit
+    }
+
+    class IMaintenanceInfo {
+        <<interface>>
+        +lastMaintenance?: Date
+        +nextMaintenance?: Date
+        +maintenanceHistory: readonly IMaintenanceRecord[]
+    }
+
+    class IMaintenanceRecord {
+        <<interface>>
+        +date: Date
+        +type: string
+        +performedBy: string
+        +notes?: string
+        +cost?: number
+    }
+
+    %% ===== EQUIPMENT SERVICE =====
+    class EquipmentService {
+        -equipmentRepository: IEquipmentRepository
+        +constructor(equipmentRepository: IEquipmentRepository)
+        +createEquipment(data: IEquipmentCreationData, createdBy: Types.ObjectId): Promise~Equipment~
+        +getEquipmentById(id: Types.ObjectId): Promise~Equipment | null~
+        +getEquipmentByName(name: string, organizationId: Types.ObjectId): Promise~Equipment | null~
+        +getEquipmentByCategory(category: EquipmentCategory): Promise~readonly Equipment[]~
+        +getOrganizationEquipment(organizationId: Types.ObjectId): Promise~readonly Equipment[]~
+        +getAvailableEquipment(organizationId: Types.ObjectId): Promise~readonly Equipment[]~
+        +updateEquipment(id: Types.ObjectId, updates: IEquipmentUpdateData): Promise~Equipment | null~
+        +setEquipmentAvailability(id: Types.ObjectId, isAvailable: boolean): Promise~Equipment | null~
+        +addEquipmentAlternative(equipmentId: Types.ObjectId, alternativeId: Types.ObjectId): Promise~Equipment | null~
+        +removeEquipmentAlternative(equipmentId: Types.ObjectId, alternativeId: Types.ObjectId): Promise~Equipment | null~
+        +searchEquipment(criteria: IEquipmentSearchCriteria): Promise~readonly Equipment[]~
+        +getEquipmentStatistics(organizationId: Types.ObjectId): Promise~IEquipmentStatistics~
+        +getEquipmentUsageStats(equipmentId: Types.ObjectId): Promise~IEquipmentUsageStats~
+        +archiveEquipment(id: Types.ObjectId): Promise~boolean~
+        +restoreEquipment(id: Types.ObjectId): Promise~boolean~
+        +findCompatibleEquipment(exerciseId: Types.ObjectId): Promise~readonly Equipment[]~
+        +getEquipmentAlternatives(equipmentId: Types.ObjectId): Promise~readonly Equipment[]~
+        +validateEquipmentAvailability(equipmentIds: readonly Types.ObjectId[], startTime: Date, endTime: Date): Promise~(available, unavailable, conflicts)~
+        -validateEquipmentCreation(data: IEquipmentCreationData): Promise~void~
+        -validateEquipmentName(name: string, organizationId: Types.ObjectId, excludeId?: Types.ObjectId): Promise~void~
+    }
+
+    %% ===== EQUIPMENT COMPATIBILITY SERVICE =====
+    class EquipmentCompatibilityService {
+        -equipmentRepository: IEquipmentRepository
+        +constructor(equipmentRepository: IEquipmentRepository)
+        +checkCompatibility(equipmentId: Types.ObjectId, exerciseId: Types.ObjectId): Promise~boolean~
+        +findCompatibleEquipment(exerciseId: Types.ObjectId): Promise~readonly Equipment[]~
+        +findCompatibleExercises(equipmentId: Types.ObjectId): Promise~readonly Types.ObjectId[]~
+        +suggestAlternatives(equipmentId: Types.ObjectId): Promise~readonly Equipment[]~
+        +validateEquipmentRequirements(exerciseId: Types.ObjectId, availableEquipment: readonly Types.ObjectId[]): Promise~IEquipmentValidationResult~
+        +findSubstituteEquipment(originalEquipmentId: Types.ObjectId, organizationId: Types.ObjectId): Promise~readonly Equipment[]~
+        +validateWorkoutEquipment(exerciseIds: readonly Types.ObjectId[], availableEquipment: readonly Types.ObjectId[]): Promise~(valid, missingEquipment, suggestions, warnings)~
+        -findSimilarEquipment(equipment: Equipment): Promise~readonly Equipment[]~
+        -calculateSimilarityScore(original: Equipment, alternative: Equipment): number
+        -getRequiredEquipmentForExercise(exerciseId: Types.ObjectId): Promise~readonly Types.ObjectId[]~
+        -getCompatibleCategories(category: EquipmentCategory): readonly EquipmentCategory[]
+        -areCategoriesCompatible(category1: EquipmentCategory, category2: EquipmentCategory): boolean
+    }
+
+    %% ===== REPOSITORY INTERFACE =====
+    class IEquipmentRepository {
+        <<interface>>
+        +findById(id: Types.ObjectId): Promise~Equipment | null~
+        +findByName(name: string): Promise~Equipment | null~
+        +findByCategory(category: EquipmentCategory): Promise~readonly Equipment[]~
+        +findByOrganization(organizationId: Types.ObjectId): Promise~readonly Equipment[]~
+        +findAvailable(organizationId: Types.ObjectId): Promise~readonly Equipment[]~
+        +search(criteria: IEquipmentSearchCriteria): Promise~readonly Equipment[]~
+        +create(equipment: Omit~Equipment, NewEntity~): Promise~Equipment~
+        +update(id: Types.ObjectId, updates: Partial~Equipment~): Promise~Equipment | null~
+        +archive(id: Types.ObjectId): Promise~boolean~
+        +restore(id: Types.ObjectId): Promise~boolean~
+        +isNameAvailable(name: string, organizationId: Types.ObjectId, excludeId?: Types.ObjectId): Promise~boolean~
+        +getStatistics(organizationId: Types.ObjectId): Promise~IEquipmentStatistics~
+        +getUsageStats(equipmentId: Types.ObjectId): Promise~IEquipmentUsageStats~
+        +findAlternatives(equipmentId: Types.ObjectId): Promise~readonly Equipment[]~
+        +findCompatibleEquipment(exerciseId: Types.ObjectId): Promise~readonly Equipment[]~
+    }
+
+    %% ===== DATA TRANSFER OBJECTS =====
+    class IEquipmentCreationData {
+        <<interface>>
+        +name: string
+        +category: EquipmentCategory
+        +description: string
+        +specifications: IEquipmentSpecs
+        +organizationId: Types.ObjectId
+        +isAvailable?: boolean
+        +status?: Status
+    }
+
+    class IEquipmentUpdateData {
+        <<interface>>
+        +name?: string
+        +description?: string
+        +specifications?: Partial~IEquipmentSpecs~
+        +isAvailable?: boolean
+        +status?: Status
+    }
+
+    class IEquipmentSearchCriteria {
+        <<interface>>
+        +name?: string
+        +category?: EquipmentCategory
+        +isAvailable?: boolean
+        +status?: Status
+        +organizationId?: Types.ObjectId
+        +hasFeatures?: readonly string[]
+        +minCapacity?: number
+        +maxCapacity?: number
+        +manufacturer?: string
+        +model?: string
+    }
+
+    class IEquipmentValidationResult {
+        <<interface>>
+        +isValid: boolean
+        +errors: readonly string[]
+        +warnings: readonly string[]
+        +suggestions: readonly string[]
+    }
+
+    %% ===== STATISTICS & ANALYTICS =====
+    class IEquipmentStatistics {
+        <<interface>>
+        +totalEquipment: number
+        +availableEquipment: number
+        +equipmentByCategory: Record~EquipmentCategory, number~
+        +equipmentByStatus: Record~Status, number~
+        +averageAge: number
+        +utilizationRate: number
+    }
+
+    class IEquipmentUsageStats {
+        <<interface>>
+        +totalUsage: number
+        +averageSessionDuration: number
+        +mostActiveUsers: readonly Types.ObjectId[]
+        +usageByTimeOfDay: Record~string, number~
+        +usageByDayOfWeek: Record~string, number~
+        +maintenanceFrequency: number
+        +downtime: number
+    }
+
+    class IEquipmentCompatibility {
+        <<interface>>
+        +exerciseTypes: readonly string[]
+        +muscleZones: readonly string[]
+        +difficultyLevels: readonly string[]
+        +userRequirements: readonly string[]
+        +contraindications: readonly string[]
+    }
+
+    %% ===== RESERVATION SYSTEM =====
+    class IEquipmentReservation {
+        <<interface>>
+        +id: Types.ObjectId
+        +equipmentId: Types.ObjectId
+        +userId: Types.ObjectId
+        +startTime: Date
+        +endTime: Date
+        +purpose: string
+        +status: 'PENDING' | 'CONFIRMED' | 'IN_USE' | 'COMPLETED' | 'CANCELLED'
+        +notes?: string
+        +createdAt: Date
+    }
+
+    class IEquipmentReservationRepository {
+        <<interface>>
+        +findByEquipmentId(equipmentId: Types.ObjectId, startDate: Date, endDate: Date): Promise~readonly IEquipmentReservation[]~
+        +findByUserId(userId: Types.ObjectId): Promise~readonly IEquipmentReservation[]~
+        +findConflicting(equipmentId: Types.ObjectId, startTime: Date, endTime: Date): Promise~readonly IEquipmentReservation[]~
+        +create(reservation: Omit~IEquipmentReservation, 'id' | 'createdAt'~): Promise~IEquipmentReservation~
+        +update(id: Types.ObjectId, updates: Partial~IEquipmentReservation~): Promise~IEquipmentReservation | null~
+        +cancel(id: Types.ObjectId): Promise~boolean~
+        +checkAvailability(equipmentId: Types.ObjectId, startTime: Date, endTime: Date): Promise~boolean~
+    }
+
+    %% ===== SERVICE INTERFACES =====
+    class IEquipmentCompatibilityService {
+        <<interface>>
+        +checkCompatibility(equipmentId: Types.ObjectId, exerciseId: Types.ObjectId): Promise~boolean~
+        +findCompatibleEquipment(exerciseId: Types.ObjectId): Promise~readonly Equipment[]~
+        +findCompatibleExercises(equipmentId: Types.ObjectId): Promise~readonly Types.ObjectId[]~
+        +suggestAlternatives(equipmentId: Types.ObjectId): Promise~readonly Equipment[]~
+        +validateEquipmentRequirements(exerciseId: Types.ObjectId, availableEquipment: readonly Types.ObjectId[]): Promise~IEquipmentValidationResult~
+    }
+
+    %% ===== RELATIONSHIPS =====
+    Equipment ..|> IEntity
+    Equipment ..|> IArchivable
+    Equipment ..|> IShareable
+    Equipment --> IEquipmentSpecs : has
+    Equipment --> IMeasurement : uses
+    Equipment --> IDimensions : uses
+
+    IEquipmentSpecs --> IMeasurement : contains
+    IEquipmentSpecs --> IDimensions : contains
+    IMaintenanceInfo --> IMaintenanceRecord : contains
+
+    EquipmentService --> IEquipmentRepository : uses
+    EquipmentService --> Equipment : manages
+    EquipmentService --> IEquipmentCreationData : uses
+    EquipmentService --> IEquipmentUpdateData : uses
+    EquipmentService --> IEquipmentSearchCriteria : uses
+    EquipmentService --> IEquipmentStatistics : returns
+    EquipmentService --> IEquipmentUsageStats : returns
+
+    EquipmentCompatibilityService ..|> IEquipmentCompatibilityService
+    EquipmentCompatibilityService --> IEquipmentRepository : uses
+    EquipmentCompatibilityService --> Equipment : analyzes
+    EquipmentCompatibilityService --> IEquipmentValidationResult : returns
+
+    IEquipmentRepository --> Equipment : manages
+    IEquipmentReservationRepository --> IEquipmentReservation : manages
+
+    %% ===== ENUM USAGE NOTES =====
+    note for Equipment "Uses: EquipmentCategory, Status enums"
+    note for IMeasurement "Uses: MeasurementUnit enum"
+    note for IEquipmentSearchCriteria "Uses: EquipmentCategory, Status enums"
+    note for IEquipmentStatistics "Uses: EquipmentCategory, Status enums"

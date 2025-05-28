@@ -1,0 +1,269 @@
+classDiagram
+    %% ===== ABSTRACT BASE LOGGER =====
+    class Logger {
+        <<abstract>>
+        #context: string
+        #level: LogLevel
+        +constructor(context: string, level: LogLevel)
+        +log(message: string, severity?: Severity, metadata?: Record~string, unknown~): void
+        +logError(error: IError, metadata?: Record~string, unknown~): void
+        +logEvent(event: IEvent, metadata?: Record~string, unknown~): void
+        +setContext(context: string): void
+        +setLevel(level: LogLevel): void
+        +getLevel(): LogLevel
+        #shouldLog(level: LogLevel): boolean
+        #formatMessage(message: string, severity: Severity): string
+        -severityToLogLevel(severity: Severity): LogLevel
+        -eventTypeToLogLevel(eventType: string): LogLevel
+        #writeLog(entry: LogEntry): void*
+    }
+
+    %% ===== LOG ENTRY & FORMATTER INTERFACES =====
+    class LogEntry {
+        <<interface>>
+        +timestamp: Date
+        +level: LogLevel
+        +message: string
+        +context?: string
+        +metadata?: Record~string, unknown~
+        +traceId?: string
+        +userId?: string
+        +source?: string
+    }
+
+    class LogFormatter {
+        <<interface>>
+        +format(entry: LogEntry): string
+    }
+
+    %% ===== CONCRETE LOGGER IMPLEMENTATIONS =====
+    class ConsoleLogger {
+        -formatter: LogFormatter
+        +constructor(context: string, formatter?: LogFormatter)
+        #writeLog(entry: LogEntry): void
+    }
+
+    class FileLogger {
+        -filePath: string
+        -maxFileSize: number
+        -rotateCount: number
+        -formatter: LogFormatter
+        -writeQueue: string[]
+        -isWriting: boolean
+        +constructor(context, filePath, maxFileSize?, rotateCount?, formatter?)
+        #writeLog(entry: LogEntry): void
+        -processWriteQueue(): Promise~void~
+        -checkAndRotate(): Promise~void~
+        +rotate(): Promise~void~
+        +cleanup(): Promise~void~
+    }
+
+    class DatabaseLogger {
+        -connectionString: string
+        -batchSize: number
+        -logQueue: LogEntry[]
+        -tableName: string
+        -flushInterval: number
+        +constructor(context, connectionString, options?)
+        #writeLog(entry: LogEntry): void
+        +flush(): Promise~void~
+        +setBatchSize(size: number): void
+        -processBatch(): Promise~void~
+    }
+
+    class ContextLogger {
+        -loggers: Logger[]
+        +constructor(context: string)
+        +addLogger(logger: Logger): void
+        +removeLogger(logger: Logger): void
+        #writeLog(entry: LogEntry): void
+    }
+
+    %% ===== FORMATTER IMPLEMENTATIONS =====
+    class ConsoleFormatter {
+        +format(entry: LogEntry): string
+    }
+
+    class JsonFormatter {
+        +format(entry: LogEntry): string
+    }
+
+    %% ===== LOGGER FACTORY =====
+    class LoggerFactory {
+        <<static>>
+        -loggers: Map~string, Logger~
+        +getLogger(name: string, config?: LoggerConfig): Logger
+        +console(context: string, level?: LogLevel): Logger
+        +file(context, filePath, level?, maxFileSize?, rotateCount?): Logger
+        +clearCache(): void
+        +getAllLoggers(): ReadonlyMap~string, Logger~
+        -createLogger(name: string, config?: LoggerConfig): Logger
+    }
+
+    class LoggerConfig {
+        <<interface>>
+        +level: LogLevel
+        +context?: string
+        +type: 'console' | 'file'
+        +filePath?: string
+        +maxFileSize?: number
+        +rotateCount?: number
+    }
+
+    %% ===== LOGGING CONFIGURATION =====
+    class LoggingConfig {
+        +globalLevel: LogLevel
+        +defaultContext: string
+        +enableTracing: boolean
+        +enableMetrics: boolean
+        +loggers: readonly LoggerConfiguration[]
+        +environment: 'development' | 'staging' | 'production'
+        +applicationName: string
+        +version: string
+    }
+
+    class LoggerConfiguration {
+        <<interface>>
+        +name: string
+        +level: LogLevel
+        +type: 'console' | 'file' | 'database' | 'composite'
+        +enabled: boolean
+        +context?: string
+        +formatter?: string
+        +filters?: readonly string[]
+    }
+
+    class FileLoggerConfiguration {
+        +type: 'file'
+        +filePath: string
+        +maxFileSize: number
+        +rotateCount: number
+        +rotateOnStartup: boolean
+        +compression: boolean
+    }
+
+    class DatabaseLoggerConfiguration {
+        +type: 'database'
+        +connectionString: string
+        +tableName: string
+        +batchSize: number
+        +flushInterval: number
+        +retentionDays: number
+    }
+
+    class CompositeLoggerConfiguration {
+        +type: 'composite'
+        +loggers: readonly LoggerConfiguration[]
+    }
+
+    %% ===== LOGGER CONFIG BUILDER =====
+    class LoggerConfigBuilder {
+        -config: Partial~LoggingConfig~
+        -loggers: LoggerConfiguration[]
+        +setGlobalLevel(level: LogLevel): this
+        +setDefaultContext(context: string): this
+        +setTracing(enabled: boolean): this
+        +setMetrics(enabled: boolean): this
+        +setEnvironment(environment): this
+        +setApplicationInfo(name: string, version: string): this
+        +addConsoleLogger(name, level?, context?, enabled?): this
+        +addFileLogger(name, filePath, options?): this
+        +addDatabaseLogger(name, connectionString, options?): this
+        +addCompositeLogger(name, childLoggers, options?): this
+        +build(): LoggingConfig
+        +development(): LoggerConfigBuilder
+        +production(): LoggerConfigBuilder
+        +testing(): LoggerConfigBuilder
+    }
+
+    %% ===== ENVIRONMENT CONFIG =====
+    class EnvironmentConfig {
+        <<static>>
+        +fromEnvironment(env?: EnvironmentVariables): LoggingConfig
+        +getDefault(): LoggingConfig
+        +validate(env: EnvironmentVariables): (isValid, errors, warnings)
+        -addLoggersFromEnvironment(builder: LoggerConfigBuilder, env): void
+        -parseLogLevel(level: string): LogLevel
+        -parseBoolean(value: string): boolean
+    }
+
+    class EnvironmentVariables {
+        <<interface>>
+        +LOG_LEVEL?: string
+        +LOG_ENVIRONMENT?: string
+        +LOG_ENABLE_TRACING?: string
+        +LOG_ENABLE_METRICS?: string
+        +LOG_FILE_PATH?: string
+        +LOG_FILE_MAX_SIZE?: string
+        +LOG_FILE_ROTATE_COUNT?: string
+        +LOG_DB_CONNECTION?: string
+        +LOG_DB_TABLE?: string
+        +LOG_DB_BATCH_SIZE?: string
+        +APP_NAME?: string
+        +APP_VERSION?: string
+    }
+
+    %% ===== SPECIALIZED LOGGERS =====
+    class ValidationLogger {
+        +logValidationError(field, value, rule, error: IError): void
+        +logValidationSuccess(field, value): void
+    }
+
+    class AuthLogger {
+        +logAuthAttempt(userId, success, reason?): void
+        +logLogin(userId, sessionId): void
+        +logLogout(userId, sessionId): void
+        +logPasswordChange(userId): void
+        +logSecurityBreach(userId, details): void
+    }
+
+    class AuditLogger {
+        +logUserAction(userId, action, resource, details?): void
+        +logSystemEvent(event, severity, details?): void
+        +logDataChange(userId, table, recordId, changes): void
+        +getAuditTrail(filters): Promise~any[]~
+    }
+
+    class IAMLogger {
+        -context: string
+        +logDecision(userId, resource, action, allowed, reason?): void
+        +logSharing(ownerId, targetUserId, resourceType, action): void
+        +logSecurityEvent(event: IEvent): void
+        +getAccessHistory(userId, limit?): any[]
+    }
+
+    %% ===== RELATIONSHIPS =====
+    Logger <|-- ConsoleLogger
+    Logger <|-- FileLogger
+    Logger <|-- DatabaseLogger
+    Logger <|-- ContextLogger
+    Logger <|-- ValidationLogger
+    Logger <|-- AuthLogger
+    Logger <|-- AuditLogger
+    Logger <|-- IAMLogger
+
+    LogFormatter <|.. ConsoleFormatter
+    LogFormatter <|.. JsonFormatter
+
+    LoggerConfiguration <|-- FileLoggerConfiguration
+    LoggerConfiguration <|-- DatabaseLoggerConfiguration
+    LoggerConfiguration <|-- CompositeLoggerConfiguration
+
+    ConsoleLogger --> LogFormatter : uses
+    FileLogger --> LogFormatter : uses
+    ContextLogger --> Logger : manages
+    LoggerFactory --> Logger : creates
+    LoggerFactory --> LoggerConfig : uses
+    LoggerConfigBuilder --> LoggingConfig : builds
+    LoggerConfigBuilder --> LoggerConfiguration : creates
+    EnvironmentConfig --> LoggerConfigBuilder : uses
+    EnvironmentConfig --> EnvironmentVariables : reads
+
+    Logger --> LogEntry : creates
+    Logger --> IError : logs
+    Logger --> IEvent : logs
+
+    %% ===== ENUM USAGE NOTES =====
+    note for Logger "Uses: LogLevel enum (DEBUG, INFO, WARN, ERROR, CRITICAL)"
+    note for Logger "Uses: Severity, EventType enums from core"
+    note for LoggingConfig "Uses: LogLevel enum"
