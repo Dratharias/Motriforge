@@ -71,7 +71,7 @@
 - [x] Media processing tests
 - [x] Access control tests
 
-## Phase 4.1: Permission System (Week 5-6) - Decomposed to Avoid God Objects
+## Phase 4.1: Permission System (Week 5-6)
 ### Permission Core
 - [ ] Create `src/infrastructure/iam/permissions/core/`
   - [ ] PermissionSet entity

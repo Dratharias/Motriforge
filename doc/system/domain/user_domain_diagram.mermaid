@@ -1,0 +1,377 @@
+classDiagram
+    %% ===== USER ENTITY =====
+    class User {
+        +id: Types.ObjectId
+        +email: string
+        +firstName: string
+        +lastName: string
+        +role: Role
+        +status: Status
+        +organization: Types.ObjectId
+        +profile?: UserProfile
+        +preferences?: UserPreferences
+        +createdAt: Date
+        +updatedAt: Date
+        +lastActiveAt?: Date
+        +createdBy: Types.ObjectId
+        +isActive: boolean
+        +isDraft: boolean
+        +constructor(data)
+        +getFullName(): string
+        +canAccess(resource: ResourceType, action: Action): boolean
+        +updateLastActive(): User
+        +isUserActive(): boolean
+        +isRecentlyActive(): boolean
+        +getDisplayName(): string
+        +canBeAssigned(): boolean
+        +canAssignToOthers(): boolean
+        +archive(): void
+        +restore(): void
+        +canBeDeleted(): boolean
+        +getAssociationCount(): number
+        +update(updates): User
+    }
+
+    %% ===== USER PROFILE ENTITY =====
+    class UserProfile {
+        +id: Types.ObjectId
+        +userId: Types.ObjectId
+        +dateOfBirth?: Date
+        +gender?: string
+        +height?: IMeasurement
+        +weight?: IMeasurement
+        +medicalConditions: readonly string[]
+        +injuries: readonly InjuryRecord[]
+        +fitnessGoals: readonly FitnessGoal[]
+        +emergencyContact?: IEmergencyContact
+        +createdAt: Date
+        +updatedAt: Date
+        +createdBy: Types.ObjectId
+        +isActive: boolean
+        +isDraft: boolean
+        +constructor(data)
+        +getAge(): number | null
+        +getBMI(): number | null
+        +hasInjury(bodyPart: MuscleZone): boolean
+        +getActiveInjuries(): readonly InjuryRecord[]
+        +hasMedicalConditions(): boolean
+        +getBMICategory(): string | null
+        +isCompleteForAssessment(): boolean
+        +update(updates): UserProfile
+        +addMedicalCondition(condition: string): UserProfile
+        +removeMedicalCondition(condition: string): UserProfile
+    }
+
+    %% ===== USER PREFERENCES ENTITY =====
+    class UserPreferences {
+        +id: Types.ObjectId
+        +userId: Types.ObjectId
+        +preferredUnits: MeasurementUnit
+        +defaultWorkoutType: WorkoutType
+        +reminderSettings: IReminderSettings
+        +privacySettings: IPrivacySettings
+        +accessibilitySettings: IAccessibilitySettings
+        +createdAt: Date
+        +updatedAt: Date
+        +createdBy: Types.ObjectId
+        +isActive: boolean
+        +isDraft: boolean
+        +constructor(data)
+        +update(updates): UserPreferences
+        +createDefaultReminders(): IReminderSettings
+        +createDefaultPrivacy(): IPrivacySettings
+        +createDefaultAccessibility(): IAccessibilitySettings
+        +allowsDataSharing(): boolean
+        +hasAccessibilityNeeds(): boolean
+        +getNotificationSummary(): (hasReminders, channels, frequency)
+    }
+
+    %% ===== USER SERVICE =====
+    class UserService {
+        -userRepository: IUserRepository
+        +constructor(userRepository: IUserRepository)
+        +createUser(data: IUserCreationData, createdBy: Types.ObjectId): Promise~User~
+        +getUserById(id: Types.ObjectId): Promise~User | null~
+        +getUserByEmail(email: string): Promise~User | null~
+        +updateUser(id: Types.ObjectId, updates): Promise~User | null~
+        +activateUser(id: Types.ObjectId): Promise~User | null~
+        +deactivateUser(id: Types.ObjectId): Promise~User | null~
+        +archiveUser(id: Types.ObjectId): Promise~boolean~
+        +restoreUser(id: Types.ObjectId): Promise~boolean~
+        +updateLastActive(id: Types.ObjectId): Promise~boolean~
+        +searchUsers(criteria: IUserSearchCriteria): Promise~readonly User[]~
+        +getUserStatistics(): Promise~IUserStatistics~
+        +getUsersByOrganization(organizationId: Types.ObjectId): Promise~readonly User[]~
+        +getUsersByRole(role: Role): Promise~readonly User[]~
+        +canUserBeAssigned(userId: Types.ObjectId): Promise~boolean~
+        +canUserAssignToOthers(userId: Types.ObjectId): Promise~boolean~
+        -validateEmail(email: string, excludeId?: Types.ObjectId): Promise~void~
+        -validateName(name: string, field: string): void
+        -validateUserCreationData(data: IUserCreationData): void
+    }
+
+    %% ===== PROFILE SERVICE =====
+    class ProfileService {
+        -profileRepository: IUserProfileRepository
+        +constructor(profileRepository: IUserProfileRepository)
+        +createProfile(data): Promise~UserProfile~
+        +getProfileByUserId(userId: Types.ObjectId): Promise~UserProfile | null~
+        +updateProfile(profileId: Types.ObjectId, updates): Promise~UserProfile | null~
+        +addMedicalCondition(profileId: Types.ObjectId, condition: string): Promise~UserProfile | null~
+        +removeMedicalCondition(profileId: Types.ObjectId, condition: string): Promise~UserProfile | null~
+        +getProfileCompletion(userId: Types.ObjectId): Promise~(percentage, missingFields, isCompleteForAssessment)~
+        +getUsersWithMedicalCondition(condition: string): Promise~readonly UserProfile[]~
+        +getUsersWithActiveInjuries(): Promise~readonly UserProfile[]~
+        +getIncompleteProfiles(): Promise~readonly UserProfile[]~
+        +calculateBMI(userId: Types.ObjectId): Promise~(bmi, category)~
+        -validateProfileData(data): void
+        -validateProfileUpdates(updates): void
+        -validateDateOfBirth(dateOfBirth: Date): void
+        -validateMeasurement(measurement: IMeasurement, field: string, limits): void
+        -validateEmergencyContact(contact: IEmergencyContact): void
+    }
+
+    %% ===== PREFERENCES SERVICE =====
+    class PreferencesService {
+        -preferencesRepository: IUserPreferencesRepository
+        +constructor(preferencesRepository: IUserPreferencesRepository)
+        +createDefaultPreferences(userId: Types.ObjectId, createdBy: Types.ObjectId): Promise~UserPreferences~
+        +getPreferencesByUserId(userId: Types.ObjectId): Promise~UserPreferences | null~
+        +updatePreferences(preferencesId: Types.ObjectId, updates): Promise~UserPreferences | null~
+        +updatePrivacySettings(preferencesId: Types.ObjectId, privacySettings: Partial~IPrivacySettings~): Promise~UserPreferences | null~
+        +updateAccessibilitySettings(preferencesId: Types.ObjectId, accessibilitySettings: Partial~IAccessibilitySettings~): Promise~UserPreferences | null~
+        +getUsersWithRemindersEnabled(): Promise~readonly UserPreferences[]~
+        +getUsersByPreferredUnits(unit: MeasurementUnit): Promise~readonly UserPreferences[]~
+        +getNotificationSummary(userId: Types.ObjectId): Promise~(hasReminders, channels, frequency) | null~
+        +userAllowsDataSharing(userId: Types.ObjectId): Promise~boolean~
+        +userHasAccessibilityNeeds(userId: Types.ObjectId): Promise~boolean~
+        +getUsersWithAccessibilityNeeds(): Promise~readonly UserPreferences[]~
+        +exportUserPreferences(userId: Types.ObjectId): Promise~Record~string, unknown~ | null~
+    }
+
+    %% ===== REPOSITORY INTERFACES =====
+    class IUserRepository {
+        <<interface>>
+        +findById(id: Types.ObjectId): Promise~User | null~
+        +findByEmail(email: string): Promise~User | null~
+        +findByOrganization(organizationId: Types.ObjectId): Promise~readonly User[]~
+        +findByRole(role: string): Promise~readonly User[]~
+        +findActive(): Promise~readonly User[]~
+        +create(user: Omit~User, NewEntity~): Promise~User~
+        +update(id: Types.ObjectId, updates: Partial~User~): Promise~User | null~
+        +archive(id: Types.ObjectId): Promise~boolean~
+        +restore(id: Types.ObjectId): Promise~boolean~
+        +isEmailAvailable(email: string, excludeId?: Types.ObjectId): Promise~boolean~
+        +updateLastActive(id: Types.ObjectId): Promise~boolean~
+        +findInactiveUsers(daysInactive: number): Promise~readonly User[]~
+    }
+
+    class IUserProfileRepository {
+        <<interface>>
+        +findByUserId(userId: Types.ObjectId): Promise~UserProfile | null~
+        +findById(id: Types.ObjectId): Promise~UserProfile | null~
+        +create(profile: Omit~UserProfile, NewEntity~): Promise~UserProfile~
+        +update(id: Types.ObjectId, updates: Partial~UserProfile~): Promise~UserProfile | null~
+        +delete(id: Types.ObjectId): Promise~boolean~
+        +findByMedicalCondition(condition: string): Promise~readonly UserProfile[]~
+        +findWithActiveInjuries(): Promise~readonly UserProfile[]~
+        +findIncompleteProfiles(): Promise~readonly UserProfile[]~
+    }
+
+    class IUserPreferencesRepository {
+        <<interface>>
+        +findByUserId(userId: Types.ObjectId): Promise~UserPreferences | null~
+        +findById(id: Types.ObjectId): Promise~UserPreferences | null~
+        +create(preferences: Omit~UserPreferences, NewEntity~): Promise~UserPreferences~
+        +update(id: Types.ObjectId, updates: Partial~UserPreferences~): Promise~UserPreferences | null~
+        +delete(id: Types.ObjectId): Promise~boolean~
+        +findByPreferredUnits(unit: MeasurementUnit): Promise~readonly UserPreferences[]~
+        +findWithRemindersEnabled(): Promise~readonly UserPreferences[]~
+    }
+
+    %% ===== DATA STRUCTURES & INTERFACES =====
+    class IMeasurement {
+        <<interface>>
+        +value: number
+        +unit: MeasurementUnit
+    }
+
+    class IEmergencyContact {
+        <<interface>>
+        +name: string
+        +relationship: string
+        +phone: string
+        +email?: string
+        +isPrimary: boolean
+    }
+
+    class IReminderSettings {
+        <<interface>>
+        +workoutReminders: boolean
+        +progressReminders: boolean
+        +reminderTime: string
+        +frequency: 'daily' | 'weekly' | 'monthly'
+        +pushNotifications: boolean
+        +emailNotifications: boolean
+        +reminderDaysBefore: number
+    }
+
+    class IPrivacySettings {
+        <<interface>>
+        +shareProgress: boolean
+        +shareWorkouts: boolean
+        +publicProfile: boolean
+        +dataRetention: number
+        +allowAnalytics: boolean
+        +allowMarketing: boolean
+        +shareWithTrainers: boolean
+        +shareWithOrganization: boolean
+    }
+
+    class IAccessibilitySettings {
+        <<interface>>
+        +fontSize: 'small' | 'medium' | 'large' | 'extra-large'
+        +highContrast: boolean
+        +voiceInstructions: boolean
+        +largeButtons: boolean
+        +reducedMotion: boolean
+        +screenReader: boolean
+        +colorBlindSupport: boolean
+        +keyboardNavigation: boolean
+    }
+
+    %% ===== INJURY & HEALTH RELATED =====
+    class InjuryRecord {
+        <<interface>>
+        +id: Types.ObjectId
+        +userId: Types.ObjectId
+        +type: InjuryType
+        +bodyPart: MuscleZone
+        +severity: InjurySeverity
+        +description: string
+        +dateOccurred: Date
+        +dateHealed?: Date
+        +treatment: readonly string[]
+        +restrictions: readonly IExerciseRestriction[]
+        +status: InjuryStatus
+        +verifiedBy?: Types.ObjectId
+        +notes: string
+        +isActive(): boolean
+        +affectsExercise(exerciseId: Types.ObjectId): boolean
+        +getRestrictions(): readonly IExerciseRestriction[]
+    }
+
+    class IExerciseRestriction {
+        <<interface>>
+        +type: RestrictionType
+        +affectedMovements: readonly string[]
+        +severity: string
+        +alternatives: readonly Types.ObjectId[]
+    }
+
+    class FitnessGoal {
+        <<interface>>
+        +id: Types.ObjectId
+        +userId: Types.ObjectId
+        +title: string
+        +description: string
+        +type: GoalType
+        +targetValue?: number
+        +currentValue?: number
+        +unit?: MeasurementUnit
+        +deadline: Date
+        +priority: GoalPriority
+        +status: GoalStatus
+        +createdAt: Date
+        +updatedAt: Date
+        +getProgress(): number
+        +isAchieved(): boolean
+        +getDaysRemaining(): number
+    }
+
+    %% ===== DATA TRANSFER OBJECTS =====
+    class IUserCreationData {
+        <<interface>>
+        +email: string
+        +firstName: string
+        +lastName: string
+        +role: string
+        +organizationId: Types.ObjectId
+        +profile?: (dateOfBirth?, gender?, height?, weight?, emergencyContact?)
+        +preferences?: (preferredUnits?, reminderSettings?, privacySettings?, accessibilitySettings?)
+    }
+
+    class IUserSearchCriteria {
+        <<interface>>
+        +name?: string
+        +email?: string
+        +role?: string
+        +organizationId?: Types.ObjectId
+        +isActive?: boolean
+        +hasProfile?: boolean
+        +hasInjuries?: boolean
+        +lastActiveBefore?: Date
+        +lastActiveAfter?: Date
+    }
+
+    class IUserStatistics {
+        <<interface>>
+        +totalUsers: number
+        +activeUsers: number
+        +usersByRole: Record~string, number~
+        +recentlyActive: number
+        +completedProfiles: number
+        +usersWithInjuries: number
+    }
+
+    %% ===== RELATIONSHIPS =====
+    User ..|> IEntity
+    User ..|> IUser
+    User ..|> IArchivable
+    User --> UserProfile : has
+    User --> UserPreferences : has
+    User --> Organization : belongs to
+
+    UserProfile ..|> IEntity
+    UserProfile --> IMeasurement : uses
+    UserProfile --> IEmergencyContact : has
+    UserProfile --> InjuryRecord : contains
+    UserProfile --> FitnessGoal : includes
+
+    UserPreferences ..|> IEntity
+    UserPreferences --> IReminderSettings : has
+    UserPreferences --> IPrivacySettings : has
+    UserPreferences --> IAccessibilitySettings : has
+
+    UserService --> IUserRepository : uses
+    UserService --> User : manages
+    UserService --> IUserCreationData : uses
+    UserService --> IUserSearchCriteria : uses
+    UserService --> IUserStatistics : returns
+
+    ProfileService --> IUserProfileRepository : uses
+    ProfileService --> UserProfile : manages
+    ProfileService --> IMeasurement : validates
+    ProfileService --> IEmergencyContact : validates
+
+    PreferencesService --> IUserPreferencesRepository : uses
+    PreferencesService --> UserPreferences : manages
+    PreferencesService --> IReminderSettings : manages
+    PreferencesService --> IPrivacySettings : manages
+    PreferencesService --> IAccessibilitySettings : manages
+
+    IUserRepository --> User : manages
+    IUserProfileRepository --> UserProfile : manages
+    IUserPreferencesRepository --> UserPreferences : manages
+
+    InjuryRecord --> IExerciseRestriction : contains
+
+    %% ===== ENUM USAGE NOTES =====
+    note for User "Uses: Role, Status, ResourceType, Action enums"
+    note for UserProfile "Uses: MuscleZone enum for injuries"
+    note for UserPreferences "Uses: MeasurementUnit, WorkoutType enums"
+    note for InjuryRecord "Uses: InjuryType, InjurySeverity, InjuryStatus, MuscleZone enums"
+    note for IExerciseRestriction "Uses: RestrictionType enum"
+    note for FitnessGoal "Uses: GoalType, GoalPriority, GoalStatus, MeasurementUnit enums"
+    note for IUserCreationData "Uses: Role enum"
+    note for IUserSearchCriteria "Uses: Role enum"
