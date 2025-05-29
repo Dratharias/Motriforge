@@ -73,46 +73,46 @@
 
 ## Phase 4.1: Permission System (Week 5-6)
 ### Permission Core
-- [ ] Create `src/infrastructure/iam/permissions/core/`
-  - [ ] PermissionSet entity
-  - [ ] IResourcePermission interface
-  - [ ] PermissionScope enum
-  - [ ] PermissionCondition interface
+- [x] Create `src/infrastructure/iam/permissions/core/`
+  - [x] PermissionSet entity
+  - [x] IResourcePermission interface
+  - [x] PermissionScope enum
+  - [x] PermissionCondition interface
 
 ### Permission Strategies
-- [ ] Create `src/infrastructure/iam/permissions/strategies/`
-  - [ ] IPermissionStrategy interface
-  - [ ] RoleBasedPermissionStrategy class
-  - [ ] ResourcePermissionStrategy class
-  - [ ] ConditionalPermissionStrategy class
-  - [ ] OrganizationPermissionStrategy class
+- [x] Create `src/infrastructure/iam/permissions/strategies/`
+  - [x] IPermissionStrategy interface
+  - [x] RoleBasedPermissionStrategy class
+  - [x] ResourcePermissionStrategy class
+  - [x] ConditionalPermissionStrategy class
+  - [x] OrganizationPermissionStrategy class
 
 ### Access Validation
-- [ ] Create `src/infrastructure/iam/validation/`
-  - [ ] IAccessValidator interface
-  - [ ] AccessValidationEngine class
-  - [ ] AccessValidationRule interface
-  - [ ] ValidationContext class
+- [x] Create `src/infrastructure/iam/validation/`
+  - [x] IAccessValidator interface
+  - [x] AccessValidationEngine class
+  - [x] AccessValidationRule interface
+  - [x] ValidationContext class
 
 ### IAM Service (Facade Pattern)
-- [ ] Create `src/infrastructure/iam/services/`
-  - [ ] IAMServiceFacade class (lightweight coordinator)
-  - [ ] PermissionResolver class
-  - [ ] AccessEvaluator class
-  - [ ] RoleManager class
+- [x] Create `src/infrastructure/iam/services/`
+  - [x] IAMServiceFacade class (lightweight coordinator)
+  - [x] PermissionResolver class
+  - [x] AccessEvaluator class
+  - [x] RoleManager class
 
 ### IAM Logging
-- [ ] Create `src/infrastructure/iam/logging/`
-  - [ ] IAMLogger class
-  - [ ] AccessDecisionLogger class
-  - [ ] SecurityEventLogger class
+- [x] Create `src/infrastructure/iam/logging/`
+  - [x] IAMLogger class
+  - [x] AccessDecisionLogger class
+  - [x] SecurityEventLogger class
 
 ### Testing
-- [ ] Unit tests for PermissionSet
-- [ ] Unit tests for each strategy
-- [ ] Integration tests for IAMServiceFacade
-- [ ] Access validation scenario tests
-- [ ] Security policy compliance tests
+- [x] Unit tests for PermissionSet
+- [x] Unit tests for each strategy
+- [x] Integration tests for IAMServiceFacade
+- [x] Access validation scenario tests
+- [x] Security policy compliance tests
 
 ## Phase 4.2: Sharing System (Week 6)
 ### Sharing Core

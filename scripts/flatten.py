@@ -8,7 +8,7 @@ import argparse
 BASE_DIR = os.path.dirname(__file__)
 OUTPUT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'flatten'))
 TYPES_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'backend', 'src', 'types'))
-SRC_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'backend', 'src'))
+SRC_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'backend'))
 INPUT_FILE = os.path.join(BASE_DIR, 'to-flatten.txt')
 
 # Ensure output directory exists
@@ -64,7 +64,12 @@ def flatten_from_file():
         return
     with open(INPUT_FILE, 'r', encoding='utf-8') as f:
         lines = [line.strip() for line in f if line.strip()]
-    for full_path in lines:
+    for line in lines:
+        # Determine path relative to SRC_DIR unless absolute
+        if os.path.isabs(line):
+            full_path = line
+        else:
+            full_path = os.path.abspath(os.path.join(SRC_DIR, line))
         if not os.path.isfile(full_path):
             print(f"❌ File does not exist: {full_path}")
             continue
@@ -95,16 +100,28 @@ def flatten_all_src():
             continue
         copy_and_clean_file(ts_path, destination_path, SRC_DIR)
 
+def flatten_test_files():
+    test_files = glob.glob(os.path.join(SRC_DIR, '**', '*.test.ts'), recursive=True)
+    for ts_path in test_files:
+        file_name = os.path.basename(ts_path)
+        destination_path = os.path.join(OUTPUT_DIR, file_name)
+        if os.path.exists(destination_path):
+            print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+            continue
+        copy_and_clean_file(ts_path, destination_path, SRC_DIR)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flatten files from backend/src.")
     parser.add_argument('--flatten-all', action='store_true', help="Flatten everything from backend/src/**/*.ts")
     parser.add_argument('--types', action='store_true', help="Only flatten types from backend/src/types/**/*.ts")
+    parser.add_argument('--test', action='store_true', help="Only flatten test files backend/src/**/*.test.ts")
     args = parser.parse_args()
 
     if args.flatten_all:
         flatten_all_src()
     elif args.types:
         flatten_types()
+    elif args.test:
+        flatten_test_files()
     else:
         flatten_from_file()
-        flatten_types()
