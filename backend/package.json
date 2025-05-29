@@ -25,6 +25,7 @@
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
     "mime-types": "^2.1.35",
+    "mongodb-memory-server": "^10.1.4",
     "mongoose": "^8.0.3",
     "motriforge-backend": "file:",
     "vitest": "^3.1.4",

@@ -191,7 +191,7 @@ export class IAMService implements IIAMService {
 
   async getRolePermissions(role: Role): Promise<IPermissionSet | null> {
     try {
-      return this.permissionRepository.findByRole(role);
+      return await this.permissionRepository.findByRole(role);
     } catch (error) {
       this.logger.log(`getRolePermissions error: ${error instanceof Error ? error.message : 'Unknown error'}`, Severity.ERROR);
       return null;
