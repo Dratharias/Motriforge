@@ -65,7 +65,6 @@ def flatten_from_file():
     with open(INPUT_FILE, 'r', encoding='utf-8') as f:
         lines = [line.strip() for line in f if line.strip()]
     for line in lines:
-        # Determine path relative to SRC_DIR unless absolute
         if os.path.isabs(line):
             full_path = line
         else:
@@ -110,11 +109,33 @@ def flatten_test_files():
             continue
         copy_and_clean_file(ts_path, destination_path, SRC_DIR)
 
+def flatten_by_dir_name(target_dir_name: str):
+    matched_dirs = []
+    for root, dirs, _ in os.walk(SRC_DIR):
+        for d in dirs:
+            if d == target_dir_name:
+                matched_dirs.append(os.path.join(root, d))
+
+    if not matched_dirs:
+        print(f"❌ No directory named '{target_dir_name}' found in {SRC_DIR}")
+        return
+
+    for dir_path in matched_dirs:
+        ts_files = glob.glob(os.path.join(dir_path, '**', '*.ts'), recursive=True)
+        for ts_path in ts_files:
+            file_name = os.path.basename(ts_path)
+            destination_path = os.path.join(OUTPUT_DIR, file_name)
+            if os.path.exists(destination_path):
+                print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+                continue
+            copy_and_clean_file(ts_path, destination_path, SRC_DIR)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flatten files from backend/src.")
     parser.add_argument('--flatten-all', action='store_true', help="Flatten everything from backend/src/**/*.ts")
     parser.add_argument('--types', action='store_true', help="Only flatten types from backend/src/types/**/*.ts")
     parser.add_argument('--test', action='store_true', help="Only flatten test files backend/src/**/*.test.ts")
+    parser.add_argument('--dir', type=str, help="Name of the directory to recursively flatten from")
     args = parser.parse_args()
 
     if args.flatten_all:
@@ -123,5 +144,7 @@ if __name__ == "__main__":
         flatten_types()
     elif args.test:
         flatten_test_files()
+    elif args.dir:
+        flatten_by_dir_name(args.dir)
     else:
         flatten_from_file()

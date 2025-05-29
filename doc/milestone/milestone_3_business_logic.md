@@ -2,35 +2,35 @@
 
 ## Phase 5.1: Basic Exercise Domain (Week 6-7)
 ### Exercise Core Entity
-- [ ] Create `src/domain/exercise/entities/`
-  - [ ] Exercise entity (implement IEntity, ICloneable, IShareable, IDraftable, IValidatable)
-  - [ ] ExerciseInstruction entity
-  - [ ] ExerciseProgression entity
-  - [ ] IContraindication interface
-  - [ ] IDifficultyLevel interface
+- [x] Create `src/domain/exercise/entities/`
+  - [x] Exercise entity (implement IEntity, ICloneable, IShareable, IDraftable, IValidatable)
+  - [x] ExerciseInstruction entity
+  - [x] ExerciseProgression entity
+  - [x] IContraindication interface
+  - [x] IDifficultyLevel interface
 
 ### Exercise Configuration
-- [ ] Create `src/domain/exercise/config/`
-  - [ ] IExerciseConfig interface
-  - [ ] ExerciseDefaults class
-  - [ ] ProgressionRules class
-  - [ ] SafetyGuidelines class
+- [x] Create `src/domain/exercise/config/`
+  - [x] IExerciseConfig interface
+  - [x] ExerciseDefaults class
+  - [x] ProgressionRules class
+  - [x] SafetyGuidelines class
 
 ### Exercise Repository
-- [ ] Create `src/domain/exercise/repositories/`
-  - [ ] IExerciseRepository interface
-  - [ ] ExerciseQueryOptions interface
-  - [ ] ExerciseSearchCriteria interface
+- [x] Create `src/domain/exercise/repositories/`
+  - [x] IExerciseRepository interface
+  - [x] ExerciseQueryOptions interface
+  - [x] ExerciseSearchCriteria interface
 
 ### Testing
-- [ ] Unit tests for Exercise entity
-- [ ] Unit tests for ExerciseInstruction
-- [ ] Unit tests for ExerciseProgression
-- [ ] Entity relationship tests
-- [ ] Draft/publish workflow tests
+- [x] Unit tests for Exercise entity
+- [x] Unit tests for ExerciseInstruction
+- [x] Unit tests for ExerciseProgression
+- [x] Entity relationship tests
+- [x] Draft/publish workflow tests
 
 ## Phase 5.2: Exercise Validation & Publishing (Week 7-8)
-### Exercise Validation (Avoid God Object)
+### Exercise Validation
 - [ ] Create `src/domain/exercise/validation/`
   - [ ] IExerciseValidator interface
   - [ ] ExerciseValidatorFacade class
