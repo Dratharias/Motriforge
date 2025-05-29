@@ -1,0 +1,9 @@
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\__tests__\IAMIntegration.test.ts
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\logging\IAMLogger.ts
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\permissions\core\__tests__\PermissionSet.test.ts
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\permissions\core\interfaces.ts
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\permissions\core\PermissionSet.ts
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\services\__tests__\IAMService.test.ts
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\services\IAMService.ts
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\validation\AccessValidationService.ts
+C:\Users\JP\Documents\GitHub\Motriforge\backend\src\infrastructure\iam\validation\interfaces.ts

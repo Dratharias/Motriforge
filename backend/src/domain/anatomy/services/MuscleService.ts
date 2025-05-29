@@ -6,7 +6,6 @@ import {
   IMuscleSearchCriteria,
   IMuscleStatistics,
   IMuscleHierarchy,
-  IMuscleValidationResult
 } from '../interfaces/AnatomyInterfaces';
 import { MuscleZone, MuscleType, MuscleLevel } from '../../../types/fitness/enums/exercise';
 import { ValidationError } from '../../../infrastructure/errors/types/ValidationError';

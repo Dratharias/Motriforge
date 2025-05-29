@@ -7,3 +7,4 @@ public/uploads
 *_old*
 /generated
 /flatten
+scripts/to-flatten.txt
