@@ -19,6 +19,7 @@ import {
 import { MediaType } from '../../../types/fitness/enums/media';
 import { User } from '@/domain/user/entities/User';
 import { IEntity } from '@/types/core/interfaces';
+import { ExerciseConfig } from '../config/ExerciseConfig';
 
 export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDraftable {
   public readonly id: Types.ObjectId;
@@ -104,7 +105,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     this.reviewedBy = data.reviewedBy;
   }
 
-  // ICloneable Implementation
   clone(): Exercise {
     return new Exercise({
       ...this,
@@ -130,12 +130,10 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     } as any);
   }
 
-  // IShareable Implementation
   canBeSharedWith(user: User): boolean {
     return !this.isDraft && this.isActive && !!this.publishedAt;
   }
 
-  // IDraftable Implementation
   validateForPublication(): ValidationResult {
     const errors: any[] = [];
     const warnings: any[] = [];
@@ -170,9 +168,24 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
   validateDraft(): ValidationResult {
     const errors: any[] = [];
     const warnings: any[] = [];
+    const rules = ExerciseConfig.validation;
 
     if (!this.name || this.name.trim().length === 0) {
       errors.push({ field: 'name', message: 'Name is required', code: 'required' });
+    } else if (this.name.trim().length > rules.nameMaxLength) {
+      errors.push({ 
+        field: 'name', 
+        message: `Name must not exceed ${rules.nameMaxLength} characters`, 
+        code: 'max_length' 
+      });
+    }
+
+    if (this.description && this.description.trim().length > rules.descriptionMaxLength) {
+      errors.push({ 
+        field: 'description', 
+        message: `Description must not exceed ${rules.descriptionMaxLength} characters`, 
+        code: 'max_length' 
+      });
     }
 
     return {
@@ -223,7 +236,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
 
     const completionPercentage = Math.round(((requiredFields.length - missingFields.length) / requiredFields.length) * 100);
 
-    // Calculate optional fields completed
     const optionalFields = ['secondaryMuscles', 'equipment', 'tags', 'mediaUrls', 'progressions', 'contraindications', 'prerequisites'];
     const completedOptionalFields = optionalFields.filter(field => {
       switch (field) {
@@ -247,7 +259,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     };
   }
 
-  // Exercise-Specific Methods
   targetsMuscle(muscle: MuscleZone): boolean {
     return this.primaryMuscles.includes(muscle) || this.secondaryMuscles.includes(muscle);
   }
@@ -275,7 +286,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
       const userPerformance = userPerformances.find(p =>
         p.exerciseId.toString() === prerequisite.exerciseId.toString()
       );
-
       return this.evaluatePrerequisite(prerequisite, userPerformance);
     });
   }
@@ -291,12 +301,10 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     );
 
     if (requiredPrerequisites.length === 0) {
-      // If no required prerequisites, recommend if majority are met
       const metCount = prerequisiteStatuses.filter(status => status.isMet).length;
       return metCount >= Math.ceil(prerequisiteStatuses.length * 0.6);
     }
 
-    // All required prerequisites must be met
     return requiredPrerequisites.every(status => status.isMet);
   }
 
@@ -311,25 +319,20 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
   }
 
   canUserAttempt(userPerformances: readonly IUserPerformance[]): boolean {
-    // Users can always attempt exercises, prerequisites are only for recommendations
     return true;
   }
 
   getRecommendationScore(userPerformances: readonly IUserPerformance[], criteria?: IRecommendationCriteria): number {
-    let score = 50; // Base score
+    let score = 50;
 
-    // Boost score based on prerequisite readiness
     const readiness = this.getPrerequisiteReadiness(userPerformances);
     score += (readiness / 100) * 30;
 
-    // Boost if recommended
     if (this.isRecommendedFor(userPerformances)) {
       score += 20;
     }
 
-    // Apply criteria-based adjustments
     if (criteria) {
-      // Fitness level alignment
       if (criteria.fitnessLevel) {
         const difficultyLevels = {
           [Difficulty.BEGINNER_I]: 1, [Difficulty.BEGINNER_II]: 2, [Difficulty.BEGINNER_III]: 3,
@@ -339,7 +342,7 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
         };
         const userLevel = difficultyLevels[criteria.fitnessLevel] ?? 5;
         const exerciseLevel = difficultyLevels[this.difficulty] ?? 5;
-        
+
         if (exerciseLevel <= userLevel) {
           score += 10;
         } else if (exerciseLevel > userLevel + 1) {
@@ -347,22 +350,19 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
         }
       }
 
-      // Time availability
       if (criteria.availableTime && this.estimatedDuration <= criteria.availableTime) {
         score += 10;
       }
 
-      // Preferred muscles
       if (criteria.preferredMuscles?.length) {
-        const matchCount = this.primaryMuscles.filter(muscle => 
+        const matchCount = this.primaryMuscles.filter(muscle =>
           criteria.preferredMuscles!.includes(muscle)
         ).length;
         score += matchCount * 5;
       }
 
-      // Equipment exclusions
       if (criteria.excludedEquipment?.length) {
-        const hasExcludedEquipment = this.equipment.some(eq => 
+        const hasExcludedEquipment = this.equipment.some(eq =>
           criteria.excludedEquipment!.includes(eq)
         );
         if (hasExcludedEquipment) {
@@ -377,32 +377,23 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
   getComplexityScore(): number {
     let score = 0;
 
-    // Base difficulty
     const difficultyLevels = {
       [Difficulty.BEGINNER_I]: 1, [Difficulty.BEGINNER_II]: 2, [Difficulty.BEGINNER_III]: 3,
       [Difficulty.INTERMEDIATE_I]: 4, [Difficulty.INTERMEDIATE_II]: 5, [Difficulty.INTERMEDIATE_III]: 6,
       [Difficulty.ADVANCED_I]: 7, [Difficulty.ADVANCED_II]: 8, [Difficulty.ADVANCED_III]: 9,
       [Difficulty.MASTER]: 10
     };
-    score += (difficultyLevels[this.difficulty] ?? 5) * 10;
 
-    // Muscle complexity
+    score += (difficultyLevels[this.difficulty] ?? 5) * 10;
     score += this.primaryMuscles.length * 5;
     score += this.secondaryMuscles.length * 3;
-
-    // Equipment complexity
     score += this.equipment.length * 8;
-
-    // Instruction complexity
     score += this.instructions.length * 3;
-
-    // Prerequisite complexity
     score += this.prerequisites.length * 5;
 
     return Math.round(score);
   }
 
-  // Update Operations
   update(updates: Partial<Exercise>): Exercise {
     return new Exercise({
       ...this,
@@ -451,7 +442,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     });
   }
 
-  // Status Methods
   isPublished(): boolean {
     return !this.isDraft && !!this.publishedAt;
   }
@@ -472,7 +462,7 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
         progress: 0,
         readinessScore: 0,
         missingRequirements: ['No performance data available'],
-        estimatedTimeToMeet: 30 // days
+        estimatedTimeToMeet: 30
       };
     }
 
@@ -530,7 +520,7 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
         break;
     }
 
-    const progress = Math.min(100, Math.round((currentValue / prerequisite.minRecommended) * 100));
+    const progress = Math.min(100, Math.floor((currentValue / prerequisite.minRecommended) * 100));
     const readinessScore = Math.min(100, progress);
 
     return {

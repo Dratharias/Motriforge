@@ -4,6 +4,7 @@ import {
   EquipmentCategory,
   MuscleZone
 } from '../../../types/fitness/enums/exercise';
+import { PrerequisiteCategory } from '../interfaces/ExerciseInterfaces';
 
 export interface ExerciseValidationRules {
   readonly nameMinLength: number;
@@ -48,10 +49,31 @@ export interface PublishingConfig {
   readonly qualityThreshold: number;
 }
 
+export interface RecommendationThresholds {
+  readonly immediate: number;
+  readonly nearTerm: number;
+  readonly longTerm: number;
+}
+
+export interface CategoryWeights {
+  readonly [PrerequisiteCategory.REPS]: number;
+  readonly [PrerequisiteCategory.HOLD_TIME]: number;
+  readonly [PrerequisiteCategory.FORM]: number;
+  readonly [PrerequisiteCategory.DURATION]: number;
+  readonly [PrerequisiteCategory.WEIGHT]: number;
+  readonly [PrerequisiteCategory.CONSISTENCY]: number;
+}
+
+export interface DataFreshnessThresholds {
+  readonly current: number;
+  readonly recent: number;
+  readonly dated: number;
+}
+
 export interface PrerequisiteConfig {
-  recommendationThresholds: any;
-  categoryWeights: any;
-  dataFreshnessThresholds: any;
+  readonly recommendationThresholds: RecommendationThresholds;
+  readonly categoryWeights: CategoryWeights;
+  readonly dataFreshnessThresholds: DataFreshnessThresholds;
   readonly defaultReadinessThreshold: number;
   readonly recommendationBoost: number;
   readonly strictMode: boolean;
@@ -60,9 +82,19 @@ export interface PrerequisiteConfig {
 }
 
 export class ExerciseConfig {
-  static calculateConfidence(arg0: number, daysSinceLastPerformed: number, arg2: number) {
-    throw new Error('Method not implemented.');
+  static calculateConfidence(totalSessions: number, daysSinceLastPerformed: number, formQuality: number): number {
+    // Base confidence from session count (more sessions = higher confidence)
+    const sessionConfidence = Math.min(100, (totalSessions / 10) * 100);
+    
+    // Reduce confidence based on recency (fresher data = higher confidence)
+    const recencyPenalty = Math.min(50, daysSinceLastPerformed * 2);
+    
+    // Form quality bonus (better form = higher confidence)
+    const formBonus = Math.max(0, (formQuality - 5) * 5);
+    
+    return Math.round(Math.max(0, Math.min(100, sessionConfidence - recencyPenalty + formBonus)));
   }
+
   static readonly validation: ExerciseValidationRules = {
     nameMinLength: 3,
     nameMaxLength: 100,
@@ -148,8 +180,23 @@ export class ExerciseConfig {
     strictMode: false,
     gracePeriodDays: 7,
     autoProgressSuggestion: true,
-    recommendationThresholds: undefined,
-    categoryWeights: undefined,
-    dataFreshnessThresholds: undefined
+    recommendationThresholds: {
+      immediate: 90,
+      nearTerm: 70,
+      longTerm: 50
+    },
+    categoryWeights: {
+      [PrerequisiteCategory.REPS]: 1.2,
+      [PrerequisiteCategory.HOLD_TIME]: 1.1,
+      [PrerequisiteCategory.FORM]: 1.5,
+      [PrerequisiteCategory.DURATION]: 1.0,
+      [PrerequisiteCategory.WEIGHT]: 1.3,
+      [PrerequisiteCategory.CONSISTENCY]: 1.4
+    },
+    dataFreshnessThresholds: {
+      current: 7,   // Days
+      recent: 30,   // Days
+      dated: 90     // Days
+    }
   };
 }

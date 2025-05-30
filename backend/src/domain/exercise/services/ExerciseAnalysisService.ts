@@ -54,21 +54,26 @@ export class ExerciseAnalysisService {
     const candidates = await this.repository.findByMuscleGroup(original.primaryMuscles[0], { limit: limit * 3 });
     const filtered = candidates.filter(exercise => {
       if (exercise.id === originalId) return false;
+
       if (options.excludedEquipment?.length &&
           exercise.equipment.some(eq => options.excludedEquipment!.includes(eq))) {
         return false;
       }
+
       if (options.medicalConditions?.length &&
           exercise.hasContraindicationsFor(options.medicalConditions)) {
         return false;
       }
+
       if (options.availableTime && exercise.estimatedDuration > options.availableTime) {
         return false;
       }
+
       if (options.maxDifficulty &&
           this.getDifficultyLevel(exercise.difficulty) > this.getDifficultyLevel(options.maxDifficulty)) {
         return false;
       }
+
       return true;
     });
 
@@ -123,8 +128,10 @@ export class ExerciseAnalysisService {
     let isValid = true;
 
     const config = ExerciseConfig.progression;
+
     while (currentLevel !== targetDifficulty) {
       const nextProgression = exercise.progressions.find(p => p.fromDifficulty === currentLevel);
+
       if (!nextProgression) {
         const allowedProgressions = config.allowedProgressions[currentLevel] ?? [];
         if (allowedProgressions.length > 0) {
@@ -147,7 +154,6 @@ export class ExerciseAnalysisService {
     return { path, totalEstimatedDays: totalDays, isValid, missingSteps };
   }
 
-  // New prerequisite-based recommendation methods
   async getRecommendedExercises(
     userPerformances: readonly IUserPerformance[],
     criteria: IRecommendationCriteria,
@@ -163,21 +169,20 @@ export class ExerciseAnalysisService {
       readiness: exercise.getPrerequisiteReadiness(userPerformances) / 100
     }));
 
-    // Filter based on criteria
     const filtered = scoredExercises.filter(item => {
       if (criteria.prerequisiteMode === 'strict' && !item.exercise.isRecommendedFor(userPerformances)) {
         return false;
       }
+
       if (criteria.readinessThreshold && item.readiness < criteria.readinessThreshold / 100) {
         return false;
       }
+
       return item.score > 0;
     });
 
-    // Sort by score
     filtered.sort((a, b) => b.score - a.score);
 
-    // Categorize results
     const recommended: Exercise[] = [];
     const nearlyReady: Exercise[] = [];
     const futureGoals: Exercise[] = [];
@@ -189,7 +194,7 @@ export class ExerciseAnalysisService {
 
     filtered.slice(0, limit).forEach(item => {
       const readinessPercentage = item.readiness * 100;
-      
+
       if (readinessPercentage >= thresholds.immediate) {
         recommended.push(item.exercise);
       } else if (readinessPercentage >= thresholds.nearTerm) {
@@ -239,6 +244,7 @@ export class ExerciseAnalysisService {
     }
 
     const prerequisiteStatuses = exercise.checkPrerequisites(userPerformances);
+
     const categoryReadiness: Record<PrerequisiteCategory, number> = {
       [PrerequisiteCategory.REPS]: 0,
       [PrerequisiteCategory.HOLD_TIME]: 0,
@@ -247,11 +253,11 @@ export class ExerciseAnalysisService {
       [PrerequisiteCategory.WEIGHT]: 0,
       [PrerequisiteCategory.CONSISTENCY]: 0
     };
+
     const readyPrerequisites: Types.ObjectId[] = [];
     const nearlyReadyPrerequisites: Types.ObjectId[] = [];
     const missingPrerequisites: Types.ObjectId[] = [];
 
-    // Categorize prerequisites by readiness
     prerequisiteStatuses.forEach(status => {
       const category = status.prerequisite.category;
       categoryReadiness[category] = Math.max(categoryReadiness[category], status.readinessScore);
@@ -266,8 +272,6 @@ export class ExerciseAnalysisService {
     });
 
     const overallReadiness = exercise.getPrerequisiteReadiness(userPerformances);
-
-    // Generate improvement plan
     const improvementPlan = this.generateImprovementPlan(prerequisiteStatuses);
 
     return {
@@ -318,9 +322,7 @@ export class ExerciseAnalysisService {
         };
       }
 
-      // Calculate individual prerequisite fulfillment based on category
       let fulfillmentScore = 0;
-      
       switch (prerequisite.category) {
         case PrerequisiteCategory.REPS: {
           const userReps = userPerformance.bestReps ?? 0;
@@ -380,6 +382,7 @@ export class ExerciseAnalysisService {
       .map(a => a.confidence)
       .filter((c): c is number => typeof c === 'number')
       .reduce((sum, c) => sum + c, 0) / assessments.length;
+
     const isMet = assessments.every(a => a.isMet);
 
     return {
@@ -445,7 +448,7 @@ export class ExerciseAnalysisService {
       }
     });
 
-    return suggestions.slice(0, 5); // Limit to top 5 suggestions
+    return suggestions.slice(0, 5);
   }
 
   private estimateReadinessDays(
@@ -462,7 +465,7 @@ export class ExerciseAnalysisService {
         ...unmetStatuses.map(status => status.estimatedTimeToMeet ?? 90)
       );
 
-      return Math.min(maxEstimate, 180); // Cap at 6 months
+      return Math.min(maxEstimate, 180);
     });
   }
 
@@ -475,14 +478,12 @@ export class ExerciseAnalysisService {
     const unmetStatuses = prerequisiteStatuses.filter(status => !status.isMet);
     const categoryGroups: Record<PrerequisiteCategory, any[]> = {} as any;
 
-    // Group by category
     unmetStatuses.forEach(status => {
       const category = status.prerequisite.category;
       categoryGroups[category] ??= [];
       categoryGroups[category].push(status);
     });
 
-    // Create improvement plan for each category
     return Object.entries(categoryGroups).map(([category, statuses]) => {
       const targetExercises = statuses.map(s => s.prerequisite.exerciseId);
       const estimatedDays = Math.max(...statuses.map(s => s.estimatedTimeToMeet ?? 30));
@@ -506,31 +507,37 @@ export class ExerciseAnalysisService {
     return Math.round(categoryWeight * 100 + requiredCount * 20 + (100 - averageProgress));
   }
 
-  // Existing private methods
   private calculateSimilarity(original: Exercise, candidate: Exercise, preferences?: any): number {
     let score = 0;
+
     if (original.type === candidate.type) score += 25;
+
     const commonPrimaryMuscles = original.primaryMuscles.filter(muscle =>
       candidate.primaryMuscles.includes(muscle)
     ).length;
     score += commonPrimaryMuscles * 20;
+
     const difficultyDifference = Math.abs(
       this.getDifficultyLevel(original.difficulty) - this.getDifficultyLevel(candidate.difficulty)
     );
     score += Math.max(0, 20 - difficultyDifference * 3);
+
     const durationDifference = Math.abs(original.estimatedDuration - candidate.estimatedDuration);
     score += Math.max(0, 15 - durationDifference);
+
     if (preferences?.preferredMuscles?.length) {
       const preferredMatch = candidate.primaryMuscles.filter(muscle =>
         preferences.preferredMuscles.includes(muscle)
       ).length;
       score += preferredMatch * 15;
     }
+
     return score;
   }
 
   private generateAlternativeReason(original: Exercise, alternative: Exercise, options: any): string {
     const reasons: string[] = [];
+
     if (options.excludedEquipment?.length) {
       const hasNoExcludedEquipment = !alternative.equipment.some(eq =>
         options.excludedEquipment.includes(eq)
@@ -539,12 +546,14 @@ export class ExerciseAnalysisService {
         reasons.push('Uses permitted equipment');
       }
     }
+
     const commonMuscles = original.primaryMuscles.filter(muscle =>
       alternative.primaryMuscles.includes(muscle)
     );
     if (commonMuscles.length > 0) {
       reasons.push(`Targets ${commonMuscles.join(', ').toLowerCase()}`);
     }
+
     return reasons.length > 0 ? reasons.join(', ') : 'Similar exercise pattern';
   }
 
@@ -559,55 +568,68 @@ export class ExerciseAnalysisService {
   private calculateMuscleComplexity(exercise: Exercise): number {
     const primaryCount = exercise.primaryMuscles.length;
     const secondaryCount = exercise.secondaryMuscles.length;
+
     let score = (primaryCount * 15) + (secondaryCount * 8);
     if (primaryCount >= 3) score += 15;
+
     return Math.min(100, score);
   }
 
   private calculateEquipmentComplexity(exercise: Exercise): number {
     const equipmentCount = exercise.equipment.length;
+
     if (equipmentCount === 0 || exercise.equipment.includes(EquipmentCategory.BODYWEIGHT)) {
       return 10;
     }
+
     return Math.min(100, equipmentCount * 20);
   }
 
   private calculateInstructionComplexity(exercise: Exercise): number {
     const instructionCount = exercise.instructions.length;
     if (instructionCount === 0) return 10;
+
     let score = Math.min(instructionCount * 8, 60);
+
     const mediaInstructions = exercise.instructions.filter(i => i.hasMedia()).length;
     if (mediaInstructions > 0) score += 10;
+
     return Math.min(100, score);
   }
 
   private calculateCoordinationRequirement(exercise: Exercise): number {
     let score = 20;
+
     const totalMuscles = exercise.primaryMuscles.length + exercise.secondaryMuscles.length;
     score += totalMuscles * 8;
+
     if (exercise.equipment.length > 1) score += 15;
+
     return Math.min(100, score);
   }
 
   private calculateSafetyRisk(exercise: Exercise): number {
     let score = 10;
+
     const safety = ExerciseConfig.safety;
     if (safety.highRiskTypes.includes(exercise.type)) score += 30;
+
     score += exercise.contraindications.length * 10;
+
     return Math.min(100, score);
   }
 
   private calculatePrerequisiteComplexity(exercise: Exercise): number {
     if (!exercise.hasPrerequisites()) return 0;
-    
+
     let score = exercise.prerequisites.length * 10;
+
     const requiredCount = exercise.prerequisites.filter(p => p.isRequired).length;
     score += requiredCount * 5;
-    
-    // Category complexity
+
     const categories = new Set(exercise.prerequisites.map(p => p.category));
     score += categories.size * 5;
-    
+
     return Math.min(100, score);
   }
 
@@ -626,32 +648,41 @@ export class ExerciseAnalysisService {
 
   private generateDifficultyReasoning(exercise: Exercise, components: any): readonly string[] {
     const reasoning: string[] = [];
+
     if (components.muscleComplexity > 60) {
       reasoning.push('Multi-muscle group exercise increases complexity');
     }
+
     if (components.equipmentComplexity > 50) {
       reasoning.push('Specialized equipment adds technical requirements');
     }
+
     if (components.instructionComplexity > 60) {
       reasoning.push('Detailed instructions indicate technical complexity');
     }
+
     if (components.coordinationRequirement > 70) {
       reasoning.push('High coordination and balance requirements');
     }
+
     if (components.safetyRisk > 50) {
       reasoning.push('Safety considerations require experience and caution');
     }
-    if (components.prerequisiteComplexity > 40) {
+
+    if (components.prerequisiteComplexity > 10) {
       reasoning.push('Significant prerequisite requirements increase complexity');
     }
+
     if (reasoning.length === 0) {
       reasoning.push('Straightforward exercise with standard requirements');
     }
+
     return reasoning;
   }
 
   private determineFreshness(daysSinceLastPerformed: number): dataFreshnessThresholds {
     const thresholds = ExerciseConfig.prerequisites.dataFreshnessThresholds;
+
     if (daysSinceLastPerformed <= thresholds.current) return 'current';
     if (daysSinceLastPerformed <= thresholds.recent) return 'recent';
     if (daysSinceLastPerformed <= thresholds.dated) return 'dated';
