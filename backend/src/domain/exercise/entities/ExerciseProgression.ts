@@ -2,6 +2,67 @@ import { Types } from 'mongoose';
 import { IEntity } from '../../../types/core/interfaces';
 import { Difficulty } from '../../../types/fitness/enums/exercise';
 
+export interface IExercisePrerequisite {
+  readonly exerciseId: Types.ObjectId;
+  readonly exerciseName?: string; // For display purposes
+  readonly minimumPerformance: {
+    readonly reps?: number;
+    readonly sets?: number;
+    readonly duration?: number; // in seconds
+    readonly weight?: number; // in kg
+    readonly holdTime?: number; // for static exercises like planks
+    readonly consecutiveDays?: number; // consistency requirement
+    readonly restTime?: number; // max rest between sets
+  };
+  readonly isRequired: boolean; // true = must meet to be recommended
+  readonly description?: string; // "Complete 25 push-ups with good form"
+}
+
+export interface IProgressionWithPrerequisitesOptions {
+  readonly fromDifficulty: Difficulty;
+  readonly toDifficulty: Difficulty;
+  readonly title: string;
+  readonly description: string;
+  readonly criteria: readonly string[];
+  readonly modifications: readonly string[];
+  readonly prerequisites: readonly {
+    readonly exerciseId: Types.ObjectId;
+    readonly exerciseName: string;
+    readonly reps?: number;
+    readonly sets?: number;
+    readonly duration?: number;
+    readonly holdTime?: number;
+    readonly consecutiveDays?: number;
+    readonly weight?: number;
+    readonly isRequired?: boolean;
+    readonly description?: string;
+  }[];
+  readonly targetExerciseId?: Types.ObjectId;
+  readonly estimatedTimeToAchieve?: number;
+  readonly order?: number;
+}
+
+export interface IUserPerformance {
+  readonly exerciseId: Types.ObjectId;
+  readonly bestReps?: number;
+  readonly bestSets?: number;
+  readonly bestDuration?: number;
+  readonly bestWeight?: number;
+  readonly bestHoldTime?: number;
+  readonly consistentDays?: number;
+  readonly averageRestTime?: number;
+  readonly lastPerformed?: Date;
+  readonly formQuality?: number; // 1-10 scale
+}
+
+export interface IPrerequisiteStatus {
+  readonly prerequisite: IExercisePrerequisite;
+  readonly userPerformance?: IUserPerformance;
+  readonly isMet: boolean;
+  readonly progress: number; // percentage 0-100
+  readonly missingRequirements: readonly string[];
+}
+
 export class ExerciseProgression implements IEntity {
   public readonly id: Types.ObjectId;
   public readonly exerciseId: Types.ObjectId;
@@ -11,6 +72,7 @@ export class ExerciseProgression implements IEntity {
   public description: string;
   public criteria: readonly string[];
   public modifications: readonly string[];
+  public readonly prerequisites: readonly IExercisePrerequisite[]; // New field
   public targetExerciseId?: Types.ObjectId;
   public estimatedTimeToAchieve: number;
   public order: number;
@@ -18,6 +80,7 @@ export class ExerciseProgression implements IEntity {
   public readonly updatedAt: Date;
   public readonly createdBy: Types.ObjectId;
   public readonly isActive: boolean;
+  public readonly isDraft: boolean;
 
   constructor(data: {
     id: Types.ObjectId;
@@ -28,6 +91,7 @@ export class ExerciseProgression implements IEntity {
     description: string;
     criteria?: readonly string[];
     modifications?: readonly string[];
+    prerequisites?: readonly IExercisePrerequisite[]; // New parameter
     targetExerciseId?: Types.ObjectId;
     estimatedTimeToAchieve?: number;
     order?: number;
@@ -35,6 +99,7 @@ export class ExerciseProgression implements IEntity {
     updatedAt: Date;
     createdBy: Types.ObjectId;
     isActive: boolean;
+    isDraft: boolean;
   }) {
     this.id = data.id;
     this.exerciseId = data.exerciseId;
@@ -44,6 +109,7 @@ export class ExerciseProgression implements IEntity {
     this.description = data.description;
     this.criteria = data.criteria ?? [];
     this.modifications = data.modifications ?? [];
+    this.prerequisites = data.prerequisites ?? []; // Initialize new field
     this.targetExerciseId = data.targetExerciseId;
     this.estimatedTimeToAchieve = data.estimatedTimeToAchieve ?? 14;
     this.order = data.order ?? 1;
@@ -51,6 +117,7 @@ export class ExerciseProgression implements IEntity {
     this.updatedAt = data.updatedAt;
     this.createdBy = data.createdBy;
     this.isActive = data.isActive;
+    this.isDraft = data.isDraft;
   }
 
   getDifficultyIncrease(): number {
@@ -258,6 +325,19 @@ export class ExerciseProgression implements IEntity {
       errors.push('Progression time must be at least 3 days');
     }
 
+    for (const prerequisite of this.prerequisites) {
+      const performance = prerequisite.minimumPerformance;
+      const hasAnyRequirement = Object.values(performance).some(value => value !== undefined);
+      
+      if (!hasAnyRequirement) {
+        warnings.push(`Prerequisite for exercise ${prerequisite.exerciseId} has no performance requirements`);
+      }
+
+      if (prerequisite.isRequired && !prerequisite.description) {
+        warnings.push('Required prerequisites should have descriptions for user guidance');
+      }
+    }
+
     return {
       isValid: errors.length === 0,
       errors,
@@ -285,5 +365,199 @@ export class ExerciseProgression implements IEntity {
     }
     
     return 'parameter'; // Default
+  }
+
+  checkPrerequisites(userPerformances: readonly IUserPerformance[]): readonly IPrerequisiteStatus[] {
+    return this.prerequisites.map(prerequisite => {
+      const userPerformance = userPerformances.find(p => 
+        p.exerciseId.toString() === prerequisite.exerciseId.toString()
+      );
+
+      return this.evaluatePrerequisite(prerequisite, userPerformance);
+    });
+  }
+
+  isRecommended(userPerformances: readonly IUserPerformance[]): boolean {
+    const requiredPrerequisites = this.prerequisites.filter(p => p.isRequired);
+    
+    if (requiredPrerequisites.length === 0) {
+      return true; // No required prerequisites
+    }
+
+    const prerequisiteStatuses = this.checkPrerequisites(userPerformances);
+    const requiredStatuses = prerequisiteStatuses.filter(status => 
+      status.prerequisite.isRequired
+    );
+
+    return requiredStatuses.every(status => status.isMet);
+  }
+
+  canStillProgress(userPerformances: readonly IUserPerformance[]): boolean {
+    // Users can always attempt progression, but we track if it's recommended
+    return true;
+  }
+
+  getProgressionRecommendation(userPerformances: readonly IUserPerformance[]): {
+    canProgress: boolean;
+    isRecommended: boolean;
+    readinessScore: number; // 0-100
+    prerequisiteStatuses: readonly IPrerequisiteStatus[];
+    recommendationMessage: string;
+  } {
+    const prerequisiteStatuses = this.checkPrerequisites(userPerformances);
+    const isRecommended = this.isRecommended(userPerformances);
+    const canProgress = this.canStillProgress(userPerformances);
+
+    // Calculate overall readiness score
+    const totalPrerequisites = this.prerequisites.length;
+    const readinessScore = totalPrerequisites === 0 ? 100 : 
+      Math.round(prerequisiteStatuses.reduce((sum, status) => sum + status.progress, 0) / totalPrerequisites);
+
+    let recommendationMessage: string;
+    if (isRecommended) {
+      recommendationMessage = `You meet all requirements for ${this.title}. Ready to progress!`;
+    } else if (readinessScore >= 70) {
+      recommendationMessage = `You're close to being ready for ${this.title}. Consider practicing prerequisites a bit more.`;
+    } else {
+      const unmetRequired = prerequisiteStatuses
+        .filter(s => s.prerequisite.isRequired && !s.isMet)
+        .map(s => s.prerequisite.exerciseName ?? 'prerequisite exercise');
+      recommendationMessage = `Focus on mastering: ${unmetRequired.join(', ')} before attempting ${this.title}.`;
+    }
+
+    return {
+      canProgress,
+      isRecommended,
+      readinessScore,
+      prerequisiteStatuses,
+      recommendationMessage
+    };
+  }
+
+  private evaluatePrerequisite(
+    prerequisite: IExercisePrerequisite, 
+    userPerformance?: IUserPerformance
+  ): IPrerequisiteStatus {
+    if (!userPerformance) {
+      return {
+        prerequisite,
+        userPerformance: undefined,
+        isMet: false,
+        progress: 0,
+        missingRequirements: ['No performance data available']
+      };
+    }
+
+    const missingRequirements: string[] = [];
+    const progressScores: number[] = [];
+
+    // Check reps requirement
+    if (prerequisite.minimumPerformance.reps !== undefined) {
+      const userReps = userPerformance.bestReps ?? 0;
+      const requiredReps = prerequisite.minimumPerformance.reps;
+      const repsProgress = Math.min(100, (userReps / requiredReps) * 100);
+      progressScores.push(repsProgress);
+      
+      if (userReps < requiredReps) {
+        missingRequirements.push(`Need ${requiredReps - userReps} more reps (current: ${userReps})`);
+      }
+    }
+
+    // Check sets requirement
+    if (prerequisite.minimumPerformance.sets !== undefined) {
+      const userSets = userPerformance.bestSets ?? 0;
+      const requiredSets = prerequisite.minimumPerformance.sets;
+      const setsProgress = Math.min(100, (userSets / requiredSets) * 100);
+      progressScores.push(setsProgress);
+      
+      if (userSets < requiredSets) {
+        missingRequirements.push(`Need ${requiredSets - userSets} more sets (current: ${userSets})`);
+      }
+    }
+
+    // Check duration requirement
+    if (prerequisite.minimumPerformance.duration !== undefined) {
+      const userDuration = userPerformance.bestDuration ?? 0;
+      const requiredDuration = prerequisite.minimumPerformance.duration;
+      const durationProgress = Math.min(100, (userDuration / requiredDuration) * 100);
+      progressScores.push(durationProgress);
+      
+      if (userDuration < requiredDuration) {
+        const missingSeconds = requiredDuration - userDuration;
+        missingRequirements.push(`Need ${missingSeconds} more seconds (current: ${userDuration}s)`);
+      }
+    }
+
+    // Check hold time requirement
+    if (prerequisite.minimumPerformance.holdTime !== undefined) {
+      const userHoldTime = userPerformance.bestHoldTime ?? 0;
+      const requiredHoldTime = prerequisite.minimumPerformance.holdTime;
+      const holdProgress = Math.min(100, (userHoldTime / requiredHoldTime) * 100);
+      progressScores.push(holdProgress);
+      
+      if (userHoldTime < requiredHoldTime) {
+        const missingTime = requiredHoldTime - userHoldTime;
+        missingRequirements.push(`Need to hold ${missingTime}s longer (current: ${userHoldTime}s)`);
+      }
+    }
+
+    // Check consistency requirement
+    if (prerequisite.minimumPerformance.consecutiveDays !== undefined) {
+      const userDays = userPerformance.consistentDays ?? 0;
+      const requiredDays = prerequisite.minimumPerformance.consecutiveDays;
+      const consistencyProgress = Math.min(100, (userDays / requiredDays) * 100);
+      progressScores.push(consistencyProgress);
+      
+      if (userDays < requiredDays) {
+        const missingDays = requiredDays - userDays;
+        missingRequirements.push(`Need ${missingDays} more consecutive days (current: ${userDays})`);
+      }
+    }
+
+    // Check weight requirement
+    if (prerequisite.minimumPerformance.weight !== undefined) {
+      const userWeight = userPerformance.bestWeight ?? 0;
+      const requiredWeight = prerequisite.minimumPerformance.weight;
+      const weightProgress = Math.min(100, (userWeight / requiredWeight) * 100);
+      progressScores.push(weightProgress);
+      
+      if (userWeight < requiredWeight) {
+        const missingWeight = requiredWeight - userWeight;
+        missingRequirements.push(`Need ${missingWeight}kg more weight (current: ${userWeight}kg)`);
+      }
+    }
+
+    const overallProgress = progressScores.length > 0 ? 
+      Math.round(progressScores.reduce((sum, score) => sum + score, 0) / progressScores.length) : 0;
+    
+    const isMet = missingRequirements.length === 0 && overallProgress >= 100;
+
+    return {
+      prerequisite,
+      userPerformance,
+      isMet,
+      progress: overallProgress,
+      missingRequirements
+    };
+  }
+
+  // Helper method to add prerequisites
+  addPrerequisite(prerequisite: IExercisePrerequisite): ExerciseProgression {
+    return new ExerciseProgression({
+      ...this,
+      prerequisites: [...this.prerequisites, prerequisite],
+      updatedAt: new Date()
+    });
+  }
+
+  // Helper method to remove prerequisites
+  removePrerequisite(exerciseId: Types.ObjectId): ExerciseProgression {
+    return new ExerciseProgression({
+      ...this,
+      prerequisites: this.prerequisites.filter(p => 
+        p.exerciseId.toString() !== exerciseId.toString()
+      ),
+      updatedAt: new Date()
+    });
   }
 }

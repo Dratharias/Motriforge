@@ -35,7 +35,7 @@ export enum MuscleZone {
   ANKLE = 'ANKLE',
   KNEE = 'KNEE',
   HIP = 'HIP',
-  CALF = 'CALF',
+  CALVES = 'CALVES',
   SHOULDER = 'SHOULDER',
   NECK = 'NECK',
   CHEST = 'CHEST',
@@ -47,7 +47,8 @@ export enum MuscleZone {
   GLUTES = 'GLUTES',
   QUADRICEPS = 'QUADRICEPS',
   HAMSTRINGS = 'HAMSTRINGS',
-  CORE = 'CORE'
+  CORE = 'CORE',
+  WRIST = 'WRIST',
 }
 
 /**

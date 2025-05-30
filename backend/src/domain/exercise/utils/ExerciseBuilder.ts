@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { Exercise } from '../entities/Exercise';
 import { ExerciseInstruction } from '../entities/ExerciseInstruction';
-import { ExerciseProgression } from '../entities/ExerciseProgression';
+import { ExerciseProgression, IExercisePrerequisite, IProgressionWithPrerequisitesOptions } from '../entities/ExerciseProgression';
 import {
   ExerciseType,
   Difficulty,
@@ -10,7 +10,7 @@ import {
 } from '../../../types/fitness/enums/exercise';
 import { MediaType } from '../../../types/fitness/enums/media';
 import { IContraindication, ContraindicationType, ContraindicationSeverity } from '../interfaces/ExerciseInterfaces';
-import { ExerciseDefaults } from '../config/ExerciseDefaults';
+import { ExerciseConfig } from '../config/ExerciseConfig';
 
 export class ExerciseBuilder {
   private readonly exercise: Partial<Exercise> & {
@@ -18,7 +18,6 @@ export class ExerciseBuilder {
     createdAt: Date;
     updatedAt: Date;
     createdBy: Types.ObjectId;
-    caloriesBurnedPerMinute?: number;
   };
   private readonly instructions: ExerciseInstruction[] = [];
   private readonly progressions: ExerciseProgression[] = [];
@@ -26,7 +25,7 @@ export class ExerciseBuilder {
 
   constructor(name: string, createdBy: Types.ObjectId) {
     const now = new Date();
-    const defaults = ExerciseDefaults.getCreationDefaults();
+    const defaults = ExerciseConfig.defaults;
 
     this.exercise = {
       id: new Types.ObjectId(),
@@ -36,7 +35,7 @@ export class ExerciseBuilder {
       primaryMuscles: [],
       secondaryMuscles: [],
       equipment: defaults.equipment,
-      tags: defaults.tags,
+      tags: [],
       estimatedDuration: defaults.estimatedDuration,
       caloriesBurnedPerMinute: defaults.caloriesBurnedPerMinute,
       isDraft: defaults.isDraft,
@@ -170,6 +169,46 @@ export class ExerciseBuilder {
     );
   }
 
+  addProgressionWithPrerequisites(options: IProgressionWithPrerequisitesOptions): this {
+    const prerequisiteObjects: IExercisePrerequisite[] = options.prerequisites.map(prereq => ({
+      exerciseId: prereq.exerciseId,
+      exerciseName: prereq.exerciseName,
+      minimumPerformance: {
+        reps: prereq.reps,
+        sets: prereq.sets,
+        duration: prereq.duration,
+        holdTime: prereq.holdTime,
+        consecutiveDays: prereq.consecutiveDays,
+        weight: prereq.weight
+      },
+      isRequired: prereq.isRequired ?? true,
+      description: prereq.description
+    }));
+  
+    const progression = new ExerciseProgression({
+      id: new Types.ObjectId(),
+      exerciseId: this.exercise.id,
+      fromDifficulty: options.fromDifficulty,
+      toDifficulty: options.toDifficulty,
+      title: options.title,
+      description: options.description,
+      criteria: options.criteria,
+      modifications: options.modifications,
+      prerequisites: prerequisiteObjects,
+      targetExerciseId: options.targetExerciseId,
+      estimatedTimeToAchieve: options.estimatedTimeToAchieve ?? 14,
+      order: options.order ?? this.progressions.length + 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: this.exercise.createdBy,
+      isActive: true,
+      isDraft: false
+    });
+  
+    this.progressions.push(progression);
+    return this;
+  }
+
   addProgression(
     fromDifficulty: Difficulty,
     toDifficulty: Difficulty,
@@ -198,7 +237,8 @@ export class ExerciseBuilder {
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: this.exercise.createdBy,
-      isActive: true
+      isActive: true,
+      isDraft: false
     });
 
     this.progressions.push(progression);
@@ -322,12 +362,13 @@ export class ExerciseBuilder {
 
   validate(): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
+    const rules = ExerciseConfig.validation;
 
-    if (!this.exercise.name || this.exercise.name.trim().length < 3) {
+    if (!this.exercise.name || this.exercise.name.trim().length < rules.nameMinLength) {
       errors.push('Exercise name must be at least 3 characters');
     }
 
-    if (!this.exercise.description || this.exercise.description.trim().length < 10) {
+    if (!this.exercise.description || this.exercise.description.trim().length < rules.descriptionMinLength) {
       errors.push('Exercise description must be at least 10 characters');
     }
 
