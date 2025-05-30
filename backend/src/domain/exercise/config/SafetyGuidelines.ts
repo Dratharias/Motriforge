@@ -1,400 +1,159 @@
-import { Types } from 'mongoose';
-import { 
-  ExerciseType, 
-  Difficulty, 
-  MuscleZone 
-} from '../../../types/fitness/enums/exercise';
-import { 
-  ContraindicationType, 
-  ContraindicationSeverity,
-  IContraindication 
-} from '../interfaces/ExerciseInterfaces';
+import { ExerciseType, Difficulty, MuscleZone } from '../../../types/fitness/enums/exercise';
 
-/**
- * Exercise safety guidelines and contraindication management
- */
 export class SafetyGuidelines {
-  /**
-   * Get default contraindications for exercise types
-   */
-  static getDefaultContraindications(exerciseType: ExerciseType): readonly IContraindication[] {
-    const baseContraindications: Record<ExerciseType, IContraindication[]> = {
-      [ExerciseType.STRENGTH]: [
-        {
-          id: new Types.ObjectId(),
-          type: ContraindicationType.MEDICAL,
-          severity: ContraindicationSeverity.ABSOLUTE,
-          conditions: ['Acute heart conditions', 'Uncontrolled hypertension'],
-          description: 'High-intensity strength training may be dangerous for those with cardiovascular conditions',
-          alternatives: []
-        }
-      ],
-      [ExerciseType.CARDIO]: [
-        {
-          id: new Types.ObjectId(),
-          type: ContraindicationType.MEDICAL,
-          severity: ContraindicationSeverity.ABSOLUTE,
-          conditions: ['Acute cardiac conditions', 'Severe respiratory conditions'],
-          description: 'Cardiovascular exercise may exacerbate heart and lung conditions',
-          alternatives: []
-        }
-      ],
-      [ExerciseType.FLEXIBILITY]: [
-        {
-          id: new Types.ObjectId(),
-          type: ContraindicationType.INJURY,
-          severity: ContraindicationSeverity.RELATIVE,
-          conditions: ['Acute muscle strains', 'Joint inflammation'],
-          description: 'Stretching injured areas may worsen condition',
-          alternatives: []
-        }
-      ],
-      [ExerciseType.BALANCE]: [
-        {
-          id: new Types.ObjectId(),
-          type: ContraindicationType.MEDICAL,
-          severity: ContraindicationSeverity.RELATIVE,
-          conditions: ['Vestibular disorders', 'Recent falls'],
-          description: 'Balance exercises may increase fall risk for those with balance disorders',
-          alternatives: []
-        }
-      ],
-      [ExerciseType.ENDURANCE]: [
-        {
-          id: new Types.ObjectId(),
-          type: ContraindicationType.MEDICAL,
-          severity: ContraindicationSeverity.RELATIVE,
-          conditions: ['Chronic fatigue syndrome', 'Severe anemia'],
-          description: 'Extended endurance activities may worsen fatigue conditions',
-          alternatives: []
-        }
-      ],
-      [ExerciseType.REHABILITATION]: [
-        {
-          id: new Types.ObjectId(),
-          type: ContraindicationType.MEDICAL,
-          severity: ContraindicationSeverity.ABSOLUTE,
-          conditions: ['Without medical supervision'],
-          description: 'Rehabilitation exercises should only be performed under professional guidance',
-          alternatives: []
-        }
-      ],
-      [ExerciseType.FUNCTIONAL]: [],
-      [ExerciseType.SPORTS_SPECIFIC]: [
-        {
-          id: new Types.ObjectId(),
-          type: ContraindicationType.INJURY,
-          severity: ContraindicationSeverity.RELATIVE,
-          conditions: ['Sport-specific injuries', 'Overuse injuries'],
-          description: 'Sport-specific movements may aggravate related injuries',
-          alternatives: []
-        }
-      ]
-    };
+  private static readonly HIGH_RISK_EXERCISE_TYPES = [
+    ExerciseType.REHABILITATION,
+    ExerciseType.SPORTS_SPECIFIC
+  ];
 
-    return baseContraindications[exerciseType] ?? [];
-  }
+  private static readonly HIGH_RISK_DIFFICULTIES = [
+    Difficulty.ADVANCED_II,
+    Difficulty.ADVANCED_III,
+    Difficulty.MASTER
+  ];
 
-  /**
-   * Get muscle-specific contraindications
-   */
-  static getMuscleContraindications(muscle: MuscleZone): readonly string[] {
-    const muscleContraindications: Record<MuscleZone, string[]> = {
-      [MuscleZone.NECK]: [
-        'Cervical spine injuries',
-        'Recent whiplash',
-        'Cervical disc herniation'
-      ],
-      [MuscleZone.SHOULDER]: [
-        'Rotator cuff tears',
-        'Shoulder impingement',
-        'Recent shoulder dislocation',
-        'Frozen shoulder'
-      ],
-      [MuscleZone.BACK]: [
-        'Lumbar disc herniation',
-        'Acute lower back pain',
-        'Spinal stenosis',
-        'Recent back surgery'
-      ],
-      [MuscleZone.KNEE]: [
-        'ACL/MCL tears',
-        'Meniscus injuries',
-        'Acute knee pain',
-        'Recent knee surgery'
-      ],
-      [MuscleZone.ANKLE]: [
-        'Acute ankle sprains',
-        'Achilles tendon injuries',
-        'Plantar fasciitis',
-        'Recent ankle fractures'
-      ],
-      [MuscleZone.HIP]: [
-        'Hip impingement',
-        'Hip labral tears',
-        'Recent hip replacement',
-        'Acute hip bursitis'
-      ],
-      [MuscleZone.CHEST]: [
-        'Recent chest surgery',
-        'Pectoral muscle strains',
-        'Costochondritis'
-      ],
-      [MuscleZone.ABS]: [
-        'Acute abdominal pain',
-        'Recent abdominal surgery',
-        'Diastasis recti',
-        'Hernias'
-      ],
-      [MuscleZone.BICEPS]: [
-        'Bicep tendon tears',
-        'Acute arm injuries'
-      ],
-      [MuscleZone.TRICEPS]: [
-        'Tricep tendon injuries',
-        'Elbow impingement'
-      ],
-      [MuscleZone.FOREARM]: [
-        'Tennis elbow',
-        'Golfer\'s elbow',
-        'Carpal tunnel syndrome',
-        'Recent wrist injuries'
-      ],
-      [MuscleZone.GLUTES]: [
-        'Piriformis syndrome',
-        'Acute hip pain',
-        'Sacroiliac joint dysfunction'
-      ],
-      [MuscleZone.QUADRICEPS]: [
-        'Quad strains',
-        'Knee instability',
-        'Patellofemoral pain syndrome'
-      ],
-      [MuscleZone.HAMSTRINGS]: [
-        'Hamstring strains',
-        'Acute posterior thigh pain',
-        'Sciatic nerve irritation'
-      ],
-      [MuscleZone.CALF]: [
-        'Calf strains',
-        'Achilles tendinitis',
-        'Deep vein thrombosis'
-      ],
-      [MuscleZone.CORE]: [
-        'Acute abdominal pain',
-        'Recent core surgery',
-        'Severe diastasis recti'
-      ]
-    };
+  private static readonly HIGH_RISK_MUSCLE_GROUPS = [
+    MuscleZone.NECK,
+    MuscleZone.BACK,
+    MuscleZone.KNEE,
+    MuscleZone.SHOULDER
+  ];
 
-    return muscleContraindications[muscle] ?? [];
-  }
+  private static readonly MUSCLE_CONTRAINDICATIONS: Record<MuscleZone, readonly string[]> = {
+    [MuscleZone.NECK]: [
+      'cervical spine injuries',
+      'neck pain',
+      'whiplash history',
+      'herniated cervical disc',
+      'cervical stenosis',
+      'cervical radiculopathy'
+    ],
+    [MuscleZone.BACK]: [
+      'lower back pain',
+      'herniated disc',
+      'sciatica',
+      'spinal stenosis',
+      'spondylolisthesis',
+      'recent back surgery',
+      'acute back injury',
+      'chronic back conditions'
+    ],
+    [MuscleZone.SHOULDER]: [
+      'rotator cuff tear',
+      'shoulder impingement',
+      'frozen shoulder',
+      'shoulder dislocation history',
+      'acromioclavicular joint injury',
+      'shoulder arthritis',
+      'recent shoulder surgery'
+    ],
+    [MuscleZone.KNEE]: [
+      'knee pain',
+      'ACL injury',
+      'meniscus tear',
+      'patellar tendonitis',
+      'knee arthritis',
+      'recent knee surgery',
+      'ligament injuries',
+      'patellofemoral pain syndrome'
+    ],
+    [MuscleZone.HIP]: [
+      'hip impingement',
+      'hip arthritis',
+      'hip flexor strain',
+      'recent hip surgery',
+      'hip bursitis'
+    ],
+    [MuscleZone.ANKLE]: [
+      'ankle sprain history',
+      'ankle arthritis',
+      'Achilles tendonitis',
+      'plantar fasciitis',
+      'ankle instability'
+    ],
+    [MuscleZone.WRIST]: [
+      'carpal tunnel syndrome',
+      'wrist arthritis',
+      'wrist fracture history',
+      'tendonitis',
+      'repetitive strain injury'
+    ],
+    [MuscleZone.CHEST]: [
+      'recent chest surgery',
+      'rib fractures',
+      'chest muscle strain'
+    ],
+    [MuscleZone.CORE]: [
+      'diastasis recti',
+      'abdominal surgery',
+      'hernia',
+      'lower back issues'
+    ],
+    [MuscleZone.TRICEPS]: [
+      'elbow tendonitis',
+      'triceps strain',
+      'elbow arthritis'
+    ],
+    [MuscleZone.BICEPS]: [
+      'biceps tendonitis',
+      'biceps rupture history',
+      'elbow issues'
+    ],
+    [MuscleZone.FOREARM]: [
+      'tennis elbow',
+      'golfer\'s elbow',
+      'forearm strain',
+      'grip strength limitations'
+    ],
+    [MuscleZone.QUADRICEPS]: [
+      'quadriceps strain',
+      'knee issues',
+      'hip flexor problems'
+    ],
+    [MuscleZone.HAMSTRING]: [
+      'hamstring strain',
+      'sciatic nerve issues',
+      'tight hip flexors'
+    ],
+    [MuscleZone.GLUTES]: [
+      'piriformis syndrome',
+      'hip issues',
+      'lower back problems'
+    ],
+    [MuscleZone.CALVES]: [
+      'calf strain',
+      'Achilles issues',
+      'ankle problems'
+    ]
+  };
 
-  /**
-   * Get age-specific safety guidelines
-   */
-  static getAgeSpecificGuidelines(age: number): readonly string[] {
-    if (age < 16) {
-      return [
-        'Adult supervision required',
-        'Focus on bodyweight exercises',
-        'Avoid heavy resistance training',
-        'Emphasize proper form over intensity',
-        'Limit session duration to 30-45 minutes',
-        'Ensure adequate rest between sessions'
-      ];
-    }
+  private static readonly MEDICAL_CLEARANCE_CONDITIONS = [
+    'cardiovascular disease',
+    'uncontrolled hypertension',
+    'recent cardiac event',
+    'diabetes complications',
+    'severe osteoporosis',
+    'pregnancy complications',
+    'recent major surgery',
+    'chronic pain conditions',
+    'neurological disorders',
+    'autoimmune conditions'
+  ];
 
-    if (age >= 65) {
-      return [
-        'Medical clearance recommended',
-        'Start with low-intensity exercises',
-        'Focus on balance and fall prevention',
-        'Monitor blood pressure during exercise',
-        'Ensure proper warm-up and cool-down',
-        'Consider exercise buddy system',
-        'Have emergency contact readily available'
-      ];
-    }
-
-    return [
-      'Follow proper warm-up protocols',
-      'Stay hydrated throughout exercise',
-      'Listen to your body and stop if experiencing pain',
-      'Progress gradually in intensity and duration'
-    ];
-  }
-
-  /**
-   * Get difficulty-specific safety warnings
-   */
-  static getDifficultyWarnings(difficulty: Difficulty): readonly string[] {
-    const warnings: Record<Difficulty, string[]> = {
-      [Difficulty.BEGINNER_I]: [
-        'Focus on learning proper form',
-        'Start with shorter durations',
-        'Use lighter weights or bodyweight only'
-      ],
-      [Difficulty.BEGINNER_II]: [
-        'Ensure mastery of basic movements',
-        'Gradually increase intensity',
-        'Pay attention to body alignment'
-      ],
-      [Difficulty.BEGINNER_III]: [
-        'Consider working with a trainer',
-        'Don\'t rush progression',
-        'Maintain consistent form under fatigue'
-      ],
-      [Difficulty.INTERMEDIATE_I]: [
-        'Proper progression from beginner level required',
-        'Increased injury risk with poor form',
-        'Monitor fatigue levels closely'
-      ],
-      [Difficulty.INTERMEDIATE_II]: [
-        'Advanced movement patterns require practice',
-        'Consider deload weeks',
-        'Ensure adequate recovery between sessions'
-      ],
-      [Difficulty.INTERMEDIATE_III]: [
-        'High skill and strength requirements',
-        'Risk of overuse injuries increases',
-        'Professional guidance recommended'
-      ],
-      [Difficulty.ADVANCED_I]: [
-        'Significant training experience required',
-        'High injury risk without proper preparation',
-        'Excellent form essential under high loads'
-      ],
-      [Difficulty.ADVANCED_II]: [
-        'Elite-level movement patterns',
-        'Requires specialized coaching',
-        'Comprehensive warm-up critical'
-      ],
-      [Difficulty.ADVANCED_III]: [
-        'Maximum effort exercises',
-        'Spotter or supervision essential',
-        'Perfect technique mandatory'
-      ],
-      [Difficulty.MASTER]: [
-        'Expert-level exercise',
-        'Years of training required',
-        'Professional supervision mandatory',
-        'Extensive injury prevention protocols needed'
-      ]
-    };
-
-    return warnings[difficulty] ?? [];
-  }
-
-  /**
-   * Check if exercise requires medical clearance
-   */
   static requiresMedicalClearance(
     exerciseType: ExerciseType,
-    difficulty: Difficulty,
-    userAge?: number,
-    medicalConditions?: readonly string[]
+    difficulty: Difficulty
   ): boolean {
-    // High-risk exercise types
-    if ([ExerciseType.REHABILITATION].includes(exerciseType)) {
-      return true;
-    }
-
-    // Advanced difficulty levels
-    if ([Difficulty.ADVANCED_II, Difficulty.ADVANCED_III, Difficulty.MASTER].includes(difficulty)) {
-      return true;
-    }
-
-    // Age-based requirements
-    if (userAge && (userAge < 16 || userAge > 65)) {
-      return true;
-    }
-
-    // Medical condition requirements
-    if (medicalConditions && medicalConditions.length > 0) {
-      const highRiskConditions = [
-        'Heart disease',
-        'Hypertension',
-        'Diabetes',
-        'Recent surgery',
-        'Chronic pain conditions'
-      ];
-      
-      return medicalConditions.some(condition =>
-        highRiskConditions.some(riskCondition =>
-          condition.toLowerCase().includes(riskCondition.toLowerCase())
-        )
-      );
-    }
-
-    return false;
+    return this.HIGH_RISK_EXERCISE_TYPES.includes(exerciseType) ||
+           this.HIGH_RISK_DIFFICULTIES.includes(difficulty);
   }
 
-  /**
-   * Get emergency procedures for exercise type
-   */
-  static getEmergencyProcedures(exerciseType: ExerciseType): readonly string[] {
-    const procedures: Record<ExerciseType, string[]> = {
-      [ExerciseType.STRENGTH]: [
-        'Stop exercise immediately if experiencing chest pain',
-        'Lower weights safely if feeling dizzy',
-        'Call for help if unable to move safely',
-        'Apply ice to acute injuries'
-      ],
-      [ExerciseType.CARDIO]: [
-        'Stop and rest if experiencing chest pain or shortness of breath',
-        'Sit down if feeling lightheaded',
-        'Monitor heart rate if available',
-        'Seek immediate medical attention for chest pain'
-      ],
-      [ExerciseType.FLEXIBILITY]: [
-        'Stop stretching if experiencing sharp pain',
-        'Apply ice to overstretched areas',
-        'Avoid bouncing or forcing movements'
-      ],
-      [ExerciseType.BALANCE]: [
-        'Use support if feeling unsteady',
-        'Clear area of obstacles before starting',
-        'Have someone nearby during challenging balance exercises'
-      ],
-      [ExerciseType.ENDURANCE]: [
-        'Hydrate regularly during long sessions',
-        'Stop if experiencing heat exhaustion symptoms',
-        'Monitor for signs of overexertion'
-      ],
-      [ExerciseType.REHABILITATION]: [
-        'Stop immediately if pain increases',
-        'Contact healthcare provider for guidance',
-        'Document any adverse reactions'
-      ],
-      [ExerciseType.FUNCTIONAL]: [
-        'Ensure proper movement mechanics',
-        'Stop if compensatory patterns develop',
-        'Progress gradually to avoid overuse'
-      ],
-      [ExerciseType.SPORTS_SPECIFIC]: [
-        'Use proper protective equipment',
-        'Warm up thoroughly before high-intensity movements',
-        'Cool down properly after sessions'
-      ]
-    };
-
-    return procedures[exerciseType] ?? [
-      'Stop exercise if experiencing pain or discomfort',
-      'Seek medical attention if symptoms persist',
-      'Rest and hydrate after sessions'
-    ];
-  }
-
-  /**
-   * Validate exercise safety
-   */
   static validateExerciseSafety(
     exerciseType: ExerciseType,
     difficulty: Difficulty,
-    targetMuscles: readonly MuscleZone[],
-    userAge?: number,
-    medicalConditions?: readonly string[]
+    primaryMuscles: readonly MuscleZone[],
+    secondaryMuscles?: readonly MuscleZone[],
+    userConditions?: readonly string[]
   ): {
     isSafe: boolean;
     warnings: readonly string[];
@@ -403,37 +162,235 @@ export class SafetyGuidelines {
   } {
     const warnings: string[] = [];
     const contraindications: string[] = [];
+    let requiresMedicalClearance = false;
 
-    // Add difficulty warnings
-    warnings.push(...this.getDifficultyWarnings(difficulty));
-
-    // Add age-specific guidelines
-    if (userAge) {
-      warnings.push(...this.getAgeSpecificGuidelines(userAge));
+    // Check exercise type risks
+    if (this.HIGH_RISK_EXERCISE_TYPES.includes(exerciseType)) {
+      warnings.push(`${exerciseType} exercises carry increased risk and require professional supervision`);
+      requiresMedicalClearance = true;
     }
 
-    // Add muscle-specific contraindications
-    for (const muscle of targetMuscles) {
-      contraindications.push(...this.getMuscleContraindications(muscle));
+    // Check difficulty risks
+    if (this.HIGH_RISK_DIFFICULTIES.includes(difficulty)) {
+      warnings.push(`${difficulty} exercises require advanced skill and experience`);
     }
 
-    // Check medical clearance requirement
-    const requiresMedicalClearance = this.requiresMedicalClearance(
-      exerciseType,
-      difficulty,
-      userAge,
-      medicalConditions
+    // Check muscle group risks
+    const allMuscles = [...primaryMuscles, ...(secondaryMuscles ?? [])];
+    const highRiskMuscles = allMuscles.filter(muscle =>
+      this.HIGH_RISK_MUSCLE_GROUPS.includes(muscle)
     );
 
-    // Determine overall safety
-    const hasHighRiskFactors = contraindications.length > 3 || requiresMedicalClearance;
-    const isSafe = !hasHighRiskFactors || (medicalConditions?.length ?? 0) === 0;
+    if (highRiskMuscles.length > 0) {
+      warnings.push(`Exercise targets high-risk muscle groups: ${highRiskMuscles.join(', ')}`);
+    }
+
+    // Check user condition contraindications
+    if (userConditions && userConditions.length > 0) {
+      for (const muscle of allMuscles) {
+        const muscleContraindications = this.MUSCLE_CONTRAINDICATIONS[muscle] ?? [];
+        const matchingContraindications = muscleContraindications.filter(contraindication =>
+          userConditions.some(condition =>
+            condition.toLowerCase().includes(contraindication.toLowerCase()) ||
+            contraindication.toLowerCase().includes(condition.toLowerCase())
+          )
+        );
+
+        if (matchingContraindications.length > 0) {
+          contraindications.push(...matchingContraindications);
+        }
+      }
+
+      // Check for medical clearance conditions
+      const needsClearance = userConditions.some(condition =>
+        this.MEDICAL_CLEARANCE_CONDITIONS.some(clearanceCondition =>
+          condition.toLowerCase().includes(clearanceCondition.toLowerCase())
+        )
+      );
+
+      if (needsClearance) {
+        requiresMedicalClearance = true;
+        warnings.push('Medical clearance required due to existing health conditions');
+      }
+    }
+
+    const uniqueContraindications = [...new Set(contraindications)];
+    const isSafe = uniqueContraindications.length === 0 && !requiresMedicalClearance;
 
     return {
       isSafe,
       warnings,
-      contraindications,
+      contraindications: uniqueContraindications,
       requiresMedicalClearance
     };
+  }
+
+  static getMuscleContraindications(muscle: MuscleZone): readonly string[] {
+    return this.MUSCLE_CONTRAINDICATIONS[muscle] ?? [];
+  }
+
+  static getGeneralSafetyGuidelines(exerciseType: ExerciseType): readonly string[] {
+    const guidelines: Record<ExerciseType, readonly string[]> = {
+      [ExerciseType.STRENGTH]: [
+        'Always warm up before starting',
+        'Use proper form over heavy weight',
+        'Progress gradually',
+        'Allow adequate rest between sets',
+        'Stop if you feel sharp pain'
+      ],
+      [ExerciseType.CARDIO]: [
+        'Start with moderate intensity',
+        'Monitor heart rate',
+        'Stay hydrated',
+        'Cool down properly',
+        'Listen to your body'
+      ],
+      [ExerciseType.FLEXIBILITY]: [
+        'Never stretch cold muscles',
+        'Avoid bouncing movements',
+        'Breathe deeply during stretches',
+        'Hold stretches for adequate time',
+        'Stop at mild discomfort, not pain'
+      ],
+      [ExerciseType.BALANCE]: [
+        'Ensure safe environment',
+        'Use support when needed',
+        'Progress difficulty gradually',
+        'Focus on proper alignment',
+        'Practice regularly for improvement'
+      ],
+      [ExerciseType.FUNCTIONAL]: [
+        'Master basic movements first',
+        'Focus on quality over quantity',
+        'Use appropriate resistance',
+        'Maintain proper breathing',
+        'Consider real-world applications'
+      ],
+      [ExerciseType.REHABILITATION]: [
+        'Follow medical professional guidance',
+        'Start very conservatively',
+        'Monitor pain levels constantly',
+        'Progress only with approval',
+        'Report any concerning symptoms'
+      ],
+      [ExerciseType.SPORTS_SPECIFIC]: [
+        'Ensure sport-specific warm-up',
+        'Use proper protective equipment',
+        'Follow progressive skill development',
+        'Consider fatigue levels',
+        'Maintain situational awareness'
+      ]
+    };
+
+    return guidelines[exerciseType] ?? [];
+  }
+
+  static getDifficultyRequirements(difficulty: Difficulty): {
+    prerequisites: readonly string[];
+    supervision: 'none' | 'recommended' | 'required';
+    medicalClearance: boolean;
+  } {
+    const requirements: Record<Difficulty, {
+      prerequisites: readonly string[];
+      supervision: 'none' | 'recommended' | 'required';
+      medicalClearance: boolean;
+    }> = {
+      [Difficulty.BEGINNER_I]: {
+        prerequisites: [],
+        supervision: 'none',
+        medicalClearance: false
+      },
+      [Difficulty.BEGINNER_II]: {
+        prerequisites: ['Basic movement competency'],
+        supervision: 'none',
+        medicalClearance: false
+      },
+      [Difficulty.BEGINNER_III]: {
+        prerequisites: ['Consistent exercise routine'],
+        supervision: 'none',
+        medicalClearance: false
+      },
+      [Difficulty.INTERMEDIATE_I]: {
+        prerequisites: ['3+ months regular exercise'],
+        supervision: 'recommended',
+        medicalClearance: false
+      },
+      [Difficulty.INTERMEDIATE_II]: {
+        prerequisites: ['6+ months regular exercise', 'Good form foundation'],
+        supervision: 'recommended',
+        medicalClearance: false
+      },
+      [Difficulty.INTERMEDIATE_III]: {
+        prerequisites: ['1+ year exercise experience', 'Advanced movement patterns'],
+        supervision: 'recommended',
+        medicalClearance: false
+      },
+      [Difficulty.ADVANCED_I]: {
+        prerequisites: ['2+ years experience', 'Excellent form', 'Injury-free status'],
+        supervision: 'required',
+        medicalClearance: true
+      },
+      [Difficulty.ADVANCED_II]: {
+        prerequisites: ['3+ years experience', 'Advanced programming knowledge'],
+        supervision: 'required',
+        medicalClearance: true
+      },
+      [Difficulty.ADVANCED_III]: {
+        prerequisites: ['5+ years experience', 'Competitive experience'],
+        supervision: 'required',
+        medicalClearance: true
+      },
+      [Difficulty.MASTER]: {
+        prerequisites: ['Expert-level competency', 'Coaching certification'],
+        supervision: 'required',
+        medicalClearance: true
+      }
+    };
+
+    return requirements[difficulty];
+  }
+
+  static getEmergencyProcedures(): readonly string[] {
+    return [
+      'Stop exercise immediately if experiencing chest pain, dizziness, or difficulty breathing',
+      'Apply RICE (Rest, Ice, Compression, Elevation) for acute injuries',
+      'Seek immediate medical attention for severe pain or suspected fractures',
+      'Have emergency contact information readily available',
+      'Know location of nearest medical facility',
+      'Keep first aid kit accessible during exercise sessions',
+      'Ensure communication device is available for emergencies'
+    ];
+  }
+
+  static getAgeSpecificGuidelines(age: number): readonly string[] {
+    const guidelines: string[] = [];
+
+    if (age < 18) {
+      guidelines.push(
+        'Require parental supervision and consent',
+        'Focus on movement skill development',
+        'Avoid heavy resistance training',
+        'Emphasize fun and participation'
+      );
+    } else if (age >= 65) {
+      guidelines.push(
+        'Consider balance and fall prevention',
+        'Monitor for medication interactions',
+        'Progress very gradually',
+        'Include functional movement patterns',
+        'Consider bone density limitations'
+      );
+    }
+
+    if (age >= 40) {
+      guidelines.push(
+        'Consider cardiovascular screening',
+        'Monitor blood pressure response',
+        'Include mobility and flexibility work',
+        'Be aware of joint limitations'
+      );
+    }
+
+    return guidelines;
   }
 }

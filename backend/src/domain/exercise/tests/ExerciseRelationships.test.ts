@@ -6,10 +6,8 @@ import { ExerciseProgression } from '../entities/ExerciseProgression';
 import { 
   ExerciseType, 
   Difficulty, 
-  MuscleZone, 
-  EquipmentCategory 
+  MuscleZone
 } from '../../../types/fitness/enums/exercise';
-import { MediaType } from '../../../types/fitness/enums/media';
 import { ContraindicationType, ContraindicationSeverity } from '../interfaces/ExerciseInterfaces';
 
 describe('Exercise Entity Relationships', () => {

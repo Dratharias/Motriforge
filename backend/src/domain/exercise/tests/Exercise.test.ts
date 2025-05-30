@@ -9,7 +9,6 @@ import {
   MuscleZone, 
   EquipmentCategory 
 } from '../../../types/fitness/enums/exercise';
-import { MediaType } from '../../../types/fitness/enums/media';
 import { Role } from '../../../types/core/enums';
 import { ContraindicationType, ContraindicationSeverity } from '../interfaces/ExerciseInterfaces';
 
@@ -71,8 +70,6 @@ describe('Exercise Entity', () => {
       expect(minimalExercise.equipment).toEqual([]);
       expect(minimalExercise.tags).toEqual([]);
       expect(minimalExercise.estimatedDuration).toBe(5);
-      expect(minimalExercise.caloriesBurnedPerMinute).toBe(3);
-      expect(minimalExercise.minimumAge).toBe(13);
       expect(minimalExercise.isDraft).toBe(false);
     });
   });
@@ -220,22 +217,6 @@ describe('Exercise Entity', () => {
     it('should check equipment requirements', () => {
       expect(exercise.requiresEquipment(EquipmentCategory.BODYWEIGHT)).toBe(true);
       expect(exercise.requiresEquipment(EquipmentCategory.FREE_WEIGHTS)).toBe(false);
-    });
-
-    it('should check age suitability', () => {
-      expect(exercise.isSuitableForAge(20)).toBe(true);
-      expect(exercise.isSuitableForAge(12)).toBe(false);
-      
-      const seniorExercise = new Exercise({
-        ...exerciseData,
-        maximumAge: 65
-      });
-      expect(seniorExercise.isSuitableForAge(70)).toBe(false);
-    });
-
-    it('should calculate estimated calories burned', () => {
-      const calories = exercise.getEstimatedCaloriesBurned(10);
-      expect(calories).toBe(40); // 4 calories/min * 10 min
     });
 
     it('should calculate complexity score', () => {

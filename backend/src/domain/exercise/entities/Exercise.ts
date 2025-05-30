@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
-import { 
-  ICloneable, 
-  IShareable, 
-  IDraftable, 
+import {
+  ICloneable,
+  IShareable,
+  IDraftable,
   IValidatable,
   ValidationResult,
   ValidationError,
@@ -11,11 +11,11 @@ import {
   ValidationWarning
 } from '../../../types/core/behaviors';
 import { IEntity, IUser } from '../../../types/core/interfaces';
-import { 
-  ExerciseType, 
-  Difficulty, 
-  MuscleZone, 
-  EquipmentCategory 
+import {
+  ExerciseType,
+  Difficulty,
+  MuscleZone,
+  EquipmentCategory
 } from '../../../types/fitness/enums/exercise';
 import { MediaType } from '../../../types/fitness/enums/media';
 import { Action } from '../../../types/core/enums';
@@ -23,37 +23,32 @@ import { ExerciseInstruction } from './ExerciseInstruction';
 import { ExerciseProgression } from './ExerciseProgression';
 import { IContraindication } from '../interfaces/ExerciseInterfaces';
 
-/**
- * Core exercise entity representing fitness exercises
- */
 export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDraftable, IValidatable {
   public readonly id: Types.ObjectId;
   public name: string;
-  public readonly description: string;
-  public readonly type: ExerciseType;
-  public readonly difficulty: Difficulty;
-  public readonly primaryMuscles: readonly MuscleZone[];
-  public readonly secondaryMuscles: readonly MuscleZone[];
-  public readonly equipment: readonly EquipmentCategory[];
+  public description: string;
+  public type: ExerciseType;
+  public difficulty: Difficulty;
+  public primaryMuscles: readonly MuscleZone[];
+  public secondaryMuscles: readonly MuscleZone[];
+  public equipment: readonly EquipmentCategory[];
   public readonly instructions: readonly ExerciseInstruction[];
   public readonly progressions: readonly ExerciseProgression[];
   public readonly contraindications: readonly IContraindication[];
-  public readonly mediaUrls: readonly string[];
-  public readonly mediaTypes: readonly MediaType[];
-  public readonly tags: readonly string[];
-  public readonly estimatedDuration: number; // in minutes
-  public readonly caloriesBurnedPerMinute: number;
-  public readonly minimumAge: number;
-  public readonly maximumAge?: number;
-  public readonly prerequisites: readonly Types.ObjectId[]; // Other exercise IDs
-  public readonly variations: readonly Types.ObjectId[]; // Exercise variation IDs
+  public mediaUrls: readonly string[];
+  public mediaTypes: readonly MediaType[];
+  public tags: readonly string[];
+  public estimatedDuration: number;
+  public caloriesBurnedPerMinute?: number;
+  public prerequisites: readonly Types.ObjectId[];
+  public readonly variations: readonly Types.ObjectId[];
   public readonly createdAt: Date;
   public readonly updatedAt: Date;
   public readonly createdBy: Types.ObjectId;
   public readonly isActive: boolean;
-  public readonly isDraft: boolean;
-  public readonly publishedAt?: Date;
-  public readonly reviewedBy?: Types.ObjectId;
+  public isDraft: boolean;
+  public publishedAt?: Date;
+  public reviewedBy?: Types.ObjectId;
 
   constructor(data: {
     id: Types.ObjectId;
@@ -72,8 +67,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     tags?: readonly string[];
     estimatedDuration?: number;
     caloriesBurnedPerMinute?: number;
-    minimumAge?: number;
-    maximumAge?: number;
     prerequisites?: readonly Types.ObjectId[];
     variations?: readonly Types.ObjectId[];
     createdAt: Date;
@@ -99,9 +92,7 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     this.mediaTypes = data.mediaTypes ?? [];
     this.tags = data.tags ?? [];
     this.estimatedDuration = data.estimatedDuration ?? 5;
-    this.caloriesBurnedPerMinute = data.caloriesBurnedPerMinute ?? 3;
-    this.minimumAge = data.minimumAge ?? 13;
-    this.maximumAge = data.maximumAge;
+    this.caloriesBurnedPerMinute = data.caloriesBurnedPerMinute;
     this.prerequisites = data.prerequisites ?? [];
     this.variations = data.variations ?? [];
     this.createdAt = data.createdAt;
@@ -113,7 +104,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     this.reviewedBy = data.reviewedBy;
   }
 
-  // ICloneable implementation
   clone(): Exercise {
     return new Exercise({
       ...this,
@@ -139,18 +129,14 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     });
   }
 
-  // IShareable implementation
   canBeSharedWith(user: IUser): boolean {
-    // Basic sharing rules - can be enhanced by IAM service
     return this.isActive && !this.isDraft;
   }
 
   async share(targetUser: IUser, permissions: readonly Action[]): Promise<void> {
-    // This would be handled by sharing service
-    // Placeholder implementation
+    // Implementation for sharing
   }
 
-  // IDraftable implementation
   validateForPublication(): ValidationResult {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -234,13 +220,11 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     let completedRequired = 0;
     let completedOptional = 0;
 
-    // Check required fields
     if (this.name && this.name.trim().length > 0) completedRequired++;
     if (this.description && this.description.trim().length >= 10) completedRequired++;
     if (this.primaryMuscles.length > 0) completedRequired++;
     if (this.instructions.length > 0) completedRequired++;
 
-    // Check optional fields
     if (this.secondaryMuscles.length > 0) completedOptional++;
     if (this.equipment.length > 0) completedOptional++;
     if (this.progressions.length > 0) completedOptional++;
@@ -265,7 +249,7 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
       completionPercentage: percentage,
       missingRequiredFields: missingRequired,
       optionalFieldsCompleted: optionalFields.slice(0, completedOptional),
-      estimatedTimeToComplete: missingRequired.length * 5, // 5 minutes per field
+      estimatedTimeToComplete: missingRequired.length * 5,
       lastModified: this.updatedAt
     };
   }
@@ -274,13 +258,11 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     return ['name', 'description', 'primaryMuscles', 'instructions', 'type', 'difficulty'];
   }
 
-  // IValidatable implementation
   validate(): ValidationResult {
     return this.validateForPublication();
   }
 
   validateDraft(): ValidationResult {
-    // More lenient validation for drafts
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
 
@@ -320,55 +302,25 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     return this.validateDraft().errors;
   }
 
-  // Exercise-specific methods
-  /**
-   * Check if exercise targets specific muscle group
-   */
   targetsMuscle(muscle: MuscleZone): boolean {
     return this.primaryMuscles.includes(muscle) || this.secondaryMuscles.includes(muscle);
   }
 
-  /**
-   * Check if exercise requires specific equipment
-   */
   requiresEquipment(equipment: EquipmentCategory): boolean {
     return this.equipment.includes(equipment);
   }
 
-  /**
-   * Check if exercise is suitable for age
-   */
-  isSuitableForAge(age: number): boolean {
-    if (age < this.minimumAge) return false;
-    if (this.maximumAge && age > this.maximumAge) return false;
-    return true;
-  }
-
-  /**
-   * Check if exercise has contraindications for conditions
-   */
   hasContraindicationsFor(conditions: readonly string[]): boolean {
     return this.contraindications.some(contraindication =>
-      conditions.some(condition => 
+      conditions.some(condition =>
         contraindication.conditions.includes(condition)
       )
     );
   }
 
-  /**
-   * Get estimated calories burned for duration
-   */
-  getEstimatedCaloriesBurned(durationMinutes: number): number {
-    return Math.round(this.caloriesBurnedPerMinute * durationMinutes);
-  }
-
-  /**
-   * Get exercise complexity score
-   */
   getComplexityScore(): number {
     let score = 0;
-    
-    // Base difficulty score
+
     const difficultyMap = {
       [Difficulty.BEGINNER_I]: 1,
       [Difficulty.BEGINNER_II]: 2,
@@ -381,24 +333,15 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
       [Difficulty.ADVANCED_III]: 9,
       [Difficulty.MASTER]: 10
     };
-    
+
     score += difficultyMap[this.difficulty] ?? 5;
-    
-    // Equipment complexity
     score += this.equipment.length * 0.5;
-    
-    // Muscle group complexity
     score += (this.primaryMuscles.length + this.secondaryMuscles.length) * 0.3;
-    
-    // Prerequisites add complexity
     score += this.prerequisites.length * 0.2;
-    
+
     return Math.round(score * 10) / 10;
   }
 
-  /**
-   * Update exercise with new data
-   */
   update(updates: {
     name?: string;
     description?: string;
@@ -410,8 +353,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     tags?: readonly string[];
     estimatedDuration?: number;
     caloriesBurnedPerMinute?: number;
-    minimumAge?: number;
-    maximumAge?: number;
   }): Exercise {
     return new Exercise({
       ...this,
@@ -425,15 +366,10 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
       tags: updates.tags ?? this.tags,
       estimatedDuration: updates.estimatedDuration ?? this.estimatedDuration,
       caloriesBurnedPerMinute: updates.caloriesBurnedPerMinute ?? this.caloriesBurnedPerMinute,
-      minimumAge: updates.minimumAge ?? this.minimumAge,
-      maximumAge: updates.maximumAge ?? this.maximumAge,
       updatedAt: new Date()
     });
   }
 
-  /**
-   * Add instruction to exercise
-   */
   addInstruction(instruction: ExerciseInstruction): Exercise {
     return new Exercise({
       ...this,
@@ -442,9 +378,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     });
   }
 
-  /**
-   * Add progression to exercise
-   */
   addProgression(progression: ExerciseProgression): Exercise {
     return new Exercise({
       ...this,
@@ -453,9 +386,6 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     });
   }
 
-  /**
-   * Add contraindication to exercise
-   */
   addContraindication(contraindication: IContraindication): Exercise {
     return new Exercise({
       ...this,
@@ -464,18 +394,11 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
     });
   }
 
-  /**
-   * Check if exercise is published
-   */
   isPublished(): boolean {
     return !this.isDraft && this.publishedAt !== undefined;
   }
 
-  /**
-   * Check if exercise needs review
-   */
   needsReview(): boolean {
     return !this.isDraft && !this.reviewedBy;
   }
 }
-

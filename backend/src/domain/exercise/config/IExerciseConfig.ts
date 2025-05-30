@@ -1,14 +1,10 @@
-import { 
-  ExerciseType, 
-  Difficulty, 
-  MuscleZone, 
-  EquipmentCategory 
+import {
+  ExerciseType,
+  Difficulty,
+  EquipmentCategory
 } from '../../../types/fitness/enums/exercise';
-import { ContraindicationType, ContraindicationSeverity } from '../interfaces/ExerciseInterfaces';
+import { ContraindicationType } from '../interfaces/ExerciseInterfaces';
 
-/**
- * Exercise system configuration interface
- */
 export interface IExerciseConfig {
   readonly validation: IExerciseValidationConfig;
   readonly defaults: IExerciseDefaults;
@@ -19,9 +15,6 @@ export interface IExerciseConfig {
   readonly progression: IExerciseProgressionConfig;
 }
 
-/**
- * Exercise validation configuration
- */
 export interface IExerciseValidationConfig {
   readonly nameMinLength: number;
   readonly nameMaxLength: number;
@@ -44,43 +37,30 @@ export interface IExerciseValidationConfig {
   readonly allowDuplicateNames: boolean;
 }
 
-/**
- * Exercise default values configuration
- */
 export interface IExerciseDefaults {
   readonly type: ExerciseType;
   readonly difficulty: Difficulty;
   readonly estimatedDuration: number;
   readonly caloriesBurnedPerMinute: number;
-  readonly minimumAge: number;
-  readonly maximumAge?: number;
   readonly isDraft: boolean;
   readonly isActive: boolean;
   readonly tags: readonly string[];
   readonly equipment: readonly EquipmentCategory[];
 }
 
-/**
- * Exercise system limits configuration
- */
 export interface IExerciseLimits {
   readonly maxExercisesPerUser: number;
   readonly maxDraftsPerUser: number;
   readonly maxInstructionLength: number;
   readonly maxProgressionCriteria: number;
-  readonly maxMediaFileSize: number; // in bytes
-  readonly maxMediaDuration: number; // in seconds
+  readonly maxMediaFileSize: number;
+  readonly maxMediaDuration: number;
   readonly minCaloriesBurnRate: number;
   readonly maxCaloriesBurnRate: number;
-  readonly minDuration: number; // in minutes
-  readonly maxDuration: number; // in minutes
-  readonly minAge: number;
-  readonly maxAge: number;
+  readonly minDuration: number;
+  readonly maxDuration: number;
 }
 
-/**
- * Exercise features configuration
- */
 export interface IExerciseFeatures {
   readonly enableDrafts: boolean;
   readonly enableProgressions: boolean;
@@ -97,9 +77,6 @@ export interface IExerciseFeatures {
   readonly enableComments: boolean;
 }
 
-/**
- * Exercise safety configuration
- */
 export interface IExerciseSafetyConfig {
   readonly requireMedicalReview: boolean;
   readonly autoDetectContraindications: boolean;
@@ -111,27 +88,21 @@ export interface IExerciseSafetyConfig {
   readonly emergencyContactRequired: boolean;
 }
 
-/**
- * Exercise media configuration
- */
 export interface IExerciseMediaConfig {
   readonly allowedImageFormats: readonly string[];
   readonly allowedVideoFormats: readonly string[];
   readonly allowedAudioFormats: readonly string[];
-  readonly maxImageSize: number; // in bytes
-  readonly maxVideoSize: number; // in bytes
-  readonly maxAudioSize: number; // in bytes
-  readonly maxVideoDuration: number; // in seconds
-  readonly maxAudioDuration: number; // in seconds
+  readonly maxImageSize: number;
+  readonly maxVideoSize: number;
+  readonly maxAudioSize: number;
+  readonly maxVideoDuration: number;
+  readonly maxAudioDuration: number;
   readonly requireThumbnails: boolean;
   readonly autoGenerateThumbnails: boolean;
   readonly compressionEnabled: boolean;
   readonly cdnEnabled: boolean;
 }
 
-/**
- * Exercise progression configuration
- */
 export interface IExerciseProgressionConfig {
   readonly enableAutoProgression: boolean;
   readonly maxProgressionLevels: number;
@@ -142,4 +113,3 @@ export interface IExerciseProgressionConfig {
   readonly autoSuggestProgressions: boolean;
   readonly trackProgressionHistory: boolean;
 }
-
