@@ -1,11 +1,18 @@
 import { Types } from 'mongoose';
 import { Exercise } from '../entities/Exercise';
-import { IExerciseRepository } from '../interfaces/ExerciseInterfaces';
 import { ExerciseValidator } from '../validation/ExerciseValidator';
 import { ExercisePublisher } from '../publishing/ExercisePublisher';
 import { ExerciseManagementService, ExerciseCreationData, ExerciseUpdateData } from './ExerciseManagementService';
 import { ExerciseAnalysisService, AlternativesOptions } from './ExerciseAnalysisService';
 import { ExerciseWorkflowService } from './ExerciseWorkflowService';
+import {
+  IUserPerformance,
+  IRecommendationCriteria,
+  IRecommendationResult,
+  IPrerequisiteReadiness,
+  PrerequisiteAssessment,
+  IExerciseRepository
+} from '../interfaces/ExerciseInterfaces';
 
 export class ExerciseService {
   private readonly managementService: ExerciseManagementService;
@@ -25,7 +32,7 @@ export class ExerciseService {
     this.workflowService = new ExerciseWorkflowService(repository, exerciseValidator, exercisePublisher);
   }
 
-  // ========== MANAGEMENT OPERATIONS ==========
+  // Management Methods
   async createExercise(data: ExerciseCreationData, createdBy: Types.ObjectId): Promise<Exercise> {
     return await this.managementService.createExercise(data, createdBy);
   }
@@ -46,7 +53,7 @@ export class ExerciseService {
     return await this.managementService.archiveExercise(id);
   }
 
-  // ========== ANALYSIS OPERATIONS ==========
+  // Analysis Methods
   async findAlternatives(originalId: Types.ObjectId, options?: AlternativesOptions, limit = 5) {
     return await this.analysisService.findAlternatives(originalId, options, limit);
   }
@@ -59,7 +66,70 @@ export class ExerciseService {
     return this.analysisService.calculateProgressionPath(exercise, currentDifficulty, targetDifficulty);
   }
 
-  // ========== WORKFLOW OPERATIONS ==========
+  // New Prerequisite-based Methods
+  async getRecommendedExercises(
+    userPerformances: readonly IUserPerformance[],
+    criteria: IRecommendationCriteria,
+    options?: { limit?: number; offset?: number }
+  ): Promise<IRecommendationResult> {
+    return await this.analysisService.getRecommendedExercises(userPerformances, criteria, options);
+  }
+
+  async evaluatePrerequisiteReadiness(
+    exerciseId: Types.ObjectId,
+    userPerformances: readonly IUserPerformance[]
+  ): Promise<IPrerequisiteReadiness> {
+    const exercise = await this.repository.findById(exerciseId);
+    if (!exercise) {
+      throw new Error('Exercise not found');
+    }
+    return this.analysisService.evaluatePrerequisiteReadiness(exercise, userPerformances);
+  }
+
+  async assessPrerequisiteFulfillment(
+    exerciseId: Types.ObjectId,
+    userPerformances: readonly IUserPerformance[]
+  ): Promise<PrerequisiteAssessment> {
+    const exercise = await this.repository.findById(exerciseId);
+    if (!exercise) {
+      throw new Error('Exercise not found');
+    }
+    
+    // Use the private method from analysis service by creating a simple assessment
+    if (!exercise.hasPrerequisites()) {
+      return {
+        isMet: true,
+        score: 100,
+        confidence: 100,
+        dataQuality: 'excellent',
+        freshness: 'current'
+      };
+    }
+
+    const overallReadiness = exercise.getPrerequisiteReadiness(userPerformances);
+    const isMet = exercise.isRecommendedFor(userPerformances);
+
+    // Calculate average confidence from user performances
+    const averageConfidence = userPerformances.length > 0 ? 
+      userPerformances.reduce((sum, perf) => {
+        const daysSince = perf.lastPerformed ? 
+          Math.floor((Date.now() - perf.lastPerformed.getTime()) / (1000 * 60 * 60 * 24)) : 30;
+        return sum + Math.max(50, 100 - daysSince * 2);
+      }, 0) / userPerformances.length : 50;
+
+      const dataQuality = userPerformances.length >= 3 ? 'fair' : 'poor'
+
+    return {
+      isMet,
+      score: Math.round(overallReadiness),
+      confidence: Math.round(averageConfidence),
+      dataQuality: userPerformances.length >= 5 ? 'good' : dataQuality,
+      freshness: userPerformances.some(p => p.lastPerformed && 
+        (Date.now() - p.lastPerformed.getTime()) < 7 * 24 * 60 * 60 * 1000) ? 'current' : 'recent'
+    };
+  }
+
+  // Workflow Methods
   async publishExercise(id: Types.ObjectId, context?: any): Promise<Exercise | null> {
     return await this.workflowService.publishExercise(id, context);
   }
@@ -80,7 +150,7 @@ export class ExerciseService {
     return await this.workflowService.getExercisesForUser(userProfile, options);
   }
 
-  // ========== QUERY OPERATIONS ==========
+  // Query Methods
   async getExerciseById(id: Types.ObjectId, options?: any): Promise<Exercise | null> {
     return await this.repository.findById(id, options);
   }

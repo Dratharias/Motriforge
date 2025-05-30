@@ -88,7 +88,7 @@ export interface IDraftable {
   publish(): void;
   saveDraft(): void;
   getDraftPreview(): IDraftPreview;
-  getPublicationRequirements(): readonly string[];
+  getPublicationRequirements?(): readonly string[];
 }
 
 /**
@@ -96,7 +96,7 @@ export interface IDraftable {
  */
 export interface IShareable {
   canBeSharedWith(user: IUser): boolean;
-  share(targetUser: IUser, permissions: readonly Action[]): Promise<void>;
+  share?(targetUser: IUser, permissions: readonly Action[]): Promise<void>;
 }
 
 /**

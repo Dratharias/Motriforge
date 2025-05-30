@@ -14,6 +14,7 @@ export interface ExerciseValidationRules {
   readonly maxSecondaryMuscles: number;
   readonly maxEquipment: number;
   readonly maxInstructions: number;
+  readonly maxPrerequisites: number;
   readonly requireInstructionsForPublish: boolean;
 }
 
@@ -31,7 +32,7 @@ export interface SafetyConfig {
   readonly highRiskTypes: readonly ExerciseType[];
   readonly highRiskDifficulties: readonly Difficulty[];
   readonly highRiskMuscles: readonly MuscleZone[];
-  readonly muscleContraindications: Partial<Record<MuscleZone, readonly string[]>>; // Changed to Partial
+  readonly muscleContraindications: Partial<Record<MuscleZone, readonly string[]>>;
   readonly medicalClearanceConditions: readonly string[];
 }
 
@@ -47,7 +48,21 @@ export interface PublishingConfig {
   readonly qualityThreshold: number;
 }
 
+export interface PrerequisiteConfig {
+  recommendationThresholds: any;
+  categoryWeights: any;
+  dataFreshnessThresholds: any;
+  readonly defaultReadinessThreshold: number;
+  readonly recommendationBoost: number;
+  readonly strictMode: boolean;
+  readonly gracePeriodDays: number;
+  readonly autoProgressSuggestion: boolean;
+}
+
 export class ExerciseConfig {
+  static calculateConfidence(arg0: number, daysSinceLastPerformed: number, arg2: number) {
+    throw new Error('Method not implemented.');
+  }
   static readonly validation: ExerciseValidationRules = {
     nameMinLength: 3,
     nameMaxLength: 100,
@@ -57,7 +72,8 @@ export class ExerciseConfig {
     maxSecondaryMuscles: 5,
     maxEquipment: 5,
     maxInstructions: 20,
-    requireInstructionsForPublish: true
+    maxPrerequisites: 10,
+    requireInstructionsForPublish: true,
   };
 
   static readonly defaults: ExerciseDefaults = {
@@ -91,7 +107,7 @@ export class ExerciseConfig {
       [MuscleZone.HAMSTRINGS]: ['hamstring strain', 'sciatic nerve issues'],
       [MuscleZone.GLUTES]: ['piriformis syndrome', 'hip issues'],
       [MuscleZone.CALVES]: ['calf strain', 'Achilles issues']
-    }, // Remove the 'as' type assertion
+    },
     medicalClearanceConditions: [
       'cardiovascular disease', 'uncontrolled hypertension', 'recent cardiac event',
       'diabetes complications', 'severe osteoporosis', 'pregnancy complications'
@@ -124,5 +140,16 @@ export class ExerciseConfig {
     requireMedicalReview: [ExerciseType.REHABILITATION],
     requireTrainerApproval: [Difficulty.ADVANCED_II, Difficulty.ADVANCED_III, Difficulty.MASTER],
     qualityThreshold: 80
+  };
+
+  static readonly prerequisites: PrerequisiteConfig = {
+    defaultReadinessThreshold: 80,
+    recommendationBoost: 15,
+    strictMode: false,
+    gracePeriodDays: 7,
+    autoProgressSuggestion: true,
+    recommendationThresholds: undefined,
+    categoryWeights: undefined,
+    dataFreshnessThresholds: undefined
   };
 }

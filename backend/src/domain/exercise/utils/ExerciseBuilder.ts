@@ -9,7 +9,13 @@ import {
   EquipmentCategory
 } from '../../../types/fitness/enums/exercise';
 import { MediaType } from '../../../types/fitness/enums/media';
-import { IContraindication, ContraindicationType, ContraindicationSeverity } from '../interfaces/ExerciseInterfaces';
+import {
+  IContraindication,
+  ContraindicationType,
+  ContraindicationSeverity,
+  IExercisePrerequisite as ISimpleExercisePrerequisite,
+  PrerequisiteCategory
+} from '../interfaces/ExerciseInterfaces';
 import { ExerciseConfig } from '../config/ExerciseConfig';
 
 export class ExerciseBuilder {
@@ -18,10 +24,12 @@ export class ExerciseBuilder {
     createdAt: Date;
     updatedAt: Date;
     createdBy: Types.ObjectId;
+    mediaTypes?: MediaType[];
   };
   private readonly instructions: ExerciseInstruction[] = [];
   private readonly progressions: ExerciseProgression[] = [];
   private readonly contraindications: IContraindication[] = [];
+  private readonly prerequisites: ISimpleExercisePrerequisite[] = [];
 
   constructor(name: string, createdBy: Types.ObjectId) {
     const now = new Date();
@@ -96,14 +104,107 @@ export class ExerciseBuilder {
     return this;
   }
 
-  withPrerequisites(...prerequisites: Types.ObjectId[]): this {
-    this.exercise.prerequisites = [...(this.exercise.prerequisites ?? []), ...prerequisites];
+  withPrerequisites(...prerequisites: ISimpleExercisePrerequisite[]): this {
+    this.prerequisites.push(...prerequisites);
     return this;
+  }
+
+  addSimplePrerequisite(
+    exerciseId: Types.ObjectId,
+    category: PrerequisiteCategory,
+    minRecommended: number,
+    description?: string,
+    isRequired = false
+  ): this {
+    const prerequisite: ISimpleExercisePrerequisite = {
+      id: new Types.ObjectId(),
+      exerciseId,
+      category,
+      minRecommended,
+      description,
+      isRequired
+    };
+    this.prerequisites.push(prerequisite);
+    return this;
+  }
+
+  addRepsPrerequisite(exerciseId: Types.ObjectId, minReps: number, description?: string): this {
+    return this.addSimplePrerequisite(
+      exerciseId,
+      PrerequisiteCategory.REPS,
+      minReps,
+      description ?? `Complete ${minReps} repetitions with good form`
+    );
+  }
+
+  addHoldTimePrerequisite(exerciseId: Types.ObjectId, minSeconds: number, description?: string): this {
+    return this.addSimplePrerequisite(
+      exerciseId,
+      PrerequisiteCategory.HOLD_TIME,
+      minSeconds,
+      description ?? `Hold position for ${minSeconds} seconds`
+    );
+  }
+
+  addFormPrerequisite(exerciseId: Types.ObjectId, minQuality: number, description?: string): this {
+    return this.addSimplePrerequisite(
+      exerciseId,
+      PrerequisiteCategory.FORM,
+      minQuality,
+      description ?? `Achieve form quality score of ${minQuality}/10`
+    );
+  }
+
+  addDurationPrerequisite(exerciseId: Types.ObjectId, minSeconds: number, description?: string): this {
+    return this.addSimplePrerequisite(
+      exerciseId,
+      PrerequisiteCategory.DURATION,
+      minSeconds,
+      description ?? `Perform exercise for ${minSeconds} seconds continuously`
+    );
+  }
+
+  addWeightPrerequisite(exerciseId: Types.ObjectId, minWeight: number, description?: string): this {
+    return this.addSimplePrerequisite(
+      exerciseId,
+      PrerequisiteCategory.WEIGHT,
+      minWeight,
+      description ?? `Handle ${minWeight}kg resistance`
+    );
+  }
+
+  addConsistencyPrerequisite(exerciseId: Types.ObjectId, minDays: number, description?: string): this {
+    return this.addSimplePrerequisite(
+      exerciseId,
+      PrerequisiteCategory.CONSISTENCY,
+      minDays,
+      description ?? `Perform consistently for ${minDays} days`
+    );
+  }
+
+  addPerformancePrerequisite(
+    exerciseId: Types.ObjectId,
+    category: PrerequisiteCategory,
+    minRecommended: number,
+    description: string,
+    isRequired = false
+  ): this {
+    return this.addSimplePrerequisite(exerciseId, category, minRecommended, description, isRequired);
+  }
+
+  addStabilityPrerequisite(exerciseId: Types.ObjectId, minSeconds: number, description?: string): this {
+    return this.addSimplePrerequisite(
+      exerciseId,
+      PrerequisiteCategory.HOLD_TIME,
+      minSeconds,
+      description ?? `Maintain stability for ${minSeconds} seconds`
+    );
   }
 
   withMedia(url: string, type: MediaType): this {
     this.exercise.mediaUrls = [...(this.exercise.mediaUrls ?? []), url];
-    this.exercise.mediaTypes = [...(this.exercise.mediaTypes ?? []), type];
+    this.exercise.mediaTypes ??= [];
+    this.exercise.mediaTypes = [...this.exercise.mediaTypes, type];
     return this;
   }
 
@@ -184,7 +285,7 @@ export class ExerciseBuilder {
       isRequired: prereq.isRequired ?? true,
       description: prereq.description
     }));
-  
+
     const progression = new ExerciseProgression({
       id: new Types.ObjectId(),
       exerciseId: this.exercise.id,
@@ -204,7 +305,7 @@ export class ExerciseBuilder {
       isActive: true,
       isDraft: false
     });
-  
+
     this.progressions.push(progression);
     return this;
   }
@@ -380,6 +481,10 @@ export class ExerciseBuilder {
       errors.push('Published exercises require at least one instruction');
     }
 
+    if (this.prerequisites.length > (rules.maxPrerequisites ?? 10)) {
+      errors.push(`Maximum ${rules.maxPrerequisites ?? 10} prerequisites allowed`);
+    }
+
     return {
       isValid: errors.length === 0,
       errors
@@ -396,7 +501,8 @@ export class ExerciseBuilder {
       ...(this.exercise as any),
       instructions: this.instructions,
       progressions: this.progressions,
-      contraindications: this.contraindications
+      contraindications: this.contraindications,
+      prerequisites: this.prerequisites
     });
   }
 
@@ -406,8 +512,8 @@ export class ExerciseBuilder {
       instructions: this.instructions,
       progressions: this.progressions,
       contraindications: this.contraindications,
+      prerequisites: this.prerequisites,
       isDraft: true
     });
   }
 }
-
