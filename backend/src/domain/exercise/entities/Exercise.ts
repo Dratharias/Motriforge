@@ -323,55 +323,87 @@ export class Exercise implements IEntity, ICloneable<Exercise>, IShareable, IDra
   }
 
   getRecommendationScore(userPerformances: readonly IUserPerformance[], criteria?: IRecommendationCriteria): number {
-    let score = 50;
-
-    const readiness = this.getPrerequisiteReadiness(userPerformances);
-    score += (readiness / 100) * 30;
-
-    if (this.isRecommendedFor(userPerformances)) {
-      score += 20;
-    }
-
+    let score = this.calculateBaseScore(userPerformances);
+    
     if (criteria) {
-      if (criteria.fitnessLevel) {
-        const difficultyLevels = {
-          [Difficulty.BEGINNER_I]: 1, [Difficulty.BEGINNER_II]: 2, [Difficulty.BEGINNER_III]: 3,
-          [Difficulty.INTERMEDIATE_I]: 4, [Difficulty.INTERMEDIATE_II]: 5, [Difficulty.INTERMEDIATE_III]: 6,
-          [Difficulty.ADVANCED_I]: 7, [Difficulty.ADVANCED_II]: 8, [Difficulty.ADVANCED_III]: 9,
-          [Difficulty.MASTER]: 10
-        };
-        const userLevel = difficultyLevels[criteria.fitnessLevel] ?? 5;
-        const exerciseLevel = difficultyLevels[this.difficulty] ?? 5;
-
-        if (exerciseLevel <= userLevel) {
-          score += 10;
-        } else if (exerciseLevel > userLevel + 1) {
-          score -= 15;
-        }
-      }
-
-      if (criteria.availableTime && this.estimatedDuration <= criteria.availableTime) {
-        score += 10;
-      }
-
-      if (criteria.preferredMuscles?.length) {
-        const matchCount = this.primaryMuscles.filter(muscle =>
-          criteria.preferredMuscles!.includes(muscle)
-        ).length;
-        score += matchCount * 5;
-      }
-
-      if (criteria.excludedEquipment?.length) {
-        const hasExcludedEquipment = this.equipment.some(eq =>
-          criteria.excludedEquipment!.includes(eq)
-        );
-        if (hasExcludedEquipment) {
-          score -= 20;
-        }
-      }
+      score += this.calculateCriteriaScore(criteria);
     }
 
     return Math.min(100, Math.max(0, Math.round(score)));
+  }
+
+  private calculateBaseScore(userPerformances: readonly IUserPerformance[]): number {
+    let score = 50;
+    
+    const readiness = this.getPrerequisiteReadiness(userPerformances);
+    score += (readiness / 100) * 30;
+    
+    if (this.isRecommendedFor(userPerformances)) {
+      score += 20;
+    }
+    
+    return score;
+  }
+
+  private calculateCriteriaScore(criteria: IRecommendationCriteria): number {
+    let score = 0;
+    
+    if (criteria.fitnessLevel) {
+      score += this.calculateFitnessLevelScore(criteria.fitnessLevel);
+    }
+    
+    if (criteria.availableTime && this.estimatedDuration <= criteria.availableTime) {
+      score += 10;
+    }
+    
+    if (criteria.preferredMuscles?.length) {
+      score += this.calculateMuscleMatchScore(criteria.preferredMuscles);
+    }
+    
+    if (criteria.excludedEquipment?.length) {
+      score += this.calculateEquipmentPenalty(criteria.excludedEquipment);
+    }
+    
+    return score;
+  }
+
+  private calculateFitnessLevelScore(userFitnessLevel: Difficulty): number {
+    const difficultyLevels = this.getDifficultyLevels();
+    const userLevel = difficultyLevels[userFitnessLevel] ?? 5;
+    const exerciseLevel = difficultyLevels[this.difficulty] ?? 5;
+    
+    if (exerciseLevel <= userLevel) {
+      return 10;
+    }
+    
+    if (exerciseLevel > userLevel + 1) {
+      return -15;
+    }
+    
+    return 0;
+  }
+
+  private calculateMuscleMatchScore(preferredMuscles: readonly MuscleZone[]): number {
+    const matchCount = this.primaryMuscles.filter(muscle =>
+      preferredMuscles.includes(muscle)
+    ).length;
+    return matchCount * 5;
+  }
+
+  private calculateEquipmentPenalty(excludedEquipment: readonly EquipmentCategory[]): number {
+    const hasExcludedEquipment = this.equipment.some(eq =>
+      excludedEquipment.includes(eq)
+    );
+    return hasExcludedEquipment ? -20 : 0;
+  }
+
+  private getDifficultyLevels(): Record<Difficulty, number> {
+    return {
+      [Difficulty.BEGINNER_I]: 1, [Difficulty.BEGINNER_II]: 2, [Difficulty.BEGINNER_III]: 3,
+      [Difficulty.INTERMEDIATE_I]: 4, [Difficulty.INTERMEDIATE_II]: 5, [Difficulty.INTERMEDIATE_III]: 6,
+      [Difficulty.ADVANCED_I]: 7, [Difficulty.ADVANCED_II]: 8, [Difficulty.ADVANCED_III]: 9,
+      [Difficulty.MASTER]: 10
+    };
   }
 
   getComplexityScore(): number {

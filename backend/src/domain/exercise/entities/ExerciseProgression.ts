@@ -284,66 +284,88 @@ export class ExerciseProgression implements IEntity {
   } {
     const errors: string[] = [];
     const warnings: string[] = [];
-
-    if (!this.title || this.title.trim().length === 0) {
-      errors.push('Progression title is required');
-    }
-
-    if (!this.description || this.description.trim().length < 10) {
-      errors.push('Progression description must be at least 10 characters');
-    }
-
-    if (this.getDifficultyIncrease() === 0) {
-      errors.push('Progression must increase difficulty level');
-    }
-
-    if (this.getDifficultyIncrease() < 0) {
-      errors.push('Progression cannot decrease difficulty level');
-    }
-
-    if (this.criteria.length === 0) {
-      warnings.push('Progression lacks completion criteria');
-    }
-
-    if (this.modifications.length === 0) {
-      warnings.push('Progression lacks specific modifications');
-    }
-
-    if (!this.isReasonableDifficulty()) {
-      warnings.push('Difficulty increase may be too large for safe progression');
-    }
-
-    if (!this.isReasonableTimeframe()) {
-      warnings.push('Time estimate may not align with difficulty increase');
-    }
-
-    if (this.getSafetyRisk() === 'high') {
-      warnings.push('Progression may have safety concerns');
-    }
-
-    if (this.estimatedTimeToAchieve < 3) {
-      errors.push('Progression time must be at least 3 days');
-    }
-
-    for (const prerequisite of this.prerequisites) {
-      const performance = prerequisite.minimumPerformance;
-      const hasAnyRequirement = Object.values(performance).some(value => value !== undefined);
-      
-      if (!hasAnyRequirement) {
-        warnings.push(`Prerequisite for exercise ${prerequisite.exerciseId} has no performance requirements`);
-      }
-
-      if (prerequisite.isRequired && !prerequisite.description) {
-        warnings.push('Required prerequisites should have descriptions for user guidance');
-      }
-    }
-
+  
+    this.validateTitle(errors);
+    this.validateDescription(errors);
+    this.validateDifficulty(errors);
+    this.validateCriteria(warnings);
+    this.validateModifications(warnings);
+    this.validateSafety(warnings);
+    this.validateTime(errors, warnings);
+    this.validatePrerequisites(warnings);
+  
     return {
       isValid: errors.length === 0,
       errors,
       warnings
     };
   }
+  
+  private validateTitle(errors: string[]) {
+    if (!this.title || this.title.trim().length === 0) {
+      errors.push('Progression title is required');
+    }
+  }
+  
+  private validateDescription(errors: string[]) {
+    if (!this.description || this.description.trim().length < 10) {
+      errors.push('Progression description must be at least 10 characters');
+    }
+  }
+  
+  private validateDifficulty(errors: string[]) {
+    const difficulty = this.getDifficultyIncrease();
+    if (difficulty === 0) {
+      errors.push('Progression must increase difficulty level');
+    } else if (difficulty < 0) {
+      errors.push('Progression cannot decrease difficulty level');
+    }
+  }
+  
+  private validateCriteria(warnings: string[]) {
+    if (this.criteria.length === 0) {
+      warnings.push('Progression lacks completion criteria');
+    }
+  }
+  
+  private validateModifications(warnings: string[]) {
+    if (this.modifications.length === 0) {
+      warnings.push('Progression lacks specific modifications');
+    }
+  }
+  
+  private validateSafety(warnings: string[]) {
+    if (!this.isReasonableDifficulty()) {
+      warnings.push('Difficulty increase may be too large for safe progression');
+    }
+    if (!this.isReasonableTimeframe()) {
+      warnings.push('Time estimate may not align with difficulty increase');
+    }
+    if (this.getSafetyRisk() === 'high') {
+      warnings.push('Progression may have safety concerns');
+    }
+  }
+  
+  private validateTime(errors: string[], warnings: string[]) {
+    if (this.estimatedTimeToAchieve < 3) {
+      errors.push('Progression time must be at least 3 days');
+    }
+  }
+  
+  private validatePrerequisites(warnings: string[]) {
+    for (const prerequisite of this.prerequisites) {
+      const performance = prerequisite.minimumPerformance;
+      const hasAnyRequirement = Object.values(performance).some(value => value !== undefined);
+      if (!hasAnyRequirement) {
+        warnings.push(`Prerequisite for exercise ${prerequisite.exerciseId} has no performance requirements`);
+      }
+  
+      if (prerequisite.isRequired && !prerequisite.description) {
+        warnings.push('Required prerequisites should have descriptions for user guidance');
+      }
+    }
+  }
+  
 
   getProgressionType(): 'parameter' | 'technique' | 'exercise' | 'intensity' {
     const modText = this.modifications.join(' ').toLowerCase();
@@ -448,88 +470,28 @@ export class ExerciseProgression implements IEntity {
       };
     }
 
-    const missingRequirements: string[] = [];
     const progressScores: number[] = [];
+    const missingRequirements: string[] = [];
 
-    // Check reps requirement
-    if (prerequisite.minimumPerformance.reps !== undefined) {
-      const userReps = userPerformance.bestReps ?? 0;
-      const requiredReps = prerequisite.minimumPerformance.reps;
-      const repsProgress = Math.min(100, (userReps / requiredReps) * 100);
-      progressScores.push(repsProgress);
-      
-      if (userReps < requiredReps) {
-        missingRequirements.push(`Need ${requiredReps - userReps} more reps (current: ${userReps})`);
-      }
+    const checks = [
+      this.checkReps,
+      this.checkSets,
+      this.checkDuration,
+      this.checkHoldTime,
+      this.checkConsecutiveDays,
+      this.checkWeight
+    ];
+
+    for (const check of checks) {
+      const { progress, missing } = check.call(this, prerequisite, userPerformance);
+      if (progress !== null) progressScores.push(progress);
+      if (missing) missingRequirements.push(missing);
     }
 
-    // Check sets requirement
-    if (prerequisite.minimumPerformance.sets !== undefined) {
-      const userSets = userPerformance.bestSets ?? 0;
-      const requiredSets = prerequisite.minimumPerformance.sets;
-      const setsProgress = Math.min(100, (userSets / requiredSets) * 100);
-      progressScores.push(setsProgress);
-      
-      if (userSets < requiredSets) {
-        missingRequirements.push(`Need ${requiredSets - userSets} more sets (current: ${userSets})`);
-      }
-    }
+    const overallProgress = progressScores.length > 0 
+      ? Math.round(progressScores.reduce((sum, score) => sum + score, 0) / progressScores.length)
+      : 0;
 
-    // Check duration requirement
-    if (prerequisite.minimumPerformance.duration !== undefined) {
-      const userDuration = userPerformance.bestDuration ?? 0;
-      const requiredDuration = prerequisite.minimumPerformance.duration;
-      const durationProgress = Math.min(100, (userDuration / requiredDuration) * 100);
-      progressScores.push(durationProgress);
-      
-      if (userDuration < requiredDuration) {
-        const missingSeconds = requiredDuration - userDuration;
-        missingRequirements.push(`Need ${missingSeconds} more seconds (current: ${userDuration}s)`);
-      }
-    }
-
-    // Check hold time requirement
-    if (prerequisite.minimumPerformance.holdTime !== undefined) {
-      const userHoldTime = userPerformance.bestHoldTime ?? 0;
-      const requiredHoldTime = prerequisite.minimumPerformance.holdTime;
-      const holdProgress = Math.min(100, (userHoldTime / requiredHoldTime) * 100);
-      progressScores.push(holdProgress);
-      
-      if (userHoldTime < requiredHoldTime) {
-        const missingTime = requiredHoldTime - userHoldTime;
-        missingRequirements.push(`Need to hold ${missingTime}s longer (current: ${userHoldTime}s)`);
-      }
-    }
-
-    // Check consistency requirement
-    if (prerequisite.minimumPerformance.consecutiveDays !== undefined) {
-      const userDays = userPerformance.consistentDays ?? 0;
-      const requiredDays = prerequisite.minimumPerformance.consecutiveDays;
-      const consistencyProgress = Math.min(100, (userDays / requiredDays) * 100);
-      progressScores.push(consistencyProgress);
-      
-      if (userDays < requiredDays) {
-        const missingDays = requiredDays - userDays;
-        missingRequirements.push(`Need ${missingDays} more consecutive days (current: ${userDays})`);
-      }
-    }
-
-    // Check weight requirement
-    if (prerequisite.minimumPerformance.weight !== undefined) {
-      const userWeight = userPerformance.bestWeight ?? 0;
-      const requiredWeight = prerequisite.minimumPerformance.weight;
-      const weightProgress = Math.min(100, (userWeight / requiredWeight) * 100);
-      progressScores.push(weightProgress);
-      
-      if (userWeight < requiredWeight) {
-        const missingWeight = requiredWeight - userWeight;
-        missingRequirements.push(`Need ${missingWeight}kg more weight (current: ${userWeight}kg)`);
-      }
-    }
-
-    const overallProgress = progressScores.length > 0 ? 
-      Math.round(progressScores.reduce((sum, score) => sum + score, 0) / progressScores.length) : 0;
-    
     const isMet = missingRequirements.length === 0 && overallProgress >= 100;
 
     return {
@@ -539,6 +501,60 @@ export class ExerciseProgression implements IEntity {
       progress: overallProgress,
       missingRequirements
     };
+  }
+
+  private checkReps(prereq: IExercisePrerequisite, perf: IUserPerformance) {
+    if (prereq.minimumPerformance.reps === undefined) return { progress: null, missing: null };
+    const user = perf.bestReps ?? 0;
+    const req = prereq.minimumPerformance.reps;
+    const progress = Math.min(100, (user / req) * 100);
+    const missing = user < req ? `Need ${req - user} more reps (current: ${user})` : null;
+    return { progress, missing };
+  }
+
+  private checkSets(prereq: IExercisePrerequisite, perf: IUserPerformance) {
+    if (prereq.minimumPerformance.sets === undefined) return { progress: null, missing: null };
+    const user = perf.bestSets ?? 0;
+    const req = prereq.minimumPerformance.sets;
+    const progress = Math.min(100, (user / req) * 100);
+    const missing = user < req ? `Need ${req - user} more sets (current: ${user})` : null;
+    return { progress, missing };
+  }
+
+  private checkDuration(prereq: IExercisePrerequisite, perf: IUserPerformance) {
+    if (prereq.minimumPerformance.duration === undefined) return { progress: null, missing: null };
+    const user = perf.bestDuration ?? 0;
+    const req = prereq.minimumPerformance.duration;
+    const progress = Math.min(100, (user / req) * 100);
+    const missing = user < req ? `Need ${req - user} more seconds (current: ${user}s)` : null;
+    return { progress, missing };
+  }
+
+  private checkHoldTime(prereq: IExercisePrerequisite, perf: IUserPerformance) {
+    if (prereq.minimumPerformance.holdTime === undefined) return { progress: null, missing: null };
+    const user = perf.bestHoldTime ?? 0;
+    const req = prereq.minimumPerformance.holdTime;
+    const progress = Math.min(100, (user / req) * 100);
+    const missing = user < req ? `Need to hold ${req - user}s longer (current: ${user}s)` : null;
+    return { progress, missing };
+  }
+
+  private checkConsecutiveDays(prereq: IExercisePrerequisite, perf: IUserPerformance) {
+    if (prereq.minimumPerformance.consecutiveDays === undefined) return { progress: null, missing: null };
+    const user = perf.consistentDays ?? 0;
+    const req = prereq.minimumPerformance.consecutiveDays;
+    const progress = Math.min(100, (user / req) * 100);
+    const missing = user < req ? `Need ${req - user} more consecutive days (current: ${user})` : null;
+    return { progress, missing };
+  }
+
+  private checkWeight(prereq: IExercisePrerequisite, perf: IUserPerformance) {
+    if (prereq.minimumPerformance.weight === undefined) return { progress: null, missing: null };
+    const user = perf.bestWeight ?? 0;
+    const req = prereq.minimumPerformance.weight;
+    const progress = Math.min(100, (user / req) * 100);
+    const missing = user < req ? `Need ${req - user}kg more weight (current: ${user}kg)` : null;
+    return { progress, missing };
   }
 
   // Helper method to add prerequisites
