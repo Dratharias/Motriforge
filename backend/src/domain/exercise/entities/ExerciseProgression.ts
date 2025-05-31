@@ -99,7 +99,7 @@ export class ExerciseProgression implements IEntity {
     updatedAt: Date;
     createdBy: Types.ObjectId;
     isActive: boolean;
-    isDraft: boolean;
+    isDraft?: boolean;
   }) {
     this.id = data.id;
     this.exerciseId = data.exerciseId;
@@ -117,7 +117,7 @@ export class ExerciseProgression implements IEntity {
     this.updatedAt = data.updatedAt;
     this.createdBy = data.createdBy;
     this.isActive = data.isActive;
-    this.isDraft = data.isDraft;
+    this.isDraft = data.isDraft ?? false;
   }
 
   getDifficultyIncrease(): number {
