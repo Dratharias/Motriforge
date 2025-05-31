@@ -1,54 +1,41 @@
-import { 
-  ExerciseSortField,
-  IExerciseQueryOptions 
-} from '../interfaces/ExerciseInterfaces';
+import { IExerciseQueryOptions } from '../interfaces/ExerciseInterfaces';
 
-/**
- * Default query options for exercise operations
- */
+export enum ExerciseSortField {
+  NAME = 'name',
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
+  DIFFICULTY = 'difficulty',
+  DURATION = 'estimatedDuration',
+  POPULARITY = 'popularity',
+  COMPLEXITY = 'complexity',
+  TYPE = 'type'
+}
+
 export class ExerciseQueryOptions implements IExerciseQueryOptions {
   public readonly limit?: number;
   public readonly offset?: number;
-  public readonly sortBy?: ExerciseSortField;
+  public readonly sortBy?: string;
   public readonly sortOrder?: 'asc' | 'desc';
-  public readonly includeInstructions?: boolean;
-  public readonly includeProgressions?: boolean;
-  public readonly includeContraindications?: boolean;
-  public readonly includeMedia?: boolean;
-  public readonly includeVariations?: boolean;
-  public readonly includePrerequisites?: boolean;
+  public readonly includeInactive?: boolean;
+  public readonly includeDrafts?: boolean;
 
   constructor(options: Partial<IExerciseQueryOptions> = {}) {
     this.limit = options.limit ?? 50;
     this.offset = options.offset ?? 0;
     this.sortBy = options.sortBy ?? ExerciseSortField.NAME;
     this.sortOrder = options.sortOrder ?? 'asc';
-    this.includeInstructions = options.includeInstructions ?? false;
-    this.includeProgressions = options.includeProgressions ?? false;
-    this.includeContraindications = options.includeContraindications ?? false;
-    this.includeMedia = options.includeMedia ?? false;
-    this.includeVariations = options.includeVariations ?? false;
-    this.includePrerequisites = options.includePrerequisites ?? false;
+    this.includeInactive = options.includeInactive ?? false;
+    this.includeDrafts = options.includeDrafts ?? false;
   }
 
-  /**
-   * Create query options with all includes enabled
-   */
   static withAllIncludes(options: Partial<IExerciseQueryOptions> = {}): ExerciseQueryOptions {
     return new ExerciseQueryOptions({
       ...options,
-      includeInstructions: true,
-      includeProgressions: true,
-      includeContraindications: true,
-      includeMedia: true,
-      includeVariations: true,
-      includePrerequisites: true
+      includeInactive: true,
+      includeDrafts: true
     });
   }
 
-  /**
-   * Create query options for basic listing
-   */
   static forListing(limit = 20, offset = 0): ExerciseQueryOptions {
     return new ExerciseQueryOptions({
       limit,
@@ -58,25 +45,68 @@ export class ExerciseQueryOptions implements IExerciseQueryOptions {
     });
   }
 
-  /**
-   * Create query options for detailed view
-   */
   static forDetailedView(): ExerciseQueryOptions {
-    return ExerciseQueryOptions.withAllIncludes({
+    return new ExerciseQueryOptions({
       limit: 1
     });
   }
 
-  /**
-   * Create query options for search results
-   */
   static forSearch(limit = 25, offset = 0): ExerciseQueryOptions {
     return new ExerciseQueryOptions({
       limit,
       offset,
       sortBy: ExerciseSortField.POPULARITY,
-      sortOrder: 'desc',
-      includeMedia: true
+      sortOrder: 'desc'
+    });
+  }
+
+  static forDrafts(creatorId?: string, limit = 20): ExerciseQueryOptions {
+    return new ExerciseQueryOptions({
+      limit,
+      includeDrafts: true,
+      includeInactive: false,
+      sortBy: ExerciseSortField.UPDATED_AT,
+      sortOrder: 'desc'
+    });
+  }
+
+  static forPublished(limit = 50): ExerciseQueryOptions {
+    return new ExerciseQueryOptions({
+      limit,
+      includeDrafts: false,
+      includeInactive: false,
+      sortBy: ExerciseSortField.NAME,
+      sortOrder: 'asc'
+    });
+  }
+
+  static byDifficulty(sortOrder: 'asc' | 'desc' = 'asc'): ExerciseQueryOptions {
+    return new ExerciseQueryOptions({
+      sortBy: ExerciseSortField.DIFFICULTY,
+      sortOrder
+    });
+  }
+
+  static byDuration(sortOrder: 'asc' | 'desc' = 'asc'): ExerciseQueryOptions {
+    return new ExerciseQueryOptions({
+      sortBy: ExerciseSortField.DURATION,
+      sortOrder
+    });
+  }
+
+  static recent(limit = 10): ExerciseQueryOptions {
+    return new ExerciseQueryOptions({
+      limit,
+      sortBy: ExerciseSortField.CREATED_AT,
+      sortOrder: 'desc'
+    });
+  }
+
+  static popular(limit = 10): ExerciseQueryOptions {
+    return new ExerciseQueryOptions({
+      limit,
+      sortBy: ExerciseSortField.POPULARITY,
+      sortOrder: 'desc'
     });
   }
 }
