@@ -1,0 +1,199 @@
+classDiagram
+    %% Core Entities (Enhanced with business logic)
+    class Workout {
+        +id: ObjectId
+        +name: string
+        +status: WorkoutStatus
+        +exercises: WorkoutExercise[]
+        +start()
+        +complete()
+        +pause()
+        +cancel()
+        +clone()
+        +validateForPublication()
+        +calculateDuration()
+        +calculateVolume()
+        +calculateIntensity()
+        +getProgress()
+        +canTransitionTo(status)
+        +getAvailableActions()
+        +createFromTemplate()
+        +asTemplate()
+    }
+    
+    class WorkoutExercise {
+        +id: ObjectId
+        +exerciseId: ObjectId
+        +sets: ExerciseSet[]
+        +order: number
+        +addSet()
+        +getTargetVolume()
+        +getActualVolume()
+        +calculateIntensity()
+        +getProgress()
+        +validate()
+    }
+    
+    class ExerciseSet {
+        +id: ObjectId
+        +setNumber: number
+        +type: SetType
+        +targetReps: number
+        +actualReps: number
+        +getIntensity()
+        +getVolume()
+        +markCompleted()
+        +validate()
+    }
+    
+    class WorkoutSection {
+        +id: ObjectId
+        +name: string
+        +duration: number
+        +instructions: string[]
+        +validate()
+    }
+
+    %% Simplified Service Layer (2 focused services)
+    class WorkoutService {
+        +createWorkout()
+        +updateWorkout()
+        +deleteWorkout()
+        +findWorkouts()
+        +validateWorkout()
+        +cloneWorkout()
+        +createTemplate()
+    }
+    
+    class WorkoutExecutionService {
+        +startWorkout()
+        +pauseWorkout()
+        +resumeWorkout()
+        +completeWorkout()
+        +cancelWorkout()
+        +trackProgress()
+    }
+
+    %% Simplified State Management (Enum + Validation)
+    class WorkoutStatus {
+        <<enumeration>>
+        DRAFT
+        ACTIVE
+        SCHEDULED
+        IN_PROGRESS
+        PAUSED
+        COMPLETED
+        CANCELLED
+        PUBLISHED
+    }
+    
+    class WorkoutStatusManager {
+        +canTransitionTo(from, to): boolean
+        +getAvailableActions(status): string[]
+        +getStateDescription(status): string
+        +validateTransition(workout, targetStatus)
+    }
+
+    %% Consolidated Validation
+    class WorkoutValidator {
+        +validateWorkout()
+        +validateForPublication()
+        +validateCreation()
+        +validateExerciseOrder()
+        +validateRestTimes()
+        +validateVolume()
+        +validateDuration()
+        +validateSafety()
+    }
+
+    %% Consolidated Analytics
+    class WorkoutAnalyzer {
+        +analyzeWorkout()
+        +calculateMetrics()
+        +trackProgress()
+        +calculateVolume()
+        +calculateIntensity()
+        +generateSummary()
+        +compareWorkouts()
+    }
+
+    %% Single Integration Service
+    class ExerciseIntegrationService {
+        +integrateExercise()
+        +findAlternatives()
+        +suggestProgressions()
+        +analyzeMuscleBalance()
+        +calculateLoad()
+    }
+
+    %% Factory Pattern (Replaces Builders)
+    class WorkoutFactory {
+        +createStrengthTraining()
+        +createCardio()
+        +createHIIT()
+        +createCircuit()
+        +createFromTemplate()
+        +createWithExercises()
+    }
+
+    %% Configuration (Unchanged - well designed)
+    class WorkoutConfig {
+        +validation: WorkoutDefaults
+        +setTypes: SetTypeRules
+        +getValidationRules()
+        +getDefaultRestTime()
+    }
+
+    %% Repository (Unchanged)
+    class IWorkoutRepository {
+        +findById()
+        +create()
+        +update()
+        +findByCriteria()
+        +delete()
+    }
+
+    %% Value Objects for Complex Operations
+    class WorkoutMetrics {
+        +totalVolume: number
+        +averageIntensity: number
+        +duration: number
+        +completionRate: number
+        +difficulty: number
+    }
+    
+    class ProgressData {
+        +overallProgress: number
+        +exerciseProgress: ExerciseProgress[]
+        +timeElapsed: number
+        +estimatedRemaining: number
+    }
+
+    %% Relationships
+    Workout --o WorkoutExercise
+    WorkoutExercise --o ExerciseSet
+    Workout --o WorkoutSection
+    Workout --> WorkoutStatus
+    
+    %% Service relationships (much simpler)
+    WorkoutService --> IWorkoutRepository
+    WorkoutService --> WorkoutValidator
+    WorkoutService --> WorkoutFactory
+    WorkoutService --> WorkoutConfig
+    
+    WorkoutExecutionService --> IWorkoutRepository
+    WorkoutExecutionService --> WorkoutStatusManager
+    WorkoutExecutionService --> WorkoutAnalyzer
+    
+    %% Domain logic relationships
+    Workout --> WorkoutMetrics
+    Workout --> ProgressData
+    WorkoutExecutionService --> ProgressData
+    WorkoutAnalyzer --> WorkoutMetrics
+    
+    %% Factory relationships
+    WorkoutFactory --> Workout
+    WorkoutFactory --> WorkoutConfig
+    
+    %% Integration relationships
+    ExerciseIntegrationService --> WorkoutExercise
