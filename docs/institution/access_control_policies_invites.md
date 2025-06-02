@@ -62,8 +62,8 @@ erDiagram
   }
 
   INSTITUTION_INVITATION_CATEGORY {
-    UUID invitation_id PK   "NOT NOT; references INSTITUTION_INVITE.id"
-    UUID category_id PK     "NOT NOT; references CATEGORY.id"
+    UUID invitation_id PK   "NOT NULL; references INSTITUTION_INVITE.id"
+    UUID category_id PK     "NOT NULL; references CATEGORY.id"
   }
 
   %%— Relationships in Layer 3 —

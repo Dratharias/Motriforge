@@ -14,7 +14,6 @@ erDiagram
     UUID workout_status_id FK          "NOT NULL; references WORKOUT_STATUS.id"
     SMALLINT estimated_duration_seconds "NOT NULL; Max ~18 hours"
     VARCHAR(50) name                   "NOT NULL; DEFAULT 'UNNAMED'; UNIQUE"
-    UUID workout_category_id FK        "NOT NULL; references WORKOUT_CATEGORY.id"
     UUID difficulty_level_id FK        "NOT NULL; references DIFFICULTY_LEVEL.id"
     VARCHAR(255) notes                 "NULLABLE; Short summary"
     TIMESTAMP created_at               "NOT NULL; DEFAULT now()"

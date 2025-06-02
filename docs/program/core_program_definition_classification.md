@@ -14,7 +14,6 @@ erDiagram
     VARCHAR(60) title                        "NOT NULL; UNIQUE"
     TEXT description                         "NOT NULL"
     UUID difficulty_level_id FK              "NOT NULL; references DIFFICULTY_LEVEL.id"
-    UUID program_category_id FK              "NOT NULL; references PROGRAM_CATEGORY.id"
     TIMESTAMP created_at                     "NOT NULL; Default: now()"
     TIMESTAMP updated_at                     "NOT NULL; Auto‐managed"
     BOOLEAN is_active                        "NOT NULL; Default: true"

@@ -17,7 +17,7 @@ erDiagram
     UUID target_muscle_id FK                "NOT NULL; references MUSCLE.id"
     UUID set_category_id FK                 "NOT NULL; references SET_CATEGORY.id"
     UUID workout_set_accessibility_id FK    "NOT NULL; references WORKOUT_SET_ACCESSIBILITY.id"
-    UUID workout_set_difficulty_variant_id FK "NOT NOT; references WORKOUT_SET_DIFFICULTY_VARIANT.id"
+    UUID workout_set_difficulty_variant_id FK "NOT NULL; references WORKOUT_SET_DIFFICULTY_VARIANT.id"
     TIMESTAMP created_at                    "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at                    "NOT NULL"
   }

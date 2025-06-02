@@ -65,47 +65,47 @@ erDiagram
     UUID id PK                    "NOT NULL"
     UUID user_program_schedule_id FK "NOT NULL; references USER_PROGRAM_SCHEDULE.id"
     UUID workout_id FK            "NOT NULL; references WORKOUT.id"
-    SMALLINT order_index          "NOT NOT"
-    BOOLEAN is_optional           "NOT NOT"
+    SMALLINT order_index          "NOT NULL"
+    BOOLEAN is_optional           "NOT NULL"
     TEXT notes                    "NULLABLE"
   }
 
   %%— Favorites & Activities —
   USER_FAVORITE {
-    UUID user_id PK        "NOT NOT; references USER.id"
-    UUID favorite_id PK    "NOT NOT; references FAVORITE.id"
-    TIMESTAMP created_at   "NOT NOT; DEFAULT now()"
+    UUID user_id PK        "NOT NULL; references USER.id"
+    UUID favorite_id PK    "NOT NULL; references FAVORITE.id"
+    TIMESTAMP created_at   "NOT NULL; DEFAULT now()"
   }
 
   USER_ACTIVITY {
-    UUID user_id PK        "NOT NOT; references USER.id"
-    UUID activity_id PK    "NOT NOT; references ACTIVITY.id"
-    TIMESTAMP created_at   "NOT NOT; DEFAULT now()"
+    UUID user_id PK        "NOT NULL; references USER.id"
+    UUID activity_id PK    "NOT NULL; references ACTIVITY.id"
+    TIMESTAMP created_at   "NOT NULL; DEFAULT now()"
   }
 
   %%— Ownership (Programs, Workouts, etc.) —
   USER_OWNERSHIP {
-    UUID id PK              "NOT NOT"
-    UUID user_id FK         "NOT NOT; references USER.id"
+    UUID id PK              "NOT NULL"
+    UUID user_id FK         "NOT NULL; references USER.id"
     UUID created_by FK      "NULLABLE; references USER.id"
     UUID granted_by FK      "NULLABLE; references USER.id or SYSTEM"
     UUID payment_id FK      "NULLABLE; references PAYMENT.id"
-    TIMESTAMP created_at    "NOT NOT; DEFAULT now()"
-    BOOLEAN is_primary_owner "NOT NOT; DEFAULT true"
-    BOOLEAN can_edit        "NOT NOT; DEFAULT false"
-    BOOLEAN can_delete      "NOT NOT; DEFAULT false"
-    BOOLEAN is_revoked      "NOT NOT; DEFAULT false"
+    TIMESTAMP created_at    "NOT NULL; DEFAULT now()"
+    BOOLEAN is_primary_owner "NOT NULL; DEFAULT true"
+    BOOLEAN can_edit        "NOT NULL; DEFAULT false"
+    BOOLEAN can_delete      "NOT NULL; DEFAULT false"
+    BOOLEAN is_revoked      "NOT NULL; DEFAULT false"
   }
 
   USER_PROGRAM_OWNERSHIP {
-    UUID id PK               "NOT NOT; references USER_OWNERSHIP.id"
-    UUID program_id FK       "NOT NOT; references PROGRAM.id"
+    UUID id PK               "NOT NULL; references USER_OWNERSHIP.id"
+    UUID program_id FK       "NOT NULL; references PROGRAM.id"
     UUID program_category_id FK "NULLABLE; references PROGRAM_CATEGORY.id"
   }
 
   USER_WORKOUT_OWNERSHIP {
-    UUID id PK               "NOT NOT; references USER_OWNERSHIP.id"
-    UUID workout_id FK       "NOT NOT; references WORKOUT.id"
+    UUID id PK               "NOT NULL; references USER_OWNERSHIP.id"
+    UUID workout_id FK       "NOT NULL; references WORKOUT.id"
     UUID workout_category_id FK "NULLABLE; references WORKOUT_CATEGORY.id"
   }
 
