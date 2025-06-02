@@ -80,7 +80,6 @@ erDiagram
     UUID role_id PK,FK                   "NOT NULL; references ROLE.id"
     UUID created_by FK                   "NOT NULL; references USER.id"
     UUID updated_by FK                   "NULLABLE; references USER.id"
-    TIMESTAMP created_at                "NOT NULL; DEFAULT now()"
     TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
     BOOLEAN is_active                    "NOT NULL; DEFAULT true"
