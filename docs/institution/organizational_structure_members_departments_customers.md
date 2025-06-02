@@ -14,7 +14,7 @@ erDiagram
     UUID id PK                           "NOT NULL"
     UUID user_id FK                      "NOT NULL; references USER.id"
     UUID institution_id FK               "NOT NULL; references INSTITUTION.id"
-    UUID institution_user_role_id FK     "NOT NULL; references INSTITUTION_ROLE.id"
+    UUID institution_user_member_role_id FK     "NOT NULL; references INSTITUTION_MEMBER_ROLE.id"
     UUID institution_user_permission_id FK "NOT NULL; references INSTITUTION_MEMBER_PERMISSION.id"
     UUID institution_department FK       "NOT NULL; references INSTITUTION_DEPARTMENT.id"
     TIMESTAMP joined_at                  "NOT NULL"

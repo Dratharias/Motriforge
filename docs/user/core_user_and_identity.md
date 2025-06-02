@@ -11,7 +11,6 @@ erDiagram
 
   USER {
     UUID id PK                          "NOT NULL"
-    UUID user_category_id FK           "NOT NULL; references USER_CATEGORY.id"
     VARCHAR(255) email                  "NOT NULL, UNIQUE"
     VARCHAR(255) first_name             "NOT NULL"
     VARCHAR(255) last_name              "NOT NULL"
@@ -46,8 +45,8 @@ erDiagram
   }
 
   USER_CATEGORY {
-    UUID user_id PK                    "NOT NULL; references USER.id"
-    UUID category_id PK                "NOT NULL; references CATEGORY.id"
+      UUID user_id PK    "NOT NULL; references USER.id"
+      UUID category_id PK "NOT NULL; references CATEGORY.id"
   }
 
   %%— Internal Relationships —
