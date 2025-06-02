@@ -9,6 +9,7 @@ BASE_DIR = os.path.dirname(__file__)
 OUTPUT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'flatten'))
 TYPES_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'backend', 'src', 'types'))
 SRC_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'backend'))
+DOCS_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'docs'))
 INPUT_FILE = os.path.join(BASE_DIR, 'to-flatten.txt')
 
 # Ensure output directory exists
@@ -75,7 +76,7 @@ def flatten_from_file():
         file_name = os.path.basename(full_path)
         destination_path = os.path.join(OUTPUT_DIR, file_name)
         if os.path.exists(destination_path):
-            print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+            print(f"⚠ Skipping {file_name}: already exists in flatten/")
             continue
         copy_and_clean_file(full_path, destination_path, SRC_DIR)
 
@@ -85,7 +86,7 @@ def flatten_types():
         file_name = os.path.basename(ts_path)
         destination_path = os.path.join(OUTPUT_DIR, file_name)
         if os.path.exists(destination_path):
-            print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+            print(f"⚠ Skipping {file_name}: already exists in flatten/")
             continue
         copy_and_clean_file(ts_path, destination_path, SRC_DIR)
 
@@ -95,7 +96,7 @@ def flatten_all_src():
         file_name = os.path.basename(ts_path)
         destination_path = os.path.join(OUTPUT_DIR, file_name)
         if os.path.exists(destination_path):
-            print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+            print(f"⚠ Skipping {file_name}: already exists in flatten/")
             continue
         copy_and_clean_file(ts_path, destination_path, SRC_DIR)
 
@@ -105,7 +106,7 @@ def flatten_test_files():
         file_name = os.path.basename(ts_path)
         destination_path = os.path.join(OUTPUT_DIR, file_name)
         if os.path.exists(destination_path):
-            print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+            print(f"⚠ Skipping {file_name}: already exists in flatten/")
             continue
         copy_and_clean_file(ts_path, destination_path, SRC_DIR)
 
@@ -126,16 +127,30 @@ def flatten_by_dir_name(target_dir_name: str):
             file_name = os.path.basename(ts_path)
             destination_path = os.path.join(OUTPUT_DIR, file_name)
             if os.path.exists(destination_path):
-                print(f"⚠️ Skipping {file_name}: already exists in flatten/")
+                print(f"⚠ Skipping {file_name}: already exists in flatten/")
                 continue
             copy_and_clean_file(ts_path, destination_path, SRC_DIR)
 
+def flatten_docs():
+    doc_files = glob.glob(os.path.join(DOCS_DIR, '**', '*.md'), recursive=True)
+    if not doc_files:
+        print(f"❌ No .ts files found in {DOCS_DIR}")
+        return
+    for doc_path in doc_files:
+        file_name = os.path.basename(doc_path)
+        destination_path = os.path.join(OUTPUT_DIR, file_name)
+        if os.path.exists(destination_path):
+            print(f"⚠ Skipping {file_name}: already exists in flatten/")
+            continue
+        copy_and_clean_file(doc_path, destination_path, DOCS_DIR)
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Flatten files from backend/src.")
+    parser = argparse.ArgumentParser(description="Flatten files from backend/src or docs.")
     parser.add_argument('--flatten-all', action='store_true', help="Flatten everything from backend/src/**/*.ts")
     parser.add_argument('--types', action='store_true', help="Only flatten types from backend/src/types/**/*.ts")
     parser.add_argument('--test', action='store_true', help="Only flatten test files backend/src/**/*.test.ts")
     parser.add_argument('--dir', type=str, help="Name of the directory to recursively flatten from")
+    parser.add_argument('--docs', action='store_true', help="Flatten all .ts files from root-level docs/")
     args = parser.parse_args()
 
     if args.flatten_all:
@@ -146,5 +161,7 @@ if __name__ == "__main__":
         flatten_test_files()
     elif args.dir:
         flatten_by_dir_name(args.dir)
+    elif args.docs:
+        flatten_docs()
     else:
         flatten_from_file()
