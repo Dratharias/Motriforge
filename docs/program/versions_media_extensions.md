@@ -14,7 +14,7 @@ erDiagram
     UUID program_id FK                       "NOT NULL; references PROGRAM.id"
     SMALLINT version_number                  "NOT NULL; DEFAULT 0"
     VARCHAR(255) reason                      "NULLABLE; Short description"
-    TIMESTAMP created_at                     "NOT NULL; Default: now()"
+    TIMESTAMP created_at                     "NOT NULL; DEFAULT now()"
     JSONB snapshot_data                      "NOT NULL"
     BOOLEAN is_active                        "NOT NULL"
   }
@@ -23,7 +23,7 @@ erDiagram
     UUID id PK                               "NOT NULL"
     UUID program_id FK                       "NOT NULL; references PROGRAM.id"
     UUID media_id FK                         "NOT NULL; references MEDIA.id"
-    TIMESTAMP added_at                       "NOT NULL; Default: now()"
+    TIMESTAMP added_at                       "NOT NULL; DEFAULT now()"
   }
 
   %%— Relationships in Layer 3 —

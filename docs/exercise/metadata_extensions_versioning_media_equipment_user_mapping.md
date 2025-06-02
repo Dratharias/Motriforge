@@ -14,31 +14,31 @@ erDiagram
   EXERCISE_VERSION {
     UUID id PK                         "NOT NULL; UNIQUE"
     UUID exercise_id FK                "NOT NULL; references EXERCISE.id"
-    INT version_number                 "NOT NULL"
+    SMALLINT version_number                 "NOT NULL"
     TEXT change_reason                 "NULLABLE"
-    TIMESTAMP created_at               "NOT NULL; Default: now()"
-    BOOLEAN is_active                  "NOT NULL; Default: true"
+    TIMESTAMP created_at               "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                  "NOT NULL; DEFAULT true"
   }
 
   EXERCISE_MEDIA {
     UUID id PK                         "NOT NULL; UNIQUE"
     UUID exercise_id FK                "NOT NULL; references EXERCISE.id"
     UUID media_id FK                   "NOT NULL; references MEDIA.id"
-    TIMESTAMP added_at                 "NOT NULL; Default: now()"
+    TIMESTAMP added_at                 "NOT NULL; DEFAULT now()"
   }
 
   EXERCISE_EQUIPMENT {
     UUID id PK                         "NOT NULL; UNIQUE"
     UUID exercise_id FK                "NOT NULL; references EXERCISE.id"
     UUID equipment_id FK               "NOT NULL; references EQUIPMENT.id"
-    TIMESTAMP added_at                 "NOT NULL; Default: now()"
+    TIMESTAMP added_at                 "NOT NULL; DEFAULT now()"
   }
 
   USER_EXERCISE_MAP {
     UUID id PK                         "NOT NULL; UNIQUE"
     UUID user_id FK                    "NOT NULL; references USER.id"
     UUID exercise_id FK                "NOT NULL; references EXERCISE.id"
-    TIMESTAMP mapped_at                "NOT NULL; Default: now()"
+    TIMESTAMP mapped_at                "NOT NULL; DEFAULT now()"
   }
 
   %%— Relationships in Layer 3 —

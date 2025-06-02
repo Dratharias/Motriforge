@@ -26,7 +26,7 @@ erDiagram
     UUID delivery_status_id FK         "NOT NULL; references DELIVERY_STATUS.id"
     VARCHAR external_id                "NULLABLE; provider message ID"
     TEXT failure_reason                "NULLABLE"
-    INT retry_count                    "NOT NULL; DEFAULT 0"
+    SMALLINT retry_count                    "NOT NULL; DEFAULT 0"
     TIMESTAMP sent_at                  "NULLABLE"
     TIMESTAMP delivered_at             "NULLABLE"
     TIMESTAMP failed_at                "NULLABLE"
@@ -55,7 +55,7 @@ erDiagram
     UUID id PK                         "NOT NULL; UNIQUE"
     UUID user_id FK                    "NOT NULL; references USER.id"
     ENUM batch_type                    "NOT NULL; DAILY_DIGEST, WEEKLY_SUMMARY"
-    INT notification_count             "NOT NULL"
+    SMALLINT notification_count             "NOT NULL"
     TIMESTAMP sent_at                  "NOT NULL"
     JSONB batch_metadata               "NULLABLE"
   }
@@ -63,7 +63,7 @@ erDiagram
   NOTIFICATION_BATCH_ITEM {
     UUID notification_batch_id PK      "NOT NULL; references NOTIFICATION_BATCH.id"
     UUID notification_id PK            "NOT NULL; references NOTIFICATION.id"
-    INT display_order                  "NOT NULL; DEFAULT 0"
+    SMALLINT display_order                  "NOT NULL; DEFAULT 0"
   }
 
   %%— Relationships in Layer 2 —

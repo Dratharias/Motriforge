@@ -1,6 +1,6 @@
 # Core “Institution” Definition & Basic Metadata
 
-**Section:** Program
+**Section:** Institution
 **Subsection:** Core “Institution” Definition & Basic Metadata
 
 ## Diagram
@@ -14,8 +14,21 @@ erDiagram
     VARCHAR(255) name      "NOT NULL; DEFAULT UNNAMED"
     TIMESTAMP created_at   "NOT NULL"
     TIMESTAMP updated_at
-    BOOLEAN is_active      "DEFAULT TRUE"
+    BOOLEAN is_active      "DEFAULT true"
     UUID visibility_id FK  "NOT NULL; references VISIBILITY.id"
+    UUID created_by FK                 "NOT NULL; references USER.id"
+    UUID updated_by FK                 "NULLABLE; references USER.id"
+  }
+
+  INSTITUTION_SETTING {
+    UUID id PK                         "NOT NULL; UNIQUE"
+    UUID institution_id FK             "NOT NULL; references INSTITUTION.id"
+    UUID setting_id FK                 "NOT NULL; references SETTING.id"
+    JSONB value                        "NOT NULL"
+    BOOLEAN overrides_system           "NOT NULL; DEFAULT false"
+    UUID set_by FK                     "NOT NULL; references USER.id"
+    TIMESTAMP set_at                   "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at               "NOT NULL"
   }
 
   INSTITUTION_CATEGORY {

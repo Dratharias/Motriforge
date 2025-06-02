@@ -14,14 +14,14 @@ erDiagram
     UUID user_id FK                    "NOT NULL; references USER.id"
     TIMESTAMP session_start            "NOT NULL"
     TIMESTAMP session_end              "NULLABLE"
-    INT activity_count                 "NOT NULL; DEFAULT 0"
+    SMALLINT activity_count                 "NOT NULL; DEFAULT 0"
     JSONB session_metadata             "NULLABLE; device, location, etc."
   }
 
   ACTIVITY_SESSION_ACTIVITY {
-    UUID activity_session_id PK        "NOT NULL; references ACTIVITY_SESSION.id"
-    UUID activity_id PK                "NOT NULL; references ACTIVITY.id"
-    INT sequence_order                 "NOT NULL"
+    UUID activity_session_id PK        "NOT NULL; references ACTIVITY_SESSION.id; composite PK"
+    UUID activity_id PK                "NOT NULL; references ACTIVITY.id; composite PK"
+    SMALLINT sequence_order                 "NOT NULL"
   }
 
   ACTIVITY_DIGEST {
@@ -29,7 +29,7 @@ erDiagram
     UUID user_id FK                    "NOT NULL; references USER.id"
     DATE digest_date                   "NOT NULL"
     ENUM digest_period                 "NOT NULL; DAILY, WEEKLY, MONTHLY"
-    INT total_activities               "NOT NULL; DEFAULT 0"
+    SMALLINT total_activities               "NOT NULL; DEFAULT 0"
     JSONB activity_summary             "NOT NULL; counts by type"
     JSONB achievements                 "NULLABLE; badges, milestones"
     TIMESTAMP calculated_at            "NOT NULL; DEFAULT now()"

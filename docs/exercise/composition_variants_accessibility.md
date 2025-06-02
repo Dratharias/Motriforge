@@ -23,7 +23,7 @@ erDiagram
     UUID id PK                         "NOT NULL; UNIQUE"
     UUID exercise_id FK                "NOT NULL; references EXERCISE.id"
     UUID alternative_exercise_id FK     "NOT NULL; references EXERCISE.id"
-    INT order_index                    "NOT NULL"
+    SMALLINT order_index                    "NOT NULL"
     TEXT note                          "NULLABLE"
   }
 

@@ -1,7 +1,6 @@
 # Goals
 
-**Section:** Program
-**Subsection:** Goals
+**Section:** Goals
 
 ## Diagram
 
@@ -37,7 +36,7 @@ erDiagram
     UUID metric_id PK, FK            "NOT NULL; references METRIC.id"
     FLOAT target_value               "NOT NULL"
     FLOAT current_value              "NULLABLE"
-    BOOLEAN is_required              "NOT NULL; DEFAULT FALSE"
+    BOOLEAN is_required              "NOT NULL; DEFAULT false"
   }
 
   %% ==============================

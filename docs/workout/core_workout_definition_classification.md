@@ -11,7 +11,6 @@ erDiagram
 
   WORKOUT {
     UUID id PK                         "NOT NULL"
-    UUID workout_status_id FK          "NOT NULL; references WORKOUT_STATUS.id"
     SMALLINT estimated_duration_seconds "NOT NULL; Max 32 000 seconds"
     VARCHAR(50) name                   "NOT NULL; DEFAULT 'UNNAMED'; UNIQUE"
     UUID difficulty_level_id FK        "NOT NULL; references DIFFICULTY_LEVEL.id"

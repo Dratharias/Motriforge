@@ -16,7 +16,7 @@ erDiagram
     TEXT description                   "NULLABLE"
     BOOLEAN is_public                  "NOT NULL; DEFAULT false"
     BOOLEAN is_system_generated        "NOT NULL; DEFAULT false; for auto-collections"
-    INT sort_order                     "NOT NULL; DEFAULT 0"
+    SMALLINT sort_order                     "NOT NULL; DEFAULT 0"
     TIMESTAMP created_at               "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at               "NOT NULL"
     UUID visibility_id FK              "NOT NULL; references VISIBILITY.id"
@@ -26,7 +26,7 @@ erDiagram
     UUID id PK                         "NOT NULL; UNIQUE"
     UUID collection_id FK              "NOT NULL; references FAVORITE_COLLECTION.id"
     UUID favorite_id FK                "NOT NULL; references FAVORITE.id"
-    INT item_order                     "NOT NULL; DEFAULT 0"
+    SMALLINT item_order                     "NOT NULL; DEFAULT 0"
     TEXT collection_notes              "NULLABLE; notes specific to this collection"
     TIMESTAMP added_at                 "NOT NULL; DEFAULT now()"
   }

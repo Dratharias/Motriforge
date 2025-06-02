@@ -19,9 +19,14 @@ erDiagram
   }
 
   ACTIVITY_INSTITUTION {
-    UUID activity_id PK                "NOT NULL; references ACTIVITY.id"
-    UUID institution_id PK             "NOT NULL; references INSTITUTION.id"
+    UUID activity_id PK,FK             "NOT NULL; references ACTIVITY.id"
+    UUID institution_id PK,FK          "NOT NULL; references INSTITUTION.id"
     ENUM involvement_type              "NOT NULL; CONTEXT, LOCATION, AUTHORITY"
+    UUID created_by FK                 "NOT NULL; references USER.id"
+    UUID updated_by FK                 "NULLABLE; references USER.id"
+    TIMESTAMP created_at               "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at               "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                  "NOT NULL; DEFAULT true"
   }
 
   ACTIVITY_METRIC {
@@ -37,8 +42,8 @@ erDiagram
     UUID id PK                         "NOT NULL; UNIQUE"
     UUID user_id FK                    "NOT NULL; references USER.id"
     UUID activity_type_id FK           "NOT NULL; references ACTIVITY_TYPE.id"
-    INT current_count                  "NOT NULL; DEFAULT 0"
-    INT best_count                     "NOT NULL; DEFAULT 0"
+    SMALLINT current_count                  "NOT NULL; DEFAULT 0"
+    SMALLINT best_count                     "NOT NULL; DEFAULT 0"
     DATE last_activity_date            "NULLABLE"
     DATE streak_started_date           "NULLABLE"
     BOOLEAN is_active                  "NOT NULL; DEFAULT true"

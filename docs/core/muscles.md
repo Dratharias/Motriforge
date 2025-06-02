@@ -1,7 +1,6 @@
 # Muscles
 
-**Section:** Program
-**Subsection:** Muscles
+**Section:** Muscles
 
 ## Diagram
 

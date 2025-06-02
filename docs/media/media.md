@@ -1,7 +1,6 @@
 # Media
 
-**Section:** Program
-**Subsection:** Media
+**Section:** Media
 
 ## Diagram
 

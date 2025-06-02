@@ -1,55 +1,149 @@
 # Organizational Structure (Members, Departments, Customers)
-
-**Section:** Program
+**Section:** Institution
 **Subsection:** Organizational Structure (Members, Departments, Customers)
 
 ## Diagram
-
 ```mermaid
 erDiagram
   %%=== Layer 2: Organizational Structure ===%%
-
-  %%— Members & Roles —
-  INSTITUTION_MEMBER {
-    UUID id PK                           "NOT NULL"
+  
+  %%— User-Institution Relationship Foundation —
+  USER_INSTITUTION_RELATIONSHIP {
+    UUID id PK                           "NOT NULL; UNIQUE"
     UUID user_id FK                      "NOT NULL; references USER.id"
     UUID institution_id FK               "NOT NULL; references INSTITUTION.id"
-    UUID institution_user_member_role_id FK     "NOT NULL; references INSTITUTION_MEMBER_ROLE.id"
-    UUID institution_user_permission_id FK "NOT NULL; references INSTITUTION_MEMBER_PERMISSION.id"
-    UUID institution_department FK       "NOT NULL; references INSTITUTION_DEPARTMENT.id"
-    TIMESTAMP joined_at                  "NOT NULL"
-    BOOLEAN is_active                    "DEFAULT TRUE"
+    UUID relationship_type_id FK         "NOT NULL; references RELATIONSHIP_TYPE.id"
+    UUID role_id FK                      "NULLABLE; references ROLE.id"
+    UUID created_by FK                   "NOT NULL; references USER.id"
+    UUID updated_by FK                   "NULLABLE; references USER.id"
+    TIMESTAMP started_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP ended_at                   "NULLABLE"
+    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
+  }
+  
+  RELATIONSHIP_TYPE {
+    UUID id PK                           "NOT NULL; UNIQUE"
+    ENUM name                            "NOT NULL; UNIQUE; CUSTOMER, MEMBER, COACH, TRAINER, ADMIN, GUEST"
+    TEXT description                     "NULLABLE"
+    BOOLEAN requires_approval            "NOT NULL; DEFAULT false"
+    BOOLEAN is_billable                  "NOT NULL; DEFAULT false"
+  }
+  
+  %%— Members & Roles —
+  INSTITUTION_MEMBER {
+    UUID id PK                           "NOT NULL; UNIQUE"
+    UUID user_institution_relationship_id FK "NOT NULL; references USER_INSTITUTION_RELATIONSHIP.id"
+    UUID institution_department_id FK    "NULLABLE; references INSTITUTION_DEPARTMENT.id"
+    UUID employee_id                     "NULLABLE; institution-specific employee ID"
+    TEXT job_title                       "NULLABLE"
+    UUID created_by FK                   "NOT NULL; references USER.id"
+    UUID updated_by FK                   "NULLABLE; references USER.id"
+    TIMESTAMP joined_at                  "NOT NULL; DEFAULT now()"
+    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
   }
   
   INSTITUTION_DEPARTMENT {
-    UUID id PK                            "NOT NULL"
-    UUID institution_id FK                "NOT NULL; references INSTITUTION.id"
-    UUID institution_department_permission_id FK "NOT NULL; references INSTITUTION_DEPARTMENT_PERMISSION.id"
-    VARCHAR(100) name                     "NOT NULL"
-    VARCHAR(255) description
+    UUID id PK                           "NOT NULL; UNIQUE"
+    UUID institution_id FK               "NOT NULL; references INSTITUTION.id"
+    VARCHAR(100) name                    "NOT NULL"
+    TEXT description                     "NULLABLE"
+    UUID parent_department_id FK         "NULLABLE; references INSTITUTION_DEPARTMENT.id"
+    UUID department_head_id FK           "NULLABLE; references INSTITUTION_MEMBER.id"
+    UUID created_by FK                   "NOT NULL; references USER.id"
+    UUID updated_by FK                   "NULLABLE; references USER.id"
+    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
   }
-
+  
   INSTITUTION_CUSTOMER {
-    UUID id PK                          "NOT NULL"
-    UUID institution_id FK              "NOT NULL; references INSTITUTION.id"
-    UUID relation_id FK                 "NOT NULL; references USER_PROFESSIONNAL_CUSTOMER_RELATION.id"
-    TIMESTAMP linked_at                 "DEFAULT now()"
-    BOOLEAN is_active                   "DEFAULT TRUE"
+    UUID id PK                           "NOT NULL; UNIQUE"
+    UUID user_institution_relationship_id FK "NOT NULL; references USER_INSTITUTION_RELATIONSHIP.id"
+    UUID customer_number                 "NULLABLE; institution-specific customer ID"
+    UUID subscription_id FK              "NULLABLE; references SUBSCRIPTION.id"
+    UUID primary_contact_id FK           "NULLABLE; references INSTITUTION_MEMBER.id"
+    UUID created_by FK                   "NOT NULL; references USER.id"
+    UUID updated_by FK                   "NULLABLE; references USER.id"
+    TIMESTAMP linked_at                  "NOT NULL; DEFAULT now()"
+    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
   }
-
-  %%— Relationships in Layer 2 —
-  INSTITUTION ||--o{ INSTITUTION_MEMBER     : "has members"
+  
+  %%— Member Role Assignments —
+  INSTITUTION_MEMBER_ROLE {
+    UUID institution_member_id PK,FK    "NOT NULL; references INSTITUTION_MEMBER.id"
+    UUID role_id PK,FK                   "NOT NULL; references ROLE.id"
+    UUID created_by FK                   "NOT NULL; references USER.id"
+    UUID updated_by FK                   "NULLABLE; references USER.id"
+    TIMESTAMP created_at                "NOT NULL; DEFAULT now()"
+    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
+  }
+  
+  %%— Permission Grants at Institution Level —
+  INSTITUTION_MEMBER_PERMISSION_GRANT {
+    UUID id PK                           "NOT NULL; UNIQUE"
+    UUID institution_member_id FK        "NOT NULL; references INSTITUTION_MEMBER.id"
+    UUID permission_id FK                "NOT NULL; references PERMISSION.id"
+    UUID scope_id                        "NULLABLE; department_id or resource_id"
+    ENUM scope_type                      "NULLABLE; DEPARTMENT, RESOURCE"
+    UUID granted_by FK                   "NOT NULL; references USER.id"
+    UUID created_by FK                   "NOT NULL; references USER.id"
+    UUID updated_by FK                   "NULLABLE; references USER.id"
+    TIMESTAMP granted_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP expires_at                 "NULLABLE"
+    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
+  }
+  
+  INSTITUTION_DEPARTMENT_PERMISSION_GRANT {
+    UUID id PK                           "NOT NULL; UNIQUE"
+    UUID institution_department_id FK    "NOT NULL; references INSTITUTION_DEPARTMENT.id"
+    UUID permission_id FK                "NOT NULL; references PERMISSION.id"
+    UUID granted_by FK                   "NOT NULL; references USER.id"
+    UUID created_by FK                   "NOT NULL; references USER.id"
+    UUID updated_by FK                   "NULLABLE; references USER.id"
+    TIMESTAMP granted_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP expires_at                 "NULLABLE"
+    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
+  }
+  
+  %%— Relationships —
+  USER ||--o{ USER_INSTITUTION_RELATIONSHIP : "has institution relationships"
+  INSTITUTION ||--o{ USER_INSTITUTION_RELATIONSHIP : "has user relationships"
+  USER_INSTITUTION_RELATIONSHIP }|--|| RELATIONSHIP_TYPE : "relationship type"
+  USER_INSTITUTION_RELATIONSHIP }o--|| ROLE : "optional role"
+  USER_INSTITUTION_RELATIONSHIP ||--o{ INSTITUTION_MEMBER : "member details"
+  USER_INSTITUTION_RELATIONSHIP ||--o{ INSTITUTION_CUSTOMER : "customer details"
+  
   INSTITUTION ||--o{ INSTITUTION_DEPARTMENT : "has departments"
-  INSTITUTION ||--o{ INSTITUTION_CUSTOMER   : "has customers"
-  INSTITUTION_DEPARTMENT ||--o{ INSTITUTION_MEMBER : "members assigned to"
-  INSTITUTION_MEMBER }|--|| USER_PROFESSIONNAL_CUSTOMER_RELATION : "participates in"
-  INSTITUTION_CUSTOMER }|--|| USER_PROFESSIONNAL_CUSTOMER_RELATION : "derived from"
-
+  INSTITUTION_DEPARTMENT ||--o{ INSTITUTION_DEPARTMENT : "parent department"
+  INSTITUTION_DEPARTMENT ||--o{ INSTITUTION_MEMBER : "department members"
+  INSTITUTION_MEMBER }o--|| INSTITUTION_MEMBER : "department head"
+  
+  INSTITUTION_MEMBER ||--o{ INSTITUTION_MEMBER_ROLE : "assigned roles"
+  INSTITUTION_MEMBER_ROLE }|--|| ROLE : "role lookup"
+  
+  INSTITUTION_MEMBER ||--o{ INSTITUTION_MEMBER_PERMISSION_GRANT : "direct permissions"
+  INSTITUTION_DEPARTMENT ||--o{ INSTITUTION_DEPARTMENT_PERMISSION_GRANT : "department permissions"
+  INSTITUTION_MEMBER_PERMISSION_GRANT }|--|| PERMISSION : "permission lookup"
+  INSTITUTION_DEPARTMENT_PERMISSION_GRANT }|--|| PERMISSION : "permission lookup"
+  
+  INSTITUTION_CUSTOMER }o--|| SUBSCRIPTION : "subscription link"
+  INSTITUTION_CUSTOMER }o--|| INSTITUTION_MEMBER : "primary contact"
 ```
 
 ## Notes
-
-This diagram represents the organizational structure (members, departments, customers) structure and relationships within the program domain.
+This diagram represents the organizational structure (members, departments, customers) with proper joint tables and standardized naming conventions within the institution domain.
 
 ---
 *Generated from diagram extraction script*

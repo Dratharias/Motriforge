@@ -18,9 +18,9 @@ erDiagram
     TEXT instructions                     "NOT NULL; Step-by-step, multi-paragraph"
     TEXT notes                            "NULLABLE; Optional trainer/user notes"
     UUID difficulty_level_id FK           "NOT NULL; references DIFFICULTY_LEVEL.id"
-    TIMESTAMP created_at                  "NOT NULL; Default: now()"
+    TIMESTAMP created_at                  "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at                  "NOT NULL; Auto-managed"
-    BOOLEAN is_active                     "NOT NULL; Default: true"
+    BOOLEAN is_active                     "NOT NULL; DEFAULT true"
     UUID visibility_id FK                 "NOT NULL; references VISIBILITY.id"
   }
 

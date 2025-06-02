@@ -15,7 +15,7 @@ erDiagram
     UUID assigned_to FK                "NOT NULL; references USER.id"
     UUID assigned_by FK                "NOT NULL; references USER.id"
     TEXT assignment_notes              "NULLABLE"
-    TIMESTAMP assigned_at              "NOT NULL; DEFAULT now()"
+    TIMESTAMP created_at              "NOT NULL; DEFAULT now()"
     TIMESTAMP due_date                 "NULLABLE"
     BOOLEAN is_active                  "NOT NULL; DEFAULT true"
   }

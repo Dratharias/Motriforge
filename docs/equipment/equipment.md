@@ -1,7 +1,6 @@
 # Equipment
 
-**Section:** Program
-**Subsection:** Equipment
+**Section:** Equipment
 
 ## Diagram
 

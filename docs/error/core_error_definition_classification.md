@@ -36,7 +36,7 @@ erDiagram
     TEXT description                   "NOT NULL"
     BOOLEAN requires_immediate_attention "NOT NULL; DEFAULT false"
     BOOLEAN is_user_facing             "NOT NULL; DEFAULT false"
-    INT default_retention_days         "NOT NULL; DEFAULT 90"
+    SMALLINT default_retention_days         "NOT NULL; DEFAULT 90"
   }
 
   SEVERITY_LEVEL {

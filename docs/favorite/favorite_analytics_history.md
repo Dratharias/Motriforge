@@ -24,9 +24,9 @@ erDiagram
     UUID resource_id                   "NOT NULL"
     ENUM resource_type                 "NOT NULL"
     DATE trend_date                    "NOT NULL"
-    INT favorite_count                 "NOT NULL; total favorites for this resource"
-    INT daily_favorites_added          "NOT NULL; new favorites added today"
-    INT daily_favorites_removed        "NOT NULL; favorites removed today"
+    SMALLINT favorite_count                 "NOT NULL; total favorites for this resource"
+    SMALLINT daily_favorites_added          "NOT NULL; new favorites added today"
+    SMALLINT daily_favorites_removed        "NOT NULL; favorites removed today"
     FLOAT trending_score               "NOT NULL; calculated trending score"
     TIMESTAMP calculated_at            "NOT NULL; DEFAULT now()"
   }

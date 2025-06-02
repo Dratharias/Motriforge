@@ -15,13 +15,13 @@ erDiagram
     UUID user_id FK          "NOT NULL; references USER.id"
     UUID program_id FK       "NOT NULL; references PROGRAM.id"
     UUID assigned_by FK      "NULLABLE; references USER.id"
-    TIMESTAMP assigned_at    "NOT NULL"
+    TIMESTAMP created_at    "NOT NULL"
   }
 
   USER_PROGRAM_PROGRESS {
     UUID user_id FK          "NOT NULL; references USER.id"
     UUID program_id FK       "NOT NULL; references PROGRAM.id"
-    INT current_day_number   "NOT NULL"
+    SMALLINT current_day_number   "NOT NULL"
     DATE last_completed_date "NULLABLE"
     TEXT progress_notes      "NULLABLE"
     TIMESTAMP updated_at     "NOT NULL"

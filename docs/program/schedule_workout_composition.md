@@ -22,7 +22,7 @@ erDiagram
     UUID workout_id FK                       "NOT NULL; references WORKOUT.id"
     SMALLINT day_number                      "NOT NULL; MIN 0; MAX references PROGRAM_SCHEDULE.schedule_length_days"
     SMALLINT order_index                     "NOT NULL"
-    BOOLEAN is_optional                      "NOT NULL; Default: false"
+    BOOLEAN is_optional                      "NOT NULL; DEFAULT false"
     VARCHAR(255) notes                       "NULLABLE"
   }
 
