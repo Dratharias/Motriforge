@@ -21,39 +21,35 @@ erDiagram
   }
 
   PROGRAM_STATUS {
-    UUID program_id PK "NOT NULL; references PROGRAM.id"
-    UUID status_id PK  "NOT NULL; references STATUS.id"
+    UUID program_id PK,FK "NOT NULL; references PROGRAM.id"
+    UUID status_id PK,FK  "NOT NULL; references STATUS.id"
   }
 
   PROGRAM_CATEGORY {
-    UUID id PK                                "NOT NULL"
-    UUID program_id FK                        "NOT NULL; references PROGRAM.id"
-    UUID category_id FK                       "NOT NULL; references CATEGORY.id"
+    UUID program_id PK,FK                        "NOT NULL; references PROGRAM.id"
+    UUID category_id PK,FK                       "NOT NULL; references CATEGORY.id"
   }
 
   PROGRAM_GOAL {
-    UUID id PK                                "NOT NULL"
-    UUID goal_id FK                           "NOT NULL; references GOAL.id"
-    UUID program_id FK                        "NOT NULL; references PROGRAM.id"
+    UUID goal_id PK,FK                           "NOT NULL; references GOAL.id"
+    UUID program_id PK,FK                        "NOT NULL; references PROGRAM.id"
   }
 
   PROGRAM_CONSTRAINT {
-    UUID id PK                                "NOT NULL"
-    UUID program_id FK                        "NOT NULL; references PROGRAM.id"
-    UUID constraint_id FK                     "NOT NULL; references CONSTRAINT_CATEGORY.id"
-    TEXT value                                "NOT NULL"
+    UUID program_id PK,FK                        "NOT NULL; references PROGRAM.id"
+    UUID constraint_id PK,FK                     "NOT NULL; references CATEGORY.id"
   }
 
   PROGRAM_TAG {
-    UUID program_id PK "NOT NULL; references PROGRAM.id"
-    UUID tag_id PK     "NOT NULL; references TAG.id"
+    UUID program_id PK,FK "NOT NULL; references PROGRAM.id"
+    UUID tag_id PK,FK     "NOT NULL; references TAG.id"
   }
 
   %%— Relationships in Layer 1 —
   PROGRAM ||--|| PROGRAM_STATUS       : "status lookup"
   PROGRAM ||--|| PROGRAM_CATEGORY     : "category lookup"
   PROGRAM ||--o{ PROGRAM_GOAL         : "has goals"
-  PROGRAM ||--o{ PROGRAM_CONSTRAINT   : "has constraints"
+  PROGRAM ||--o{ CATEGORY             : "has constraints"
   PROGRAM ||--o{ PROGRAM_TAG          : "has tags"
 ```
 

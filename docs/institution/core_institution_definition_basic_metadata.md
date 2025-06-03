@@ -32,13 +32,13 @@ erDiagram
   }
 
   INSTITUTION_CATEGORY {
-    UUID institution_id PK    "NOT NULL; references INSTITUTION.id"
-    UUID category_id PK       "NOT NULL; references CATEGORY.id"
+    UUID institution_id PK,FK    "NOT NULL; references INSTITUTION.id"
+    UUID category_id PK,FK       "NOT NULL; references CATEGORY.id"
   }
 
   INSTITUTION_TAG {
-    UUID institution_id PK    "NOT NULL; references INSTITUTION.id"
-    UUID tag_id PK            "NOT NULL; references TAG.id"
+    UUID institution_id PK,FK    "NOT NULL; references INSTITUTION.id"
+    UUID tag_id PK,FK            "NOT NULL; references TAG.id"
   }
 
   %%— Relationships in Layer 1 —

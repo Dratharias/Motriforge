@@ -26,13 +26,13 @@ erDiagram
   %% ===================================
 
   EQUIPMENT_CATEGORY {
-    UUID equipment_id PK, FK         "NOT NULL; references EQUIPMENT.id"
-    UUID category_id PK              "NOT NULL; references CATEGORY.id"
+    UUID equipment_id PK,FK         "NOT NULL; references EQUIPMENT.id"
+    UUID category_id PK,FK              "NOT NULL; references CATEGORY.id"
   }
 
   EQUIPMENT_TAG {
-    UUID equipment_id PK, FK         "NOT NULL; references EQUIPMENT.id"
-    UUID tag_id PK                   "NOT NULL; references TAG.id"
+    UUID equipment_id PK,FK         "NOT NULL; references EQUIPMENT.id"
+    UUID tag_id PK,FK                   "NOT NULL; references TAG.id"
   }
 
   %% ===================================

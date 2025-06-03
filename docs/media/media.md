@@ -33,12 +33,12 @@ erDiagram
   %% =========================================
 
   MEDIA_TAG {
-    UUID media_id PK, FK                 "NOT NULL; references MEDIA.id"
-    UUID tag_id PK                       "NOT NULL; references TAG.id"
+    UUID media_id PK,FK                 "NOT NULL; references MEDIA.id"
+    UUID tag_id PK,FK                       "NOT NULL; references TAG.id"
   }
 
   MEDIA_METADATA {
-    UUID media_id PK, FK                 "NOT NULL; references MEDIA.id"
+    UUID media_id PK,FK                 "NOT NULL; references MEDIA.id"
     JSONB metadata                       "NOT NULL"
   }
 

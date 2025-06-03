@@ -44,8 +44,8 @@ erDiagram
 
   USER_WORKOUT_PROGRESS {
     UUID user_id FK          "NOT NULL; references USER.id"
-    UUID workout_id PK       "NOT NULL; references WORKOUT.id"
-    UUID completion_status   "NOT NULL; references COMPLETION_STATUS.id"
+    UUID workout_id PK,FK       "NOT NULL; references WORKOUT.id"
+    UUID completion_status   "NOT NULL; references CATEGORY.id"
     DATE last_completed_date "NULLABLE"
     TEXT progress_notes      "NULLABLE"
     SMALLINT soreness_post_workout "NULLABLE; MIN 0, MAX 10"
@@ -72,15 +72,13 @@ erDiagram
 
   %%— Favorites & Activities —
   USER_FAVORITE {
-    UUID user_id PK        "NOT NULL; references USER.id"
+    UUID user_id PK,FK        "NOT NULL; references USER.id"
     UUID favorite_id PK    "NOT NULL; references FAVORITE.id"
-    TIMESTAMP created_at   "NOT NULL; DEFAULT now()"
   }
 
   USER_ACTIVITY {
-    UUID user_id PK        "NOT NULL; references USER.id"
-    UUID activity_id PK    "NOT NULL; references ACTIVITY.id"
-    TIMESTAMP created_at   "NOT NULL; DEFAULT now()"
+    UUID user_id PK,FK        "NOT NULL; references USER.id"
+    UUID activity_id PK,FK    "NOT NULL; references ACTIVITY.id"
   }
 
   %%— Ownership (Programs, Workouts, etc.) —

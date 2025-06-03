@@ -11,8 +11,8 @@ erDiagram
 
   %%— Many-to-many between USER and ROLE/ PERMISSION —
   USER_ROLE {
-    UUID user_id PK,FK                "NOT NULL; references USER.id"
-    UUID role_id PK,FK                "NOT NULL; references ROLE.id"
+    UUID user_id PK                "NOT NULL; references USER.id"
+    UUID role_id PK                "NOT NULL; references ROLE.id"
     UUID updated_by FK               "NULLABLE; references USER.id; DEFAULT NULL"
     TIMESTAMP created_at            "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at             "NOT NULL; DEFAULT now()"
@@ -20,8 +20,8 @@ erDiagram
   }
 
   USER_PERMISSION {
-    UUID user_id PK,FK                "NOT NULL; references USER.id"
-    UUID permission_id PK,FK          "NOT NULL; references PERMISSION.id"
+    UUID user_id PK                "NOT NULL; references USER.id"
+    UUID permission_id PK          "NOT NULL; references PERMISSION.id"
     UUID updated_by FK                "NOT NULL; references USER.id"
     TIMESTAMP updated_at             "NOT NULL; DEFAULT now()"
     BOOLEAN is_active                "NOT NULL; DEFAULT true"
@@ -44,8 +44,8 @@ erDiagram
   }
 
   USER_SHARE_INVITE_CATEGORY {
-    UUID user_share_invite_id PK "NOT NULL; references USER_SHARE_INVITE.id"
-    UUID category_id PK          "NOT NULL; references CATEGORY.id"
+    UUID user_share_invite_id PK,FK "NOT NULL; references USER_SHARE_INVITE.id"
+    UUID category_id PK,FK          "NOT NULL; references CATEGORY.id"
   }
 
   %%— Relationships —

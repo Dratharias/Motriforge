@@ -10,7 +10,7 @@ erDiagram
   %%=== Layer 3: Error Analytics & Monitoring ===%%
 
   ERROR_FREQUENCY {
-    UUID error_id PK                   "NOT NULL; references ERROR.id"
+    UUID error_id PK,FK                   "NOT NULL; references ERROR.id"
     DATE frequency_date PK             "NOT NULL"
     INT occurrence_count               "NOT NULL; DEFAULT 0"
     INT unique_users_affected          "NOT NULL; DEFAULT 0"

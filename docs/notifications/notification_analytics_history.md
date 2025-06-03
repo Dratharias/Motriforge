@@ -28,7 +28,7 @@ erDiagram
   }
 
   NOTIFICATION_ANALYTICS {
-    UUID notification_type_id PK       "NOT NULL; references NOTIFICATION_TYPE.id"
+    UUID notification_type_id PK,FK       "NOT NULL; references NOTIFICATION_TYPE.id"
     DATE analytics_date PK             "NOT NULL"
     INT sent_count                     "NOT NULL; DEFAULT 0"
     INT delivered_count                "NOT NULL; DEFAULT 0"

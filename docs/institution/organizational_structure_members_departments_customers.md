@@ -5,8 +5,7 @@
 ## Diagram
 ```mermaid
 erDiagram
-  %%=== Layer 2: Organizational Structure ===%%
-  
+  %%=== Layer 2: Organizational Structure - FIXED ===%%
   %%— User-Institution Relationship Foundation —
   USER_INSTITUTION_RELATIONSHIP {
     UUID id PK                           "NOT NULL; UNIQUE"
@@ -14,33 +13,24 @@ erDiagram
     UUID institution_id FK               "NOT NULL; references INSTITUTION.id"
     UUID relationship_type_id FK         "NOT NULL; references RELATIONSHIP_TYPE.id"
     UUID role_id FK                      "NULLABLE; references ROLE.id"
-    UUID created_by FK                   "NOT NULL; references USER.id"
-    UUID updated_by FK                   "NULLABLE; references USER.id"
+    UUID created_by_user_id FK           "NOT NULL; references USER.id"
+    UUID updated_by_user_id FK           "NULLABLE; references USER.id"
     TIMESTAMP started_at                 "NOT NULL; DEFAULT now()"
     TIMESTAMP ended_at                   "NULLABLE"
     TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
     BOOLEAN is_active                    "NOT NULL; DEFAULT true"
+    UNIQUE(user_id, institution_id, relationship_type_id) "Business constraint: one relationship type per user per institution"
   }
   
   RELATIONSHIP_TYPE {
     UUID id PK                           "NOT NULL; UNIQUE"
-    ENUM name                            "NOT NULL; UNIQUE; CUSTOMER, MEMBER, COACH, TRAINER, ADMIN, GUEST"
+    ENUM name                            "NOT NULL; UNIQUE; CHECK (name IN ('CUSTOMER', 'MEMBER', 'COACH', 'TRAINER', 'ADMIN', 'GUEST', 'PHYSIOTHERAPIST'))"
     TEXT description                     "NULLABLE"
     BOOLEAN requires_approval            "NOT NULL; DEFAULT false"
     BOOLEAN is_billable                  "NOT NULL; DEFAULT false"
-  }
-  
-  %%— Members & Roles —
-  INSTITUTION_MEMBER {
-    UUID id PK                           "NOT NULL; UNIQUE"
-    UUID user_institution_relationship_id FK "NOT NULL; references USER_INSTITUTION_RELATIONSHIP.id"
-    UUID institution_department_id FK    "NULLABLE; references INSTITUTION_DEPARTMENT.id"
-    UUID employee_id                     "NULLABLE; institution-specific employee ID"
-    TEXT job_title                       "NULLABLE"
-    UUID created_by FK                   "NOT NULL; references USER.id"
-    UUID updated_by FK                   "NULLABLE; references USER.id"
-    TIMESTAMP joined_at                  "NOT NULL; DEFAULT now()"
+    UUID created_by_user_id FK           "NOT NULL; references USER.id"
+    UUID updated_by_user_id FK           "NULLABLE; references USER.id"
     TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
     BOOLEAN is_active                    "NOT NULL; DEFAULT true"
@@ -51,10 +41,38 @@ erDiagram
     UUID institution_id FK               "NOT NULL; references INSTITUTION.id"
     VARCHAR(100) name                    "NOT NULL"
     TEXT description                     "NULLABLE"
-    UUID parent_department_id FK         "NULLABLE; references INSTITUTION_DEPARTMENT.id"
-    UUID department_head_id FK           "NULLABLE; references INSTITUTION_MEMBER.id"
-    UUID created_by FK                   "NOT NULL; references USER.id"
-    UUID updated_by FK                   "NULLABLE; references USER.id"
+    UUID parent_department_id FK         "NULLABLE; references INSTITUTION_DEPARTMENT.id; CHECK (parent_department_id != id)"
+    SMALLINT hierarchy_level             "NOT NULL; DEFAULT 0; CHECK (hierarchy_level >= 0 AND hierarchy_level <= 10)"
+    VARCHAR(500) hierarchy_path          "NOT NULL; materialized path for efficient queries"
+    UUID created_by_user_id FK           "NOT NULL; references USER.id"
+    UUID updated_by_user_id FK           "NULLABLE; references USER.id"
+    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
+    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
+    UNIQUE(institution_id, name)         "Business constraint: unique department names within institution"
+  }
+  
+  DEPARTMENT_HEAD_ASSIGNMENT {
+    UUID id PK                           "NOT NULL; UNIQUE"
+    UUID institution_department_id FK    "NOT NULL; references INSTITUTION_DEPARTMENT.id"
+    UUID institution_member_id FK        "NOT NULL; references INSTITUTION_MEMBER.id"
+    UUID assigned_by_user_id FK          "NOT NULL; references USER.id"
+    TIMESTAMP assigned_at                "NOT NULL; DEFAULT now()"
+    TIMESTAMP ends_at                    "NULLABLE"
+    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
+    UNIQUE(institution_department_id, assigned_at) "Business constraint: one active head per department"
+  }
+  
+  %%— Members & Roles —
+  INSTITUTION_MEMBER {
+    UUID id PK                           "NOT NULL; UNIQUE"
+    UUID user_institution_relationship_id FK "NOT NULL; references USER_INSTITUTION_RELATIONSHIP.id"
+    UUID institution_department_id FK    "NULLABLE; references INSTITUTION_DEPARTMENT.id"
+    VARCHAR(50) employee_id              "NULLABLE; institution-specific employee ID"
+    VARCHAR(100) job_title               "NULLABLE"
+    UUID created_by_user_id FK           "NOT NULL; references USER.id"
+    UUID updated_by_user_id FK           "NULLABLE; references USER.id"
+    TIMESTAMP joined_at                  "NOT NULL; DEFAULT now()"
     TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
     BOOLEAN is_active                    "NOT NULL; DEFAULT true"
@@ -63,11 +81,11 @@ erDiagram
   INSTITUTION_CUSTOMER {
     UUID id PK                           "NOT NULL; UNIQUE"
     UUID user_institution_relationship_id FK "NOT NULL; references USER_INSTITUTION_RELATIONSHIP.id"
-    UUID customer_number                 "NULLABLE; institution-specific customer ID"
+    VARCHAR(50) customer_number          "NULLABLE; institution-specific customer ID"
     UUID subscription_id FK              "NULLABLE; references SUBSCRIPTION.id"
-    UUID primary_contact_id FK           "NULLABLE; references INSTITUTION_MEMBER.id"
-    UUID created_by FK                   "NOT NULL; references USER.id"
-    UUID updated_by FK                   "NULLABLE; references USER.id"
+    UUID primary_contact_member_id FK    "NULLABLE; references INSTITUTION_MEMBER.id"
+    UUID created_by_user_id FK           "NOT NULL; references USER.id"
+    UUID updated_by_user_id FK           "NULLABLE; references USER.id"
     TIMESTAMP linked_at                  "NOT NULL; DEFAULT now()"
     TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
@@ -78,37 +96,23 @@ erDiagram
   INSTITUTION_MEMBER_ROLE {
     UUID institution_member_id PK,FK    "NOT NULL; references INSTITUTION_MEMBER.id"
     UUID role_id PK,FK                   "NOT NULL; references ROLE.id"
-    UUID created_by FK                   "NOT NULL; references USER.id"
-    UUID updated_by FK                   "NULLABLE; references USER.id"
+    UUID created_by_user_id FK           "NOT NULL; references USER.id"
+    UUID updated_by_user_id FK           "NULLABLE; references USER.id"
     TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
     TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
     BOOLEAN is_active                    "NOT NULL; DEFAULT true"
   }
   
-  %%— Permission Grants at Institution Level —
-  INSTITUTION_MEMBER_PERMISSION_GRANT {
+  INSTITUTION_PERMISSION_GRANT {
     UUID id PK                           "NOT NULL; UNIQUE"
-    UUID institution_member_id FK        "NOT NULL; references INSTITUTION_MEMBER.id"
+    UUID grantee_id                      "NOT NULL; references INSTITUTION_MEMBER.id or INSTITUTION_DEPARTMENT.id"
+    ENUM grantee_type                    "NOT NULL; CHECK (grantee_type IN ('MEMBER', 'DEPARTMENT'))"
     UUID permission_id FK                "NOT NULL; references PERMISSION.id"
     UUID scope_id                        "NULLABLE; department_id or resource_id"
-    ENUM scope_type                      "NULLABLE; DEPARTMENT, RESOURCE"
-    UUID granted_by FK                   "NOT NULL; references USER.id"
-    UUID created_by FK                   "NOT NULL; references USER.id"
-    UUID updated_by FK                   "NULLABLE; references USER.id"
-    TIMESTAMP granted_at                 "NOT NULL; DEFAULT now()"
-    TIMESTAMP expires_at                 "NULLABLE"
-    TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
-    TIMESTAMP updated_at                 "NOT NULL; DEFAULT now()"
-    BOOLEAN is_active                    "NOT NULL; DEFAULT true"
-  }
-  
-  INSTITUTION_DEPARTMENT_PERMISSION_GRANT {
-    UUID id PK                           "NOT NULL; UNIQUE"
-    UUID institution_department_id FK    "NOT NULL; references INSTITUTION_DEPARTMENT.id"
-    UUID permission_id FK                "NOT NULL; references PERMISSION.id"
-    UUID granted_by FK                   "NOT NULL; references USER.id"
-    UUID created_by FK                   "NOT NULL; references USER.id"
-    UUID updated_by FK                   "NULLABLE; references USER.id"
+    ENUM scope_type                      "NULLABLE; CHECK (scope_type IN ('DEPARTMENT', 'RESOURCE', 'GLOBAL'))"
+    UUID granted_by_user_id FK           "NOT NULL; references USER.id"
+    UUID created_by_user_id FK           "NOT NULL; references USER.id"
+    UUID updated_by_user_id FK           "NULLABLE; references USER.id"
     TIMESTAMP granted_at                 "NOT NULL; DEFAULT now()"
     TIMESTAMP expires_at                 "NULLABLE"
     TIMESTAMP created_at                 "NOT NULL; DEFAULT now()"
@@ -127,15 +131,15 @@ erDiagram
   INSTITUTION ||--o{ INSTITUTION_DEPARTMENT : "has departments"
   INSTITUTION_DEPARTMENT ||--o{ INSTITUTION_DEPARTMENT : "parent department"
   INSTITUTION_DEPARTMENT ||--o{ INSTITUTION_MEMBER : "department members"
-  INSTITUTION_MEMBER }o--|| INSTITUTION_MEMBER : "department head"
+  INSTITUTION_DEPARTMENT ||--o{ DEPARTMENT_HEAD_ASSIGNMENT : "head assignments"
+  DEPARTMENT_HEAD_ASSIGNMENT }|--|| INSTITUTION_MEMBER : "department head"
   
   INSTITUTION_MEMBER ||--o{ INSTITUTION_MEMBER_ROLE : "assigned roles"
   INSTITUTION_MEMBER_ROLE }|--|| ROLE : "role lookup"
   
-  INSTITUTION_MEMBER ||--o{ INSTITUTION_MEMBER_PERMISSION_GRANT : "direct permissions"
-  INSTITUTION_DEPARTMENT ||--o{ INSTITUTION_DEPARTMENT_PERMISSION_GRANT : "department permissions"
-  INSTITUTION_MEMBER_PERMISSION_GRANT }|--|| PERMISSION : "permission lookup"
-  INSTITUTION_DEPARTMENT_PERMISSION_GRANT }|--|| PERMISSION : "permission lookup"
+  INSTITUTION_MEMBER ||--o{ INSTITUTION_PERMISSION_GRANT : "member permissions"
+  INSTITUTION_DEPARTMENT ||--o{ INSTITUTION_PERMISSION_GRANT : "department permissions"
+  INSTITUTION_PERMISSION_GRANT }|--|| PERMISSION : "permission lookup"
   
   INSTITUTION_CUSTOMER }o--|| SUBSCRIPTION : "subscription link"
   INSTITUTION_CUSTOMER }o--|| INSTITUTION_MEMBER : "primary contact"

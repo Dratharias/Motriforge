@@ -10,7 +10,7 @@ erDiagram
   %%=== Layer 3: Rating Analytics & Aggregation ===%%
 
   RATING_SUMMARY {
-    UUID resource_id PK                "NOT NULL; matches RATING.resource_id"
+    UUID resource_id PK,FK                "NOT NULL; matches RATING.resource_id"
     ENUM resource_type PK              "NOT NULL; matches RATING.resource_type"
     FLOAT average_rating               "NOT NULL; calculated average"
     INT total_ratings                  "NOT NULL; count of all ratings"

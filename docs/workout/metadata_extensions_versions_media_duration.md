@@ -26,7 +26,7 @@ erDiagram
   }
 
   ESTIMATED_WORKOUT_DURATION {
-    UUID workout_id PK                  "NOT NULL; references WORKOUT.id"
+    UUID workout_id PK,FK                  "NOT NULL; references WORKOUT.id"
     SMALLINT total_seconds              "NOT NULL"
     SMALLINT tempo_seconds              "NOT NULL"
     SMALLINT rest_between_sets_seconds  "NOT NULL"

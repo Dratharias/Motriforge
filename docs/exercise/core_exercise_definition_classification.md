@@ -25,13 +25,13 @@ erDiagram
   }
 
   EXERCISE_CATEGORY {
-    UUID exercise_id PK                   "NOT NULL; references EXERCISE.id"
-    UUID category_id PK                   "NOT NULL; references CATEGORY.id"
+    UUID exercise_id PK,FK                   "NOT NULL; references EXERCISE.id"
+    UUID category_id PK,FK                   "NOT NULL; references CATEGORY.id"
   }
 
   EXERCISE_TAG {
-    UUID exercise_id PK                   "NOT NULL; references EXERCISE.id"
-    UUID tag_id PK                        "NOT NULL; references TAG.id"
+    UUID exercise_id PK,FK                   "NOT NULL; references EXERCISE.id"
+    UUID tag_id PK,FK                        "NOT NULL; references TAG.id"
   }
 
   %%— Relationships in Layer 1 —

@@ -23,29 +23,29 @@ erDiagram
 
   %%— Classification & Lookup Tables —
   WORKOUT_STATUS {
-    UUID workout_id PK "NOT NULL; references WORKOUT.id"
-    UUID status_id PK  "NOT NULL; references STATUS.id"
+    UUID workout_id PK,FK "NOT NULL; references WORKOUT.id"
+    UUID status_id PK,FK  "NOT NULL; references STATUS.id"
     TIMESTAMP published_at "NULLABLE"
   }
 
   WORKOUT_CATEGORY {
-    UUID workout_id PK "NOT NULL; references WORKOUT.id"
-    UUID category_id PK "NOT NULL; references CATEGORY.id"
+    UUID workout_id PK,FK "NOT NULL; references WORKOUT.id"
+    UUID category_id PK,FK "NOT NULL; references CATEGORY.id"
   }
 
   WORKOUT_GOAL {
-    UUID workout_id PK "NOT NULL; references WORKOUT.id"
-    UUID goal_id PK    "NOT NULL; references GOAL.id"
+    UUID workout_id PK,FK "NOT NULL; references WORKOUT.id"
+    UUID goal_id PK,FK    "NOT NULL; references GOAL.id"
   }
 
   WORKOUT_CONSTRAINT {
-    UUID workout_id PK "NOT NULL; references WORKOUT.id"
-    UUID category_id PK "NOT NULL; references CATEGORY.id"
+    UUID workout_id PK,FK "NOT NULL; references WORKOUT.id"
+    UUID category_id PK,FK "NOT NULL; references CATEGORY.id"
   }
 
   WORKOUT_TAG {
-    UUID workout_id PK "NOT NULL; references WORKOUT.id"
-    UUID tag_id PK     "NOT NULL; references TAG.id"
+    UUID workout_id PK,FK "NOT NULL; references WORKOUT.id"
+    UUID tag_id PK,FK     "NOT NULL; references TAG.id"
   }
 
   %%— Relationships in Layer 1 —

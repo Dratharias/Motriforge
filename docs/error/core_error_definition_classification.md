@@ -55,13 +55,13 @@ erDiagram
   }
 
   ERROR_CATEGORY {
-    UUID error_id PK                   "NOT NULL; references ERROR.id"
-    UUID category_id PK                "NOT NULL; references CATEGORY.id"
+    UUID error_id PK,FK                   "NOT NULL; references ERROR.id"
+    UUID category_id PK,FK                "NOT NULL; references CATEGORY.id"
   }
 
   ERROR_TAG {
-    UUID error_id PK                   "NOT NULL; references ERROR.id"
-    UUID tag_id PK                     "NOT NULL; references TAG.id"
+    UUID error_id PK,FK                   "NOT NULL; references ERROR.id"
+    UUID tag_id PK,FK                     "NOT NULL; references TAG.id"
   }
 
   %%— Relationships in Layer 1 —
