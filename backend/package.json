@@ -10,16 +10,17 @@
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "db:migrate": "bun src/scripts/migrate.ts",
+    "db:rollback": "bun src/scripts/rollback.ts",
+    "db:seed": "bun src/scripts/seed.ts",
+    "db:reset": "bun src/scripts/reset.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.812.0",
     "@aws-sdk/s3-request-presigner": "^3.812.0",
     "@hono/zod-validator": "^0.1.11",
     "@smithy/node-http-handler": "^4.0.5",
-    "@types/pg": "^8.15.4",
-    "@vitest/ui": "^3.1.4",
-    "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "hono": "^4.0.5",
@@ -27,23 +28,24 @@
     "jsonwebtoken": "^9.0.2",
     "mime-types": "^2.1.35",
     "motriforge-backend": "file:",
-    "pg": "^8.16.0",
-    "vitest": "^3.1.4",
+    "pg": "^8.12.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^20.10.5",
+    "@types/pg": "^8.11.10",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
+    "@vitest/ui": "^3.1.4",
     "bun-types": "^1.0.20",
     "eslint": "^8.56.0",
     "eslint-plugin-import": "^2.29.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^3.1.4"
   }
 }
