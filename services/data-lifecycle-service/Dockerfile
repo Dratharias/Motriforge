@@ -1,4 +1,4 @@
-# Dockerfile for frontend
+# Dockerfile for data-lifecycle-service
 FROM node:20-alpine
 
 WORKDIR /app

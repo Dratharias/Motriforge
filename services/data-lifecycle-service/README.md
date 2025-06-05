@@ -1,10 +1,10 @@
-# Frontend
+# Data Lifecycle Service
 
 Service used in the MōtriForge platform.
 
 ## Description
 
-This service handles frontend logic.
+This service handles data lifecycle service logic.
 
 ## Scripts
 - `npm run dev`

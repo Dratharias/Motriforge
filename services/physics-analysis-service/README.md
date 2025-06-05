@@ -1,10 +1,10 @@
-# Frontend
+# Physics Analysis Service
 
 Service used in the MōtriForge platform.
 
 ## Description
 
-This service handles frontend logic.
+This service handles physics analysis service logic.
 
 ## Scripts
 - `npm run dev`

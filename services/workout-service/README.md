@@ -1,10 +1,10 @@
-# Frontend
+# Workout Service
 
 Service used in the MōtriForge platform.
 
 ## Description
 
-This service handles frontend logic.
+This service handles workout service logic.
 
 ## Scripts
 - `npm run dev`

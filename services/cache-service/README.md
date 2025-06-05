@@ -1,10 +1,10 @@
-# Frontend
+# Cache Service
 
 Service used in the MōtriForge platform.
 
 ## Description
 
-This service handles frontend logic.
+This service handles cache service logic.
 
 ## Scripts
 - `npm run dev`

@@ -1,4 +1,4 @@
-# Dockerfile for frontend
+# Dockerfile for cache-service
 FROM node:20-alpine
 
 WORKDIR /app

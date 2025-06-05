@@ -1,4 +1,4 @@
-# Dockerfile for frontend
+# Dockerfile for cross-domain-service
 FROM node:20-alpine
 
 WORKDIR /app

@@ -17,20 +17,28 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@lib/*": ["./src/lib/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@context/*": ["./src/context/*"],
-      "@types/*": ["./src/types/*"],
-      "@styles/*": ["./src/styles/*"],
-      "@pages/*": ["./src/pages/*"],
-      "@ui/*": ["./src/components/ui/*"],
-      "@constants/*": ["../constants/*"],
-      "@shared/types/*": ["../types/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/constants/*": [
+        "../shared/constants/*"
+      ],
+      "@/shared/*": [
+        "../shared/*"
+      ]
     },
-    "types": ["vite/client", "vitest/globals"]
+    "types": [
+      "vite/client",
+      "vitest/globals"
+    ]
   },
-  "include": ["src/**/*", "../types/**/*", "../constants/**/*", "vite.config.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

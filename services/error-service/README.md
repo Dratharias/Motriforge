@@ -1,10 +1,10 @@
-# Frontend
+# Error Service
 
 Service used in the MōtriForge platform.
 
 ## Description
 
-This service handles frontend logic.
+This service handles error service logic.
 
 ## Scripts
 - `npm run dev`

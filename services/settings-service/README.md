@@ -1,10 +1,10 @@
-# Frontend
+# Settings Service
 
 Service used in the MōtriForge platform.
 
 ## Description
 
-This service handles frontend logic.
+This service handles settings service logic.
 
 ## Scripts
 - `npm run dev`

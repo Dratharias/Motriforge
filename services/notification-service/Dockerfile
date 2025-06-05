@@ -1,4 +1,4 @@
-# Dockerfile for frontend
+# Dockerfile for notification-service
 FROM node:20-alpine
 
 WORKDIR /app

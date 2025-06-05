@@ -1,10 +1,10 @@
-# Frontend
+# Api
 
 Service used in the MōtriForge platform.
 
 ## Description
 
-This service handles frontend logic.
+This service handles api logic.
 
 ## Scripts
 - `npm run dev`
