@@ -1,4 +1,4 @@
-import { DatabaseService } from '../database/DatabaseService';
+import { DatabaseService } from '@/database/DatabaseService';
 
 /**
  * Run database migrations

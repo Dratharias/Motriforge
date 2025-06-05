@@ -1,14 +1,15 @@
-import { DatabaseManager } from './DatabaseManager';
-import { DatabaseConfigFactory } from './config/database.config';
+import { QueryResultRow } from 'pg';
+import { DatabaseManager, DatabaseResult } from './DatabaseManager';
+import { DatabaseConfigFactory } from '@/config/database.config';
 
-/**
- * Singleton database service for application-wide database access
- */
+export interface QueryResult<T = any> {
+  readonly rows: readonly T[];
+  readonly rowCount: number;
+}
+
 export class DatabaseService {
   private static instance: DatabaseService;
   private databaseManager: DatabaseManager | null = null;
-
-  private constructor() {}
 
   static getInstance(): DatabaseService {
     if (!DatabaseService.instance) {
@@ -17,9 +18,6 @@ export class DatabaseService {
     return DatabaseService.instance;
   }
 
-  /**
-   * Initialize the database service
-   */
   async initialize(): Promise<void> {
     if (this.databaseManager) {
       console.log('ℹ️ Database service already initialized');
@@ -29,9 +27,7 @@ export class DatabaseService {
     try {
       const config = DatabaseConfigFactory.createFromEnvironment();
       this.databaseManager = new DatabaseManager(config.connection);
-      
       await this.databaseManager.initializeDatabase();
-      
       console.log('✅ Database service initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize database service:', error);
@@ -39,9 +35,6 @@ export class DatabaseService {
     }
   }
 
-  /**
-   * Get the database manager instance
-   */
   getManager(): DatabaseManager {
     if (!this.databaseManager) {
       throw new Error('Database service not initialized. Call initialize() first.');
@@ -49,9 +42,29 @@ export class DatabaseService {
     return this.databaseManager;
   }
 
-  /**
-   * Shutdown the database service
-   */
+  async query<T extends QueryResultRow = any>(sql: string, params: any[] = []): Promise<QueryResult<T>> {
+    const manager = this.getManager();
+    const result = await manager.executeQuery<T>(sql, params);
+    return {
+      rows: result.rows,
+      rowCount: result.rowCount,
+    };
+  }
+
+  async querySingle<T extends QueryResultRow = any>(sql: string, params: any[] = []): Promise<T | null> {
+    const manager = this.getManager();
+    return await manager.executeQuerySingle<T>(sql, params);
+  }
+
+  async transaction<T extends QueryResultRow = any>(queries: Array<{ sql: string; params?: any[] }>): Promise<readonly DatabaseResult<T>[]> {
+    const manager = this.getManager();
+    const transactionQueries = queries.map(q => ({
+      sql: q.sql,
+      params: q.params ?? [],
+    }));
+    return await manager.executeTransaction<T>(transactionQueries);
+  }
+
   async shutdown(): Promise<void> {
     if (this.databaseManager) {
       await this.databaseManager.closeConnections();
@@ -60,9 +73,6 @@ export class DatabaseService {
     }
   }
 
-  /**
-   * Health check for the database service
-   */
   async healthCheck(): Promise<{
     readonly status: 'healthy' | 'unhealthy';
     readonly details: {
@@ -86,9 +96,7 @@ export class DatabaseService {
         };
       }
 
-      // Test connection with a simple query
       await this.databaseManager.executeQuery('SELECT 1');
-      
       return {
         status: 'healthy',
         details: {

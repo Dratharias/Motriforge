@@ -46,14 +46,11 @@ def get_relative_path_comment(full_path: str, base: str) -> str:
     except Exception:
         return "// <unknown path>\n\n"
 
-def generate_prefixed_filename(file_path: str) -> str:
-    parts = os.path.normpath(file_path).split(os.sep)
-    filename = os.path.basename(file_path)
-    if len(parts) >= 3:
-        return f"{parts[-3]}_{parts[-2]}_{filename}"
-    elif len(parts) >= 2:
-        return f"{parts[-2]}_{filename}"
-    return filename
+def generate_prefixed_filename(file_path: str, base_path: str) -> str:
+    rel_path = os.path.relpath(file_path, base_path)
+    flat_name = rel_path.replace(os.sep, '_')
+    return flat_name
+
 
 def copy_and_clean_file(src_path: str, dest_path: str, comment_base: str):
     try:
@@ -77,7 +74,7 @@ def flatten_from_file():
         if not os.path.isfile(full_path):
             print(f"❌ File does not exist: {full_path}")
             continue
-        new_name = generate_prefixed_filename(full_path)
+        new_name = generate_prefixed_filename(full_path, SRC_DIR)
         destination_path = os.path.join(OUTPUT_DIR, new_name)
         if os.path.exists(destination_path):
             print(f"⚠ Skipping {new_name}: already exists in flatten/")
@@ -87,7 +84,7 @@ def flatten_from_file():
 def flatten_types():
     ts_files = glob.glob(os.path.join(TYPES_DIR, '**', '*.ts'), recursive=True)
     for ts_path in ts_files:
-        new_name = generate_prefixed_filename(ts_path)
+        new_name = generate_prefixed_filename(ts_path, SRC_DIR)
         destination_path = os.path.join(OUTPUT_DIR, new_name)
         if os.path.exists(destination_path):
             print(f"⚠ Skipping {new_name}: already exists in flatten/")
@@ -97,7 +94,7 @@ def flatten_types():
 def flatten_all_src():
     ts_files = glob.glob(os.path.join(SRC_DIR, '**', '*.ts'), recursive=True)
     for ts_path in ts_files:
-        new_name = generate_prefixed_filename(ts_path)
+        new_name = generate_prefixed_filename(ts_path, SRC_DIR)
         destination_path = os.path.join(OUTPUT_DIR, new_name)
         if os.path.exists(destination_path):
             print(f"⚠ Skipping {new_name}: already exists in flatten/")
@@ -107,7 +104,7 @@ def flatten_all_src():
 def flatten_test_files():
     test_files = glob.glob(os.path.join(SRC_DIR, '**', '*.test.ts'), recursive=True)
     for ts_path in test_files:
-        new_name = generate_prefixed_filename(ts_path)
+        new_name = generate_prefixed_filename(ts_path, SRC_DIR)
         destination_path = os.path.join(OUTPUT_DIR, new_name)
         if os.path.exists(destination_path):
             print(f"⚠ Skipping {new_name}: already exists in flatten/")
@@ -128,7 +125,7 @@ def flatten_by_dir_name(target_dir_name: str):
     for dir_path in matched_dirs:
         ts_files = glob.glob(os.path.join(dir_path, '**', '*.ts'), recursive=True)
         for ts_path in ts_files:
-            new_name = generate_prefixed_filename(ts_path)
+            new_name = generate_prefixed_filename(ts_path, SRC_DIR)
             destination_path = os.path.join(OUTPUT_DIR, new_name)
             if os.path.exists(destination_path):
                 print(f"⚠ Skipping {new_name}: already exists in flatten/")
@@ -141,7 +138,7 @@ def flatten_docs():
         print(f"❌ No .md files found in {DOCS_DIR}")
         return
     for doc_path in doc_files:
-        new_name = generate_prefixed_filename(doc_path)
+        new_name = generate_prefixed_filename(doc_path, SRC_DIR)
         destination_path = os.path.join(OUTPUT_DIR, new_name)
         if os.path.exists(destination_path):
             print(f"⚠ Skipping {new_name}: already exists in flatten/")

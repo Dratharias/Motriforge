@@ -3,21 +3,32 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@constants/*": ["./constants/*"],
-      "@types/*": ["./types/*"]
+      "@/backend/*": [
+        "./backend/*"
+      ],
+      "@/frontend/*": [
+        "./frontend/*"
+      ],
+      "@/shared/*": [
+        "./shared/*"
+      ]
     },
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["constants/**/*", "types/**/*"],
-  "references": [
-    { "path": "./frontend" },
-    { "path": "./backend" }
+  "include": [
+    "./backend/**/*",
+    "./frontend/**/*",
+    "./shared/**/*"
   ]
 }

@@ -18,11 +18,14 @@
         "./src/*"
       ],
       "@/database/*": [
-        "./src/database/*"
+        "src/database/*"
       ],
       "@/types/*": [
         "./src/types/*"
-      ]
+      ],
+      "@/shared/*": [
+        "../shared/*"
+      ],
     },
     "types": [
       "bun-types",
@@ -33,7 +36,7 @@
       "DOM"
     ],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "../",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noImplicitReturns": true,
@@ -43,7 +46,8 @@
   },
   "include": [
     "./src/**/*.ts",
-    "./src/**/*.tsx"
+    "./src/**/*.tsx",
+    "../shared/**/*.tsx",
   ],
   "exclude": [
     "./node_modules",

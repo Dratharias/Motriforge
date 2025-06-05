@@ -21,6 +21,7 @@
     "@aws-sdk/s3-request-presigner": "^3.812.0",
     "@hono/zod-validator": "^0.1.11",
     "@smithy/node-http-handler": "^4.0.5",
+    "@solidjs/start": "^1.1.4",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "hono": "^4.0.5",

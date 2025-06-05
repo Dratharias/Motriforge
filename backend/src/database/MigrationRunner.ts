@@ -82,7 +82,7 @@ export class MigrationRunner {
       const files = await readdir(this.migrationsPath);
       const migrationFiles = files
         .filter(file => file.endsWith('.sql'))
-        .sort(); // Ensure chronological order
+        .sort((a, b) => a.localeCompare(b)); // Ensure chronological order
 
       const migrations: Migration[] = [];
       
