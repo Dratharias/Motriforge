@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "jsx": "preserve", 
+    "jsx": "preserve",
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",
@@ -9,18 +9,20 @@
     "strict": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@lib/*": ["./src/lib/*"],
-      "@api/*": ["./src/api/*"],
-      "@modules/*": ["./src/modules/*"],
-      "@shared/types/*": ["../types/*"],
-      "@constants/*": ["../constants/*"]
-    },
-    "types": ["bun-types"],
+    "paths": {},
+    "types": [
+      "bun-types"
+    ],
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/**/*", "../types/**/*", "../constants/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
 }
