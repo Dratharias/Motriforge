@@ -105,7 +105,7 @@ export class AuthenticationManager {
   async authenticate(credentials: UserCredentials, userAgent?: string, ipAddress?: string): Promise<AuthResult> {
     try {
       const user = await this.getUserByEmail(credentials.email);
-      if (!user || !user.isActive) {
+      if (!user?.isActive) {
         return {
           success: false,
           error: 'Invalid credentials',
@@ -179,7 +179,7 @@ export class AuthenticationManager {
       }
 
       const user = await this.getUserById(payload.sub);
-      if (!user || !user.isActive) {
+      if (!user?.isActive) {
         return {
           success: false,
           error: 'User not found or inactive',
@@ -313,6 +313,7 @@ export class AuthenticationManager {
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
         isActive: row.is_active,
+        roles: []
       };
 
       if (row.date_of_birth) {
@@ -359,6 +360,7 @@ export class AuthenticationManager {
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
         isActive: row.is_active,
+        roles: []
       };
 
       if (row.date_of_birth) {

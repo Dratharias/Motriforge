@@ -3,14 +3,15 @@ export interface User {
   readonly email: string;
   readonly firstName: string;
   readonly lastName: string;
+  readonly roles: string[];
+  readonly visibilityId?: string;
+  readonly createdBy?: string;
+  readonly createdAt?: Date;
+  readonly updatedAt?: Date;
+  readonly lastLogin?: Date;
   readonly dateOfBirth?: Date;
   readonly notes?: string;
-  readonly visibilityId: string;
-  readonly createdBy: string;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-  readonly lastLogin?: Date;
-  readonly isActive: boolean;
+  readonly isActive?: boolean;
 }
 
 export interface UserCredentials {
@@ -45,9 +46,9 @@ export interface TokenPayload {
   readonly email: string;
   readonly roles: string[];
   readonly permissions: string[];
+  readonly jti: string;
   readonly iat: number;
   readonly exp: number;
-  readonly jti: string;
 }
 
 export interface RefreshTokenPayload {
@@ -55,27 +56,6 @@ export interface RefreshTokenPayload {
   readonly jti: string;
   readonly iat: number;
   readonly exp: number;
-}
-
-export interface Session {
-  readonly id: string;
-  readonly userId: string;
-  readonly refreshTokenId: string;
-  readonly userAgent?: string;
-  readonly ipAddress?: string;
-  readonly createdAt: Date;
-  readonly lastActiveAt: Date;
-  readonly expiresAt: Date;
-  readonly isActive: boolean;
-}
-
-export interface Role {
-  readonly id: string;
-  readonly name: string;
-  readonly displayName: string;
-  readonly description?: string;
-  readonly level: number;
-  readonly isActive: boolean;
 }
 
 export interface Permission {
@@ -88,25 +68,24 @@ export interface Permission {
   readonly isActive: boolean;
 }
 
-export interface UserRole {
-  readonly userId: string;
-  readonly roleId: string;
-  readonly scopeId?: string;
-  readonly scopeType?: string;
-  readonly assignedBy: string;
-  readonly assignedAt: Date;
-  readonly expiresAt?: Date;
+export interface Role {
+  readonly id: string;
+  readonly name: string;
+  readonly displayName: string;
+  readonly description?: string;
+  readonly level: number;
   readonly isActive: boolean;
 }
 
-export interface UserPermission {
+export interface Session {
+  readonly id: string;
   readonly userId: string;
-  readonly permissionId: string;
-  readonly scopeId?: string;
-  readonly scopeType?: string;
-  readonly grantedBy: string;
-  readonly grantedAt: Date;
-  readonly expiresAt?: Date;
+  readonly refreshTokenId: string;
+  readonly userAgent?: string;
+  readonly ipAddress?: string;
+  readonly createdAt: Date;
+  readonly lastActiveAt: Date;
+  readonly expiresAt: Date;
   readonly isActive: boolean;
 }
 
@@ -124,11 +103,15 @@ export interface AuthzResult {
   readonly matchedPermissions: Permission[];
 }
 
+export interface ValidationResult {
+  readonly isValid: boolean;
+  readonly errors: string[];
+}
+
 export interface RateLimitConfig {
   readonly windowMs: number;
   readonly maxRequests: number;
   readonly skipSuccessfulRequests?: boolean;
-  readonly skipFailedRequests?: boolean;
 }
 
 export interface RateLimitResult {
@@ -136,18 +119,4 @@ export interface RateLimitResult {
   readonly remaining: number;
   readonly resetTime: Date;
   readonly retryAfter?: number;
-}
-
-export interface ValidationResult {
-  readonly isValid: boolean;
-  readonly errors: string[];
-}
-
-export interface PasswordResetToken {
-  readonly id: string;
-  readonly userId: string;
-  readonly token: string;
-  readonly requestedAt: Date;
-  readonly expiresAt: Date;
-  readonly isUsed: boolean;
 }

@@ -76,6 +76,7 @@ export class DatabaseService {
   async healthCheck(): Promise<{
     readonly status: 'healthy' | 'unhealthy';
     readonly details: {
+      readonly responseTime: number;
       readonly connected: boolean;
       readonly poolStats?: {
         readonly totalCount: number;
@@ -92,6 +93,7 @@ export class DatabaseService {
           details: {
             connected: false,
             error: 'Database service not initialized',
+            responseTime: 0
           },
         };
       }
@@ -102,6 +104,7 @@ export class DatabaseService {
         details: {
           connected: true,
           poolStats: this.databaseManager.getPoolStats(),
+          responseTime: 0
         },
       };
     } catch (error) {
@@ -110,6 +113,7 @@ export class DatabaseService {
         details: {
           connected: false,
           error: error instanceof Error ? error.message : 'Unknown error',
+          responseTime: 0
         },
       };
     }
