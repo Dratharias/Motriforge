@@ -1,12 +1,12 @@
-import { PasswordManager } from './PasswordManager.js';
-import { JWTManager } from './JWTManager.js';
-import { SessionManager } from './SessionManager.js';
-import { RoleManager } from './RoleManager.js';
-import { AuthenticationManager } from './AuthenticationManager.js';
-import { AuthorizationEngine } from './AuthorizationEngine.js';
-import { RateLimitManager } from './RateLimitManager.js';
-import { DatabaseService } from '@/database/DatabaseService.js';
-import { UserRegistration, AuthResult, UserCredentials } from '@/shared/types/auth.js';
+import { PasswordManager } from './PasswordManager';
+import { JWTManager } from './JWTManager';
+import { SessionManager } from './SessionManager';
+import { RoleManager } from './RoleManager';
+import { AuthenticationManager } from './AuthenticationManager';
+import { AuthorizationEngine } from './AuthorizationEngine';
+import { RateLimitManager } from './RateLimitManager';
+import { DatabaseService } from '@/database/DatabaseService';
+import { UserRegistration, AuthResult, UserCredentials } from '@/shared/types/auth';
 
 export class AuthenticationFacade {
   private readonly passwordManager: PasswordManager;

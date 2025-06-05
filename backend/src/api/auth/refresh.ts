@@ -1,15 +1,15 @@
 import { json } from '@solidjs/router';
 import type { APIEvent } from '@solidjs/start/server';
-import { AuthenticationFacade } from '@/services/auth/AuthenticationFacade.js';
-import { DatabaseService } from '@/database/DatabaseService.js';
-import { rateLimitAuth } from '@/middleware/auth.js';
+import { AuthenticationFacade } from '@/services/auth/AuthenticationFacade';
+import { DatabaseService } from '@/database/DatabaseService';
+import { rateLimitAuth } from '@/middleware/auth';
 
 export async function POST(event: APIEvent) {
   // Apply rate limiting
   rateLimitAuth(event);
 
   try {
-    const body = await event.request.json() as { refreshToken: string };
+    const body = await event.requeston() as { refreshToken: string };
 
     if (!body.refreshToken) {
       return json({ error: 'Refresh token is required' }, { status: 400 });

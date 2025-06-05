@@ -1,5 +1,5 @@
-import { DatabaseService } from '@/database/DatabaseService.js';
-import type { Role, Permission } from '@/shared/types/auth.js';
+import { DatabaseService } from '@/database/DatabaseService';
+import type { Role, Permission } from '@/shared/types/auth';
 
 interface RoleRow {
   readonly id: string;

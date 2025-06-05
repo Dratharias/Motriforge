@@ -1,4 +1,4 @@
-import type { RateLimitConfig, RateLimitResult } from '@/shared/types/auth.js';
+import type { RateLimitConfig, RateLimitResult } from '@/shared/types/auth';
 
 interface RateLimitEntry {
   readonly count: number;

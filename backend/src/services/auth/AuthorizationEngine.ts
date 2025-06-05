@@ -1,5 +1,5 @@
-import type { AuthorizationContext, AuthzResult, Permission } from '@/shared/types/auth.js';
-import { RoleManager } from './RoleManager.js';
+import type { AuthorizationContext, AuthzResult, Permission } from '@/shared/types/auth';
+import { RoleManager } from './RoleManager';
 
 export class AuthorizationEngine {
   private readonly permissionCache = new Map<string, { permissions: Permission[]; timestamp: number }>();

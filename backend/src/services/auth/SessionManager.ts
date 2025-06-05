@@ -1,9 +1,9 @@
 // src/services/auth/SessionManager.ts
 
 import { randomUUID } from 'crypto';
-import type { Session } from '@/shared/types/auth.js';
-import { authConfig } from '@/config/auth.js';
-import { DatabaseService } from '@/database/DatabaseService.js';
+import type { Session } from '@/shared/types/auth';
+import { authConfig } from '@/config/auth';
+import { DatabaseService } from '@/database/DatabaseService';
 
 export class SessionManager {
   private readonly cleanupInterval: number;

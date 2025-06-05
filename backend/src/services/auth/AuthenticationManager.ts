@@ -4,12 +4,12 @@ import type {
   UserCredentials,
   UserRegistration,
   AuthResult
-} from '@/shared/types/auth.js';
-import { PasswordManager } from './PasswordManager.js';
-import { JWTManager } from './JWTManager.js';
-import { SessionManager } from './SessionManager.js';
-import { RoleManager } from './RoleManager.js';
-import { DatabaseService } from '@/database/DatabaseService.js';
+} from '@/shared/types/auth';
+import { PasswordManager } from './PasswordManager';
+import { JWTManager } from './JWTManager';
+import { SessionManager } from './SessionManager';
+import { RoleManager } from './RoleManager';
+import { DatabaseService } from '@/database/DatabaseService';
 
 interface UserRow {
   readonly id: string;

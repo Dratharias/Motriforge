@@ -1,6 +1,6 @@
 import { Pool, PoolClient, QueryResult, QueryResultRow, PoolConfig } from 'pg';
-import { MigrationRunner } from './MigrationRunner.js';
-import { IndexManager } from './IndexManager.js';
+import { MigrationRunner } from './MigrationRunner';
+import { IndexManager } from './IndexManager';
 
 export interface ConnectionPoolConfig {
   readonly host: string;

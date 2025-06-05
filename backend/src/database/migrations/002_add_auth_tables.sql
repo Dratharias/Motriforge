@@ -56,7 +56,7 @@ import type {
   AuthResult, 
   TokenPair, 
   User 
-} from '../../shared/types/auth.js';
+} from '../../shared/types/auth';
 
 class AuthService {
   private readonly baseUrl = '/api/auth';

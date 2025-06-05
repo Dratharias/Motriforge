@@ -1,9 +1,9 @@
 import type { APIEvent } from '@solidjs/start/server';
-import { authConfig } from '@/config/auth.js';
-import { DatabaseService } from '@/database/DatabaseService.js';
-import { AuthenticationFacade } from '@/services/auth/AuthenticationFacade.js';
-import type { RateLimitConfig, User } from '@/shared/types/auth.js';
-import type { AuthenticatedRequest } from '@/shared/types/middleware.js';
+import { authConfig } from '@/config/auth';
+import { DatabaseService } from '@/database/DatabaseService';
+import { AuthenticationFacade } from '@/services/auth/AuthenticationFacade';
+import type { RateLimitConfig, User } from '@/shared/types/auth';
+import type { AuthenticatedRequest } from '@/shared/types/middleware';
 
 let authFacade: AuthenticationFacade | undefined;
 

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
-import { authConfig } from '@/config/auth.js';
-import { ValidationResult } from '@/shared/types/auth.js';
+import { authConfig } from '@/config/auth';
+import { ValidationResult } from '@/shared/types/auth';
 
 export class PasswordManager {
   private readonly saltRounds: number;

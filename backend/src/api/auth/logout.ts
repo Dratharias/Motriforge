@@ -1,8 +1,8 @@
 import { json } from '@solidjs/router';
 import type { APIEvent } from '@solidjs/start/server';
-import { requireAuth } from '@/middleware/auth.js';
-import { AuthenticationFacade } from '@/services/auth/AuthenticationFacade.js';
-import { DatabaseService } from '@/database/DatabaseService.js';
+import { requireAuth } from '@/middleware/auth';
+import { AuthenticationFacade } from '@/services/auth/AuthenticationFacade';
+import { DatabaseService } from '@/database/DatabaseService';
 
 export async function POST(event: APIEvent) {
   try {

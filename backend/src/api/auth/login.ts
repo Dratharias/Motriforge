@@ -1,16 +1,16 @@
 import { json } from '@solidjs/router';
 import type { APIEvent } from '@solidjs/start/server';
-import type { UserCredentials } from '@/shared/types/auth.js';
-import { AuthenticationFacade } from '@/services/auth/AuthenticationFacade.js';
-import { DatabaseService } from '@/database/DatabaseService.js';
-import { rateLimitAuth } from '@/middleware/auth.js';
+import type { UserCredentials } from '@/shared/types/auth';
+import { AuthenticationFacade } from '@/services/auth/AuthenticationFacade';
+import { DatabaseService } from '@/database/DatabaseService';
+import { rateLimitAuth } from '@/middleware/auth';
 
 export async function POST(event: APIEvent) {
   // Apply rate limiting
   rateLimitAuth(event);
 
   try {
-    const body = await event.request.json() as UserCredentials;
+    const body = await event.requeston() as UserCredentials;
 
     // Basic validation
     if (!body.email || !body.password) {

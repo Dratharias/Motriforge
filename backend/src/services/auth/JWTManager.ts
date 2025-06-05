@@ -8,8 +8,8 @@ import type {
   RefreshTokenPayload,
   User,
   Permission
-} from '@/shared/types/auth.js';
-import { authConfig } from '@/config/auth.js';
+} from '@/shared/types/auth';
+import { authConfig } from '@/config/auth';
 
 export class JWTManager {
   private readonly accessTokenSecret: Secret;

@@ -1,6 +1,6 @@
 import { json } from '@solidjs/router';
 import type { APIEvent } from '@solidjs/start/server';
-import { requireAuth, rateLimitAPI } from '@/middleware/auth.js';
+import { requireAuth, rateLimitAPI } from '@/middleware/auth';
 
 export async function GET(event: APIEvent) {
   // Apply rate limiting
