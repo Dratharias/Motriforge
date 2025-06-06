@@ -1,0 +1,27 @@
+{
+  "name": "motriforge-prisma",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "merge": "node scripts/merge-schema.js",
+    "generate": "npm run merge && npx prisma format && npx prisma generate && npm run post-generate",
+    "post-generate": "node -e \"console.log('✅ Prisma client generated successfully!')\"",
+    "migrate": "npx prisma migrate dev",
+    "migrate:reset": "npx prisma migrate reset",
+    "migrate:deploy": "npx prisma migrate deploy",
+    "seed": "npx tsx scripts/seed.ts",
+    "studio": "npx prisma studio",
+    "format": "npx prisma format",
+    "validate": "npx prisma validate",
+    "db:push": "npx prisma db push",
+    "db:pull": "npx prisma db pull"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.8.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.8.0",
+    "tsx": "^4.7.0"
+  }
+}

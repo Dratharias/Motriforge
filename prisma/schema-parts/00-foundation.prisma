@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../shared/database/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================
+// CORE FOUNDATION MODELS
+// =====================================
+
+model Visibility {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  level       Int      @default(0) @db.SmallInt
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdBy   String   @map("created_by")
+
+  // Relations
+  createdByUser User        @relation("VisibilityCreatedBy", fields: [createdBy], references: [id])
+  exercises     Exercise[]
+  workouts      Workout[]
+  programs      Program[]
+  equipment     Equipment[]
+  media         Media[]
+  users         User[]      @relation("UserVisibility")
+
+  @@map("visibility")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(50)
+  type        String   @db.VarChar(50) // TODO: Convert to enum
+  description String?  @db.Text
+  parentId    String?  @map("parent_id")
+  level       Int      @default(0) @db.SmallInt
+  path        String   @db.VarChar(255)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdBy   String   @map("created_by")
+
+  // Relations
+  parent              Category?           @relation("CategoryParent", fields: [parentId], references: [id])
+  children            Category[]          @relation("CategoryParent")
+  createdByUser       User                @relation("CategoryCreatedBy", fields: [createdBy], references: [id])
+  exerciseCategories  ExerciseCategory[]
+  workoutCategories   WorkoutCategory[]
+  programCategories   ProgramCategory[]
+  equipmentCategories EquipmentCategory[]
+
+  @@map("category")
+}
+
+model Tag {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(50)
+  type        String   @db.VarChar(50) // TODO: Convert to enum
+  description String?  @db.Text
+  isSystem    Boolean  @default(false) @map("is_system")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdBy   String   @map("created_by")
+
+  // Relations
+  createdByUser User           @relation("TagCreatedBy", fields: [createdBy], references: [id])
+  exerciseTags  ExerciseTag[]
+  workoutTags   WorkoutTag[]
+  programTags   ProgramTag[]
+  equipmentTags EquipmentTag[]
+  mediaTags     MediaTag[]
+
+  @@map("tag")
+}
+
+model DifficultyLevel {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(50)
+  value       Int      @unique @db.SmallInt
+  description String?  @db.Text
+  colorCode   String?  @map("color_code") @db.VarChar(7)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdBy   String   @map("created_by")
+
+  // Relations
+  createdByUser User       @relation("DifficultyLevelCreatedBy", fields: [createdBy], references: [id])
+  exercises     Exercise[]
+  workouts      Workout[]
+  programs      Program[]
+
+  @@map("difficulty_level")
+}
+
+model Metric {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(50)
+  unit        String   @db.VarChar(20)
+  dataType    String   @db.VarChar(20) // TODO: Convert to enum (NUMBER, DECIMAL, BOOLEAN, TEXT)
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdBy   String   @map("created_by")
+
+  // Relations
+  createdByUser User              @relation("MetricCreatedBy", fields: [createdBy], references: [id])
+  measurements  UserMeasurement[]
+
+  @@map("metric")
+}

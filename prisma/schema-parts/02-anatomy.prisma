@@ -1,0 +1,39 @@
+// =====================================
+// MUSCLES & ANATOMY
+// =====================================
+
+model MuscleGroup {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdBy   String   @map("created_by")
+
+  // Relations
+  createdByUser User     @relation("MuscleGroupCreatedBy", fields: [createdBy], references: [id])
+  muscles       Muscle[]
+
+  @@map("muscle_group")
+}
+
+model Muscle {
+  id             String   @id @default(cuid())
+  name           String   @db.VarChar(100)
+  scientificName String?  @map("scientific_name") @db.VarChar(100)
+  muscleGroupId  String   @map("muscle_group_id")
+  description    String?  @db.Text
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  createdBy      String   @map("created_by")
+
+  // Relations
+  muscleGroup     MuscleGroup            @relation(fields: [muscleGroupId], references: [id])
+  createdByUser   User                   @relation("MuscleCreatedBy", fields: [createdBy], references: [id])
+  exerciseTargets ExerciseMuscleTarget[]
+  workoutTargets  WorkoutMuscleTarget[]
+  workoutSets     WorkoutSet[]           @relation("WorkoutSetTargetMuscle")
+
+  @@unique([name, muscleGroupId])
+  @@map("muscle")
+}

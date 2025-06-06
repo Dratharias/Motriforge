@@ -5,6 +5,7 @@ package-lock.json
 public/uploads
 *.zip
 *_old*
-/generated
 /flatten
 scripts/to-flatten.txt
+
+/generated
