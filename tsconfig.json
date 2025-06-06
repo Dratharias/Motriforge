@@ -1,34 +1,46 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "lib": [
       "ESNext",
       "DOM",
       "DOM.Iterable"
     ],
-    "skipLibCheck": true,
     "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": true,
     "baseUrl": ".",
     "paths": {
+      "@/shared/*": [
+        "shared/*"
+      ],
       "@/backend/*": [
-        "./backend/*"
+        "api/src/*"
       ],
       "@/frontend/*": [
-        "./frontend/*"
-      ],
-      "@/shared/*": [
-        "./shared/*"
+        "frontend/src/*"
       ]
-    },
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    }
   },
   "include": [
-    "./backend/**/*",
-    "./frontend/**/*",
-    "./shared/**/*"
+    "api/src/**/*",
+    "frontend/src/**/*",
+    "services/*/src/**/*",
+    "shared/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }
