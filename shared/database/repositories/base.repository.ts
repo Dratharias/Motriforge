@@ -1,4 +1,4 @@
-import type { PrismaClient } from '../generated'
+import type { PrismaClient } from '@/prisma/generated'
 import { DatabaseService, isDatabaseReady } from '../database.service'
 import { logger } from '../../utils/logger'
 
@@ -69,7 +69,7 @@ export abstract class BaseRepository {
       })
       
       logger.debug(`${this.entityName} found by ID`, { id, found: !!result })
-      return result as T | null
+      return result ? (result as T) : null
     } catch (error) {
       logger.error(`Failed to find ${this.entityName} by ID`, { id, error })
       throw new Error(`Failed to find ${this.entityName}`)
@@ -97,10 +97,10 @@ export abstract class BaseRepository {
       })
       
       logger.debug(`${this.entityName} list retrieved`, { 
-        count: result.length,
+        count: Array.isArray(result) ? result.length : 0,
         filters: where 
       })
-      return result as readonly T[]
+      return Array.isArray(result) ? (result as T[]) : []
     } catch (error) {
       logger.error(`Failed to find ${this.entityName} list`, { options, error })
       throw new Error(`Failed to retrieve ${this.entityName} list`)
@@ -129,7 +129,7 @@ export abstract class BaseRepository {
       const take = limit
 
       // Execute queries in parallel
-      const [data, total] = await Promise.all([
+      const [dataResult, total] = await Promise.all([
         model.findMany({
           ...(where && { where }),
           ...(include && { include }),
@@ -140,6 +140,7 @@ export abstract class BaseRepository {
         model.count({ ...(where && { where }) }),
       ])
 
+      const data = Array.isArray(dataResult) ? (dataResult as T[]) : []
       const totalPages = Math.ceil(total / limit)
       const hasNextPage = page < totalPages
       const hasPreviousPage = page > 1
@@ -154,7 +155,7 @@ export abstract class BaseRepository {
       })
 
       return {
-        data: data as readonly T[],
+        data,
         total,
         page,
         limit,
@@ -185,7 +186,7 @@ export abstract class BaseRepository {
         },
       })
       
-      logger.info(`${this.entityName} created`, { id: result.id })
+      logger.info(`${this.entityName} created`, { id: result?.id })
       return result as T
     } catch (error) {
       logger.error(`Failed to create ${this.entityName}`, { data, error })
@@ -279,7 +280,7 @@ export abstract class BaseRepository {
       const count = await model.count({ ...(where && { where }) })
       
       logger.debug(`${this.entityName} count retrieved`, { count, filters: where })
-      return count
+      return typeof count === 'number' ? count : 0
     } catch (error) {
       logger.error(`Failed to count ${this.entityName}`, { where, error })
       throw new Error(`Failed to count ${this.entityName}`)
@@ -299,7 +300,7 @@ export abstract class BaseRepository {
       const count = await model.count({
         where: { id, isActive: true },
       })
-      return count > 0
+      return (typeof count === 'number' ? count : 0) > 0
     } catch (error) {
       logger.error(`Failed to check ${this.entityName} existence`, { id, error })
       throw new Error(`Failed to check ${this.entityName} existence`)
@@ -341,7 +342,7 @@ export abstract class BaseRepository {
       })
       
       logger.debug(`${this.entityName} found first`, { found: !!result })
-      return result as T | null
+      return result ? (result as T) : null
     } catch (error) {
       logger.error(`Failed to find first ${this.entityName}`, { options, error })
       throw new Error(`Failed to find ${this.entityName}`)
@@ -372,7 +373,7 @@ export abstract class BaseRepository {
         },
       })
       
-      logger.info(`${this.entityName} upserted`, { id: result.id })
+      logger.info(`${this.entityName} upserted`, { id: result?.id })
       return result as T
     } catch (error) {
       logger.error(`Failed to upsert ${this.entityName}`, { where, create, update, error })

@@ -3,49 +3,49 @@
 // =====================================
 
 model UserProgramEnrollment {
-  id             String    @id @default(cuid())
-  userId         String    @map("user_id")
-  programId      String    @map("program_id")
-  status         String    @default("ACTIVE") @db.VarChar(20) // TODO: Convert to enum
-  startDate      DateTime  @default(now()) @map("start_date") @db.Date
-  completionDate DateTime? @map("completion_date") @db.Date
-  currentDay     Int       @default(1) @map("current_day") @db.SmallInt
-  notes          String?   @db.Text
-  isActive       Boolean   @default(true) @map("is_active")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  createdBy      String    @map("created_by")
+  id             String        @id @default(cuid())
+  userId         String        @map("user_id")
+  programId      String        @map("program_id")
+  status         ProgramStatus @default(ACTIVE)
+  startDate      DateTime      @default(now()) @map("start_date")
+  completionDate DateTime?     @map("completion_date")
+  currentDay     Int           @default(1) @map("current_day")
+  notes          String?
+  isActive       Boolean       @default(true) @map("is_active")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  createdBy      String?       @map("created_by") // Allow null for system data
 
   // Relations
-  user            User                 @relation("UserProgramEnrollments", fields: [userId], references: [id])
-  program         Program              @relation(fields: [programId], references: [id])
-  createdByUser   User                 @relation("UserProgramEnrollmentCreatedBy", fields: [createdBy], references: [id])
+  user            User                 @relation("UserProgramEnrollments", fields: [userId], references: [id], map: "user_program_enrollment_user_fkey")
+  program         Program              @relation(fields: [programId], references: [id], map: "user_program_enrollment_program_fkey")
+  createdByUser   User?                @relation("UserProgramEnrollmentCreatedBy", fields: [createdBy], references: [id], map: "user_program_enrollment_created_by_fkey")
   workoutSessions UserWorkoutSession[]
 
   @@map("user_program_enrollment")
 }
 
 model UserWorkoutSession {
-  id              String    @id @default(cuid())
-  userId          String    @map("user_id")
-  workoutId       String    @map("workout_id")
-  enrollmentId    String?   @map("enrollment_id")
-  status          String    @default("PLANNED") @db.VarChar(20) // TODO: Convert to enum
-  scheduledAt     DateTime? @map("scheduled_at")
-  startedAt       DateTime? @map("started_at")
-  completedAt     DateTime? @map("completed_at")
-  durationSeconds Int?      @map("duration_seconds") @db.SmallInt
-  effortRating    Int?      @map("effort_rating") @db.SmallInt
-  sorenessRating  Int?      @map("soreness_rating") @db.SmallInt
-  notes           String?   @db.Text
-  isActive        Boolean   @default(true) @map("is_active")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  createdBy       String    @map("created_by")
+  id              String               @id @default(cuid())
+  userId          String               @map("user_id")
+  workoutId       String               @map("workout_id")
+  enrollmentId    String?              @map("enrollment_id")
+  status          WorkoutSessionStatus @default(PLANNED)
+  scheduledAt     DateTime?            @map("scheduled_at")
+  startedAt       DateTime?            @map("started_at")
+  completedAt     DateTime?            @map("completed_at")
+  durationSeconds Int?                 @map("duration_seconds")
+  effortRating    Int?                 @map("effort_rating") @db.SmallInt
+  sorenessRating  Int?                 @map("soreness_rating") @db.SmallInt
+  notes           String?
+  isActive        Boolean              @default(true) @map("is_active")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  createdBy       String?              @map("created_by") // Allow null for system data
 
   // Relations
-  user          User                      @relation("UserWorkoutSessions", fields: [userId], references: [id])
-  workout       Workout                   @relation(fields: [workoutId], references: [id])
-  enrollment    UserProgramEnrollment?    @relation(fields: [enrollmentId], references: [id])
-  createdByUser User                      @relation("UserWorkoutSessionCreatedBy", fields: [createdBy], references: [id])
+  user          User                      @relation("UserWorkoutSessions", fields: [userId], references: [id], map: "user_workout_session_user_fkey")
+  workout       Workout                   @relation(fields: [workoutId], references: [id], map: "user_workout_session_workout_fkey")
+  enrollment    UserProgramEnrollment?    @relation(fields: [enrollmentId], references: [id], map: "user_workout_session_enrollment_fkey")
+  createdByUser User?                     @relation("UserWorkoutSessionCreatedBy", fields: [createdBy], references: [id], map: "user_workout_session_created_by_fkey")
   performances  UserExercisePerformance[]
 
   @@map("user_workout_session")
@@ -57,41 +57,41 @@ model UserExercisePerformance {
   sessionId        String   @map("session_id")
   instructionId    String   @map("instruction_id")
   setsCompleted    Int      @default(0) @map("sets_completed") @db.SmallInt
-  repsCompleted    Int?     @map("reps_completed") @db.SmallInt
-  weightKg         Decimal? @map("weight_kg") @db.Decimal(5, 2)
-  durationSeconds  Int?     @map("duration_seconds") @db.SmallInt
+  repsCompleted    Int?     @map("reps_completed")
+  weightKg         Float?   @map("weight_kg")
+  durationSeconds  Int?     @map("duration_seconds")
   difficultyRating Int?     @map("difficulty_rating") @db.SmallInt
-  notes            String?  @db.Text
+  notes            String?
   isActive         Boolean  @default(true) @map("is_active")
   createdAt        DateTime @default(now()) @map("created_at")
-  createdBy        String   @map("created_by")
+  createdBy        String?  @map("created_by") // Allow null for system data
 
   // Relations
   user          User                @relation("UserExercisePerformances", fields: [userId], references: [id], map: "user_exercise_performance_user_fkey")
   session       UserWorkoutSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade, map: "user_exercise_performance_session_fkey")
   instruction   ExerciseInstruction @relation(fields: [instructionId], references: [id], map: "user_exercise_performance_instruction_fkey")
-  createdByUser User                @relation("UserExercisePerformanceCreatedBy", fields: [createdBy], references: [id], map: "user_exercise_performance_created_by_fkey")
+  createdByUser User?               @relation("UserExercisePerformanceCreatedBy", fields: [createdBy], references: [id], map: "user_exercise_performance_created_by_fkey")
   User          User                @relation(fields: [userId], references: [id])
 
   @@map("user_exercise_performance")
 }
 
 model UserMeasurement {
-  id              String   @id @default(cuid())
-  userId          String   @map("user_id")
-  metricId        String   @map("metric_id")
-  value           Decimal  @db.Decimal(10, 3)
-  measurementDate DateTime @map("measurement_date") @db.Date
-  notes           String?  @db.Text
-  source          String   @default("MANUAL") @db.VarChar(20) // TODO: Convert to enum
-  isActive        Boolean  @default(true) @map("is_active")
-  createdAt       DateTime @default(now()) @map("created_at")
-  createdBy       String   @map("created_by")
+  id              String            @id @default(cuid())
+  userId          String            @map("user_id")
+  metricId        String            @map("metric_id")
+  value           Float
+  measurementDate DateTime          @map("measurement_date")
+  notes           String?
+  source          MeasurementSource @default(MANUAL)
+  isActive        Boolean           @default(true) @map("is_active")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  createdBy       String?           @map("created_by") // Allow null for system data
 
   // Relations
-  user          User   @relation("UserMeasurements", fields: [userId], references: [id])
-  metric        Metric @relation(fields: [metricId], references: [id])
-  createdByUser User   @relation("UserMeasurementCreatedBy", fields: [createdBy], references: [id])
+  user          User   @relation("UserMeasurements", fields: [userId], references: [id], map: "user_measurement_user_fkey")
+  metric        Metric @relation(fields: [metricId], references: [id], map: "user_measurement_metric_fkey")
+  createdByUser User?  @relation("UserMeasurementCreatedBy", fields: [createdBy], references: [id], map: "user_measurement_created_by_fkey")
 
   @@map("user_measurement")
 }

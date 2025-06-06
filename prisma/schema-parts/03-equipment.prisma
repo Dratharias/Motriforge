@@ -4,19 +4,19 @@
 
 model Equipment {
   id           String   @id @default(cuid())
-  name         String   @unique @db.VarChar(100)
-  description  String?  @db.Text
-  manufacturer String?  @db.VarChar(100)
-  model        String?  @db.VarChar(100)
+  name         String   @unique
+  description  String?
+  manufacturer String?
+  model        String?
   visibilityId String   @map("visibility_id")
   isActive     Boolean  @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
-  createdBy    String   @map("created_by")
+  createdBy    String?  @map("created_by") // Allow null for system data
 
   // Relations
-  visibility    Visibility          @relation(fields: [visibilityId], references: [id])
-  createdByUser User                @relation("EquipmentCreatedBy", fields: [createdBy], references: [id])
+  visibility    Visibility          @relation(fields: [visibilityId], references: [id], map: "equipment_visibility_fkey")
+  createdByUser User?               @relation("EquipmentCreatedBy", fields: [createdBy], references: [id], map: "equipment_created_by_fkey")
   categories    EquipmentCategory[]
   tags          EquipmentTag[]
   exercises     ExerciseEquipment[]
@@ -31,12 +31,12 @@ model EquipmentCategory {
   isPrimary   Boolean  @default(false) @map("is_primary")
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
-  createdBy   String   @map("created_by")
+  createdBy   String?  @map("created_by") // Allow null for system data
 
   // Relations
-  equipment     Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
-  category      Category  @relation(fields: [categoryId], references: [id])
-  createdByUser User      @relation("EquipmentCategoryCreatedBy", fields: [createdBy], references: [id])
+  equipment     Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade, map: "equipment_category_equipment_fkey")
+  category      Category  @relation(fields: [categoryId], references: [id], map: "equipment_category_category_fkey")
+  createdByUser User?     @relation("EquipmentCategoryCreatedBy", fields: [createdBy], references: [id], map: "equipment_category_created_by_fkey")
 
   @@id([equipmentId, categoryId])
   @@map("equipment_category")
@@ -47,12 +47,12 @@ model EquipmentTag {
   tagId       String   @map("tag_id")
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
-  createdBy   String   @map("created_by")
+  createdBy   String?  @map("created_by") // Allow null for system data
 
   // Relations
-  equipment     Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
-  tag           Tag       @relation(fields: [tagId], references: [id])
-  createdByUser User      @relation("EquipmentTagCreatedBy", fields: [createdBy], references: [id])
+  equipment     Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade, map: "equipment_tag_equipment_fkey")
+  tag           Tag       @relation(fields: [tagId], references: [id], map: "equipment_tag_tag_fkey")
+  createdByUser User?     @relation("EquipmentTagCreatedBy", fields: [createdBy], references: [id], map: "equipment_tag_created_by_fkey")
 
   @@id([equipmentId, tagId])
   @@map("equipment_tag")

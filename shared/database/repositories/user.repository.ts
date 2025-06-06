@@ -1,5 +1,5 @@
 import { logger } from "@/shared/utils/logger"
-import { User, Prisma } from "../generated"
+import { User, Prisma } from "@/prisma/generated"
 import { BaseRepository, PaginatedResult } from "./base.repository"
 
 export interface CreateUserData {

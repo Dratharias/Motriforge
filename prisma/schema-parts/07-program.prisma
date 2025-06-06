@@ -4,20 +4,20 @@
 
 model Program {
   id                String   @id @default(cuid())
-  name              String   @unique @db.VarChar(100)
-  description       String   @db.Text
+  name              String   @unique
+  description       String
   difficultyLevelId String   @map("difficulty_level_id")
-  notes             String?  @db.Text
+  notes             String?
   visibilityId      String   @map("visibility_id")
   isActive          Boolean  @default(true) @map("is_active")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
-  createdBy         String   @map("created_by")
+  createdBy         String?  @map("created_by") // Allow null for system data
 
   // Relations
-  difficultyLevel DifficultyLevel         @relation(fields: [difficultyLevelId], references: [id])
-  visibility      Visibility              @relation(fields: [visibilityId], references: [id])
-  createdByUser   User                    @relation("ProgramCreatedBy", fields: [createdBy], references: [id])
+  difficultyLevel DifficultyLevel         @relation(fields: [difficultyLevelId], references: [id], map: "program_difficulty_level_fkey")
+  visibility      Visibility              @relation(fields: [visibilityId], references: [id], map: "program_visibility_fkey")
+  createdByUser   User?                   @relation("ProgramCreatedBy", fields: [createdBy], references: [id], map: "program_created_by_fkey")
   categories      ProgramCategory[]
   tags            ProgramTag[]
   schedules       ProgramSchedule[]
@@ -34,12 +34,12 @@ model ProgramCategory {
   isPrimary  Boolean  @default(false) @map("is_primary")
   isActive   Boolean  @default(true) @map("is_active")
   createdAt  DateTime @default(now()) @map("created_at")
-  createdBy  String   @map("created_by")
+  createdBy  String?  @map("created_by") // Allow null for system data
 
   // Relations
-  program       Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
-  category      Category @relation(fields: [categoryId], references: [id])
-  createdByUser User     @relation("ProgramCategoryCreatedBy", fields: [createdBy], references: [id])
+  program       Program  @relation(fields: [programId], references: [id], onDelete: Cascade, map: "program_category_program_fkey")
+  category      Category @relation(fields: [categoryId], references: [id], map: "program_category_category_fkey")
+  createdByUser User?    @relation("ProgramCategoryCreatedBy", fields: [createdBy], references: [id], map: "program_category_created_by_fkey")
 
   @@id([programId, categoryId])
   @@map("program_category")
@@ -50,12 +50,12 @@ model ProgramTag {
   tagId     String   @map("tag_id")
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
-  createdBy String   @map("created_by")
+  createdBy String?  @map("created_by") // Allow null for system data
 
   // Relations
-  program       Program @relation(fields: [programId], references: [id], onDelete: Cascade)
-  tag           Tag     @relation(fields: [tagId], references: [id])
-  createdByUser User    @relation("ProgramTagCreatedBy", fields: [createdBy], references: [id])
+  program       Program @relation(fields: [programId], references: [id], onDelete: Cascade, map: "program_tag_program_fkey")
+  tag           Tag     @relation(fields: [tagId], references: [id], map: "program_tag_tag_fkey")
+  createdByUser User?   @relation("ProgramTagCreatedBy", fields: [createdBy], references: [id], map: "program_tag_created_by_fkey")
 
   @@id([programId, tagId])
   @@map("program_tag")
@@ -64,16 +64,16 @@ model ProgramTag {
 model ProgramSchedule {
   id              String   @id @default(cuid())
   programId       String   @map("program_id")
-  lengthDays      Int      @map("length_days") @db.SmallInt
-  restDaysPerWeek Int      @default(1) @map("rest_days_per_week") @db.SmallInt
-  notes           String?  @db.Text
+  lengthDays      Int      @map("length_days")
+  restDaysPerWeek Int      @default(1) @map("rest_days_per_week")
+  notes           String?
   isActive        Boolean  @default(true) @map("is_active")
   createdAt       DateTime @default(now()) @map("created_at")
-  createdBy       String   @map("created_by")
+  createdBy       String?  @map("created_by") // Allow null for system data
 
   // Relations
-  program       Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
-  createdByUser User              @relation("ProgramScheduleCreatedBy", fields: [createdBy], references: [id])
+  program       Program           @relation(fields: [programId], references: [id], onDelete: Cascade, map: "program_schedule_program_fkey")
+  createdByUser User?             @relation("ProgramScheduleCreatedBy", fields: [createdBy], references: [id], map: "program_schedule_created_by_fkey")
   workouts      ScheduleWorkout[]
 
   @@map("program_schedule")
@@ -83,18 +83,18 @@ model ScheduleWorkout {
   id         String   @id @default(cuid())
   scheduleId String   @map("schedule_id")
   workoutId  String   @map("workout_id")
-  dayNumber  Int      @map("day_number") @db.SmallInt
-  orderIndex Int      @default(0) @map("order_index") @db.SmallInt
+  dayNumber  Int      @map("day_number")
+  orderIndex Int      @default(0) @map("order_index")
   isOptional Boolean  @default(false) @map("is_optional")
-  notes      String?  @db.Text
+  notes      String?
   isActive   Boolean  @default(true) @map("is_active")
   createdAt  DateTime @default(now()) @map("created_at")
-  createdBy  String   @map("created_by")
+  createdBy  String?  @map("created_by") // Allow null for system data
 
   // Relations
-  schedule      ProgramSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  workout       Workout         @relation(fields: [workoutId], references: [id])
-  createdByUser User            @relation("ScheduleWorkoutCreatedBy", fields: [createdBy], references: [id])
+  schedule      ProgramSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade, map: "schedule_workout_schedule_fkey")
+  workout       Workout         @relation(fields: [workoutId], references: [id], map: "schedule_workout_workout_fkey")
+  createdByUser User?           @relation("ScheduleWorkoutCreatedBy", fields: [createdBy], references: [id], map: "schedule_workout_created_by_fkey")
 
   @@map("schedule_workout")
 }
@@ -102,35 +102,35 @@ model ScheduleWorkout {
 model ProgramPhase {
   id          String   @id @default(cuid())
   programId   String   @map("program_id")
-  name        String   @db.VarChar(100)
-  description String?  @db.Text
-  startDay    Int      @map("start_day") @db.SmallInt
-  endDay      Int      @map("end_day") @db.SmallInt
-  orderIndex  Int      @map("order_index") @db.SmallInt
+  name        String
+  description String?
+  startDay    Int      @map("start_day")
+  endDay      Int      @map("end_day")
+  orderIndex  Int      @map("order_index")
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
-  createdBy   String   @map("created_by")
+  createdBy   String?  @map("created_by") // Allow null for system data
 
   // Relations
-  program       Program @relation(fields: [programId], references: [id], onDelete: Cascade)
-  createdByUser User    @relation("ProgramPhaseCreatedBy", fields: [createdBy], references: [id])
+  program       Program @relation(fields: [programId], references: [id], onDelete: Cascade, map: "program_phase_program_fkey")
+  createdByUser User?   @relation("ProgramPhaseCreatedBy", fields: [createdBy], references: [id], map: "program_phase_created_by_fkey")
 
   @@map("program_phase")
 }
 
 model ProgramMedia {
-  programId  String   @map("program_id")
-  mediaId    String   @map("media_id")
-  purpose    String   @db.VarChar(50) // TODO: Convert to enum
-  orderIndex Int      @default(0) @map("order_index") @db.SmallInt
-  isActive   Boolean  @default(true) @map("is_active")
-  createdAt  DateTime @default(now()) @map("created_at")
-  createdBy  String   @map("created_by")
+  programId  String       @map("program_id")
+  mediaId    String       @map("media_id")
+  purpose    MediaPurpose
+  orderIndex Int          @default(0) @map("order_index")
+  isActive   Boolean      @default(true) @map("is_active")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  createdBy  String?      @map("created_by") // Allow null for system data
 
   // Relations
-  program       Program @relation(fields: [programId], references: [id], onDelete: Cascade)
-  media         Media   @relation(fields: [mediaId], references: [id])
-  createdByUser User    @relation("ProgramMediaCreatedBy", fields: [createdBy], references: [id])
+  program       Program @relation(fields: [programId], references: [id], onDelete: Cascade, map: "program_media_program_fkey")
+  media         Media   @relation(fields: [mediaId], references: [id], map: "program_media_media_fkey")
+  createdByUser User?   @relation("ProgramMediaCreatedBy", fields: [createdBy], references: [id], map: "program_media_created_by_fkey")
 
   @@id([programId, mediaId])
   @@map("program_media")

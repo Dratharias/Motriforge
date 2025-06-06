@@ -1,4 +1,3 @@
-// prisma/scripts/generate.ts
 import { execSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";

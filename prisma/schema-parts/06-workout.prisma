@@ -4,20 +4,20 @@
 
 model Workout {
   id                String   @id @default(cuid())
-  name              String   @unique @db.VarChar(100)
-  durationSeconds   Int      @map("duration_seconds") @db.SmallInt
+  name              String   @unique
+  durationSeconds   Int      @map("duration_seconds")
   difficultyLevelId String   @map("difficulty_level_id")
-  notes             String?  @db.Text
+  notes             String?
   visibilityId      String   @map("visibility_id")
   isActive          Boolean  @default(true) @map("is_active")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
-  createdBy         String   @map("created_by")
+  createdBy         String?  @map("created_by") // Allow null for system data
 
   // Relations
-  difficultyLevel  DifficultyLevel       @relation(fields: [difficultyLevelId], references: [id])
-  visibility       Visibility            @relation(fields: [visibilityId], references: [id])
-  createdByUser    User                  @relation("WorkoutCreatedBy", fields: [createdBy], references: [id])
+  difficultyLevel  DifficultyLevel       @relation(fields: [difficultyLevelId], references: [id], map: "workout_difficulty_level_fkey")
+  visibility       Visibility            @relation(fields: [visibilityId], references: [id], map: "workout_visibility_fkey")
+  createdByUser    User?                 @relation("WorkoutCreatedBy", fields: [createdBy], references: [id], map: "workout_created_by_fkey")
   categories       WorkoutCategory[]
   tags             WorkoutTag[]
   muscleTargets    WorkoutMuscleTarget[]
@@ -35,12 +35,12 @@ model WorkoutCategory {
   isPrimary  Boolean  @default(false) @map("is_primary")
   isActive   Boolean  @default(true) @map("is_active")
   createdAt  DateTime @default(now()) @map("created_at")
-  createdBy  String   @map("created_by")
+  createdBy  String?  @map("created_by") // Allow null for system data
 
   // Relations
-  workout       Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  category      Category @relation(fields: [categoryId], references: [id])
-  createdByUser User     @relation("WorkoutCategoryCreatedBy", fields: [createdBy], references: [id])
+  workout       Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade, map: "workout_category_workout_fkey")
+  category      Category @relation(fields: [categoryId], references: [id], map: "workout_category_category_fkey")
+  createdByUser User?    @relation("WorkoutCategoryCreatedBy", fields: [createdBy], references: [id], map: "workout_category_created_by_fkey")
 
   @@id([workoutId, categoryId])
   @@map("workout_category")
@@ -51,31 +51,31 @@ model WorkoutTag {
   tagId     String   @map("tag_id")
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
-  createdBy String   @map("created_by")
+  createdBy String?  @map("created_by") // Allow null for system data
 
   // Relations
-  workout       Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  tag           Tag     @relation(fields: [tagId], references: [id])
-  createdByUser User    @relation("WorkoutTagCreatedBy", fields: [createdBy], references: [id])
+  workout       Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade, map: "workout_tag_workout_fkey")
+  tag           Tag     @relation(fields: [tagId], references: [id], map: "workout_tag_tag_fkey")
+  createdByUser User?   @relation("WorkoutTagCreatedBy", fields: [createdBy], references: [id], map: "workout_tag_created_by_fkey")
 
   @@id([workoutId, tagId])
   @@map("workout_tag")
 }
 
 model WorkoutMuscleTarget {
-  id         String   @id @default(cuid())
-  workoutId  String   @map("workout_id")
-  muscleId   String   @map("muscle_id")
-  targetType String   @map("target_type") @db.VarChar(20) // TODO: Convert to enum
-  intensity  Int      @db.SmallInt
-  isActive   Boolean  @default(true) @map("is_active")
-  createdAt  DateTime @default(now()) @map("created_at")
-  createdBy  String   @map("created_by")
+  id         String     @id @default(cuid())
+  workoutId  String     @map("workout_id")
+  muscleId   String     @map("muscle_id")
+  targetType TargetType @map("target_type")
+  intensity  Int
+  isActive   Boolean    @default(true) @map("is_active")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  createdBy  String?    @map("created_by") // Allow null for system data
 
   // Relations
-  workout       Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  muscle        Muscle  @relation(fields: [muscleId], references: [id])
-  createdByUser User    @relation("WorkoutMuscleTargetCreatedBy", fields: [createdBy], references: [id])
+  workout       Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade, map: "workout_muscle_target_workout_fkey")
+  muscle        Muscle  @relation(fields: [muscleId], references: [id], map: "workout_muscle_target_muscle_fkey")
+  createdByUser User?   @relation("WorkoutMuscleTargetCreatedBy", fields: [createdBy], references: [id], map: "workout_muscle_target_created_by_fkey")
 
   @@map("workout_muscle_target")
 }
@@ -83,18 +83,18 @@ model WorkoutMuscleTarget {
 model WorkoutSet {
   id             String   @id @default(cuid())
   workoutId      String   @map("workout_id")
-  name           String   @db.VarChar(100)
-  restSeconds    Int      @default(0) @map("rest_seconds") @db.SmallInt
+  name           String
+  restSeconds    Int      @default(0) @map("rest_seconds")
   targetMuscleId String   @map("target_muscle_id")
-  orderIndex     Int      @map("order_index") @db.SmallInt
+  orderIndex     Int      @map("order_index")
   isActive       Boolean  @default(true) @map("is_active")
   createdAt      DateTime @default(now()) @map("created_at")
-  createdBy      String   @map("created_by")
+  createdBy      String?  @map("created_by") // Allow null for system data
 
   // Relations
-  workout       Workout               @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  targetMuscle  Muscle                @relation("WorkoutSetTargetMuscle", fields: [targetMuscleId], references: [id])
-  createdByUser User                  @relation("WorkoutSetCreatedBy", fields: [createdBy], references: [id])
+  workout       Workout               @relation(fields: [workoutId], references: [id], onDelete: Cascade, map: "workout_set_workout_fkey")
+  targetMuscle  Muscle                @relation("WorkoutSetTargetMuscle", fields: [targetMuscleId], references: [id], map: "workout_set_target_muscle_fkey")
+  createdByUser User?                 @relation("WorkoutSetCreatedBy", fields: [createdBy], references: [id], map: "workout_set_created_by_fkey")
   instructions  ExerciseInstruction[]
 
   @@map("workout_set")
@@ -104,39 +104,39 @@ model ExerciseInstruction {
   id                 String   @id @default(cuid())
   workoutSetId       String   @map("workout_set_id")
   exerciseId         String   @map("exercise_id")
-  setsCount          Int      @default(1) @map("sets_count") @db.SmallInt
-  repsCount          Int?     @map("reps_count") @db.SmallInt
-  weightKg           Decimal? @map("weight_kg") @db.Decimal(5, 2)
-  durationSeconds    Int?     @map("duration_seconds") @db.SmallInt
-  restSeconds        Int      @default(0) @map("rest_seconds") @db.SmallInt
-  orderIndex         Int      @map("order_index") @db.SmallInt
-  customInstructions String?  @map("custom_instructions") @db.Text
+  setsCount          Int      @default(1) @map("sets_count")
+  repsCount          Int?     @map("reps_count")
+  weightKg           Float?   @map("weight_kg")
+  durationSeconds    Int?     @map("duration_seconds")
+  restSeconds        Int      @default(0) @map("rest_seconds")
+  orderIndex         Int      @map("order_index")
+  customInstructions String?  @map("custom_instructions")
   isActive           Boolean  @default(true) @map("is_active")
   createdAt          DateTime @default(now()) @map("created_at")
-  createdBy          String   @map("created_by")
+  createdBy          String?  @map("created_by") // Allow null for system data
 
   // Relations
-  workoutSet       WorkoutSet                @relation(fields: [workoutSetId], references: [id], onDelete: Cascade)
-  exercise         Exercise                  @relation(fields: [exerciseId], references: [id])
-  createdByUser    User                      @relation("ExerciseInstructionCreatedBy", fields: [createdBy], references: [id])
+  workoutSet       WorkoutSet                @relation(fields: [workoutSetId], references: [id], onDelete: Cascade, map: "exercise_instruction_workout_set_fkey")
+  exercise         Exercise                  @relation(fields: [exerciseId], references: [id], map: "exercise_instruction_exercise_fkey")
+  createdByUser    User?                     @relation("ExerciseInstructionCreatedBy", fields: [createdBy], references: [id], map: "exercise_instruction_created_by_fkey")
   userPerformances UserExercisePerformance[]
 
   @@map("exercise_instruction")
 }
 
 model WorkoutMedia {
-  workoutId  String   @map("workout_id")
-  mediaId    String   @map("media_id")
-  purpose    String   @db.VarChar(50) // TODO: Convert to enum
-  orderIndex Int      @default(0) @map("order_index") @db.SmallInt
-  isActive   Boolean  @default(true) @map("is_active")
-  createdAt  DateTime @default(now()) @map("created_at")
-  createdBy  String   @map("created_by")
+  workoutId  String       @map("workout_id")
+  mediaId    String       @map("media_id")
+  purpose    MediaPurpose
+  orderIndex Int          @default(0) @map("order_index")
+  isActive   Boolean      @default(true) @map("is_active")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  createdBy  String?      @map("created_by") // Allow null for system data
 
   // Relations
-  workout       Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  media         Media   @relation(fields: [mediaId], references: [id])
-  createdByUser User    @relation("WorkoutMediaCreatedBy", fields: [createdBy], references: [id])
+  workout       Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade, map: "workout_media_workout_fkey")
+  media         Media   @relation(fields: [mediaId], references: [id], map: "workout_media_media_fkey")
+  createdByUser User?   @relation("WorkoutMediaCreatedBy", fields: [createdBy], references: [id], map: "workout_media_created_by_fkey")
 
   @@id([workoutId, mediaId])
   @@map("workout_media")

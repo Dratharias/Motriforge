@@ -1,5 +1,20 @@
-import type { PrismaClient, QueryEvent, LogEvent } from './generated'
 import { logger } from '../utils/logger'
+import type { PrismaClient } from '@/prisma/generated'
+
+// Event types for Prisma client
+interface QueryEvent {
+  readonly timestamp: Date
+  readonly query: string
+  readonly params: string
+  readonly duration: number
+  readonly target: string
+}
+
+interface LogEvent {
+  readonly timestamp: Date
+  readonly message: string
+  readonly target: string
+}
 
 /**
  * Database Service - Singleton Prisma Client Manager
@@ -146,29 +161,32 @@ export class DatabaseService {
         return
       }
 
-      this.prisma.$on('query', (event: QueryEvent) => {
-        logger.debug('Database query executed', {
-          query: event.query,
-          duration: event.duration,
-          params: event.params,
+      // Type-safe event listener setup
+      if (typeof this.prisma.$on === 'function') {
+        this.prisma.$on('query', (event: QueryEvent) => {
+          logger.debug('Database query executed', {
+            query: event.query,
+            duration: event.duration,
+            params: event.params,
+          })
         })
-      })
 
-      this.prisma.$on('error', (event: LogEvent) => {
-        logger.error('Database error occurred', {
-          message: event.message,
-          target: event.target,
+        this.prisma.$on('error', (event: LogEvent) => {
+          logger.error('Database error occurred', {
+            message: event.message,
+            target: event.target,
+          })
         })
-      })
 
-      this.prisma.$on('warn', (event: LogEvent) => {
-        logger.warn('Database warning', {
-          message: event.message,
-          target: event.target,
+        this.prisma.$on('warn', (event: LogEvent) => {
+          logger.warn('Database warning', {
+            message: event.message,
+            target: event.target,
+          })
         })
-      })
 
-      logger.debug('Database event listeners setup successfully')
+        logger.debug('Database event listeners setup successfully')
+      }
     } catch (error) {
       logger.warn('Failed to setup database event listeners', { error })
       // Don't throw error here as it's not critical

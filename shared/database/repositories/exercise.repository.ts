@@ -1,5 +1,5 @@
 import { logger } from "@/shared/utils/logger"
-import { Exercise, Equipment, Prisma } from "../generated"
+import { Exercise, Equipment, Prisma } from "@/prisma/generated"
 import { BaseRepository, PaginatedResult } from "./base.repository"
 
 export interface CreateExerciseData {

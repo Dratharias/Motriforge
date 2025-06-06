@@ -178,22 +178,17 @@
         "security:check": "npm audit && npx better-npm-audit audit",
         "precommit": "npm run lint && npm run type-check && npm run test",
         "prepare": "husky install || true",
-        "prisma:merge": "node prisma/scripts/merge-schema.js",
-        "prisma:build": "tsx prisma/scripts/generate.ts",
-        "prisma:generate": "npm run prisma:merge && prisma generate",
-        "prisma:format": "prisma format",
-        "prisma:validate": "prisma validate",
-        "prisma:migrate": "npm run prisma:generate && prisma migrate dev",
-        "prisma:migrate:prod": "npm run prisma:generate && prisma migrate deploy",
-        "prisma:migrate:reset": "prisma migrate reset",
-        "prisma:seed": "tsx prisma/seed/seed.ts",
-        "prisma:studio": "prisma studio",
-        "prisma:push": "npm run prisma:generate && prisma db push",
-        "db:reset": "npm run prisma:migrate:reset && npm run prisma:seed",
-        "db:setup": "npm run prisma:migrate && npm run prisma:seed"
-    },
-    "prisma": {
-        "seed": "tsx prisma/seed/seed.ts"
+        "db:generate": "cd prisma && npm run generate",
+        "db:format": "cd prisma && npm run format",
+        "db:validate": "cd prisma && npm run validate",
+        "db:migrate": "cd prisma && npm run migrate",
+        "db:migrate:prod": "cd prisma && npm run migrate:deploy",
+        "db:migrate:reset": "cd prisma && npm run migrate:reset",
+        "db:seed": "cd prisma && npm run seed",
+        "db:studio": "cd prisma && npm run studio",
+        "db:push": "cd prisma && npm run db:push",
+        "db:reset": "npm run db:migrate:reset && npm run db:seed",
+        "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed"
     },
     "dependencies": {
         "jose": "^5.0.0",
