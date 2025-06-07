@@ -161,3 +161,34 @@ export class ExternalServiceError extends APIError {
     this.name = 'ExternalServiceError'
   }
 }
+
+export function isValidationError(error: unknown): error is ValidationError {
+  return typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    'message' in error &&
+    'details' in error;
+}
+
+export function isAuthenticationError(error: unknown): error is AuthenticationError {
+  return typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    'message' in error;
+}
+
+export function isBusinessLogicError(error: unknown): error is BusinessLogicError {
+  return typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    'message' in error &&
+    'details' in error;
+}
+
+export function isAPIError(error: unknown): error is APIError {
+  return typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    'message' in error &&
+    'statusCode' in error;
+}

@@ -1,12 +1,12 @@
 import { logger } from "@/shared/utils/logger"
-import { Exercise, Equipment, Prisma } from "@/prisma/generated"
+import { Exercise, Equipment, Prisma, TargetType } from "@/prisma/generated"
 import { BaseRepository, PaginatedResult } from "./base.repository"
 
 export interface CreateExerciseData {
   readonly name: string
   readonly description: string
   readonly instructions: string
-  readonly notes?: string
+  readonly notes?: string | null
   readonly difficultyLevelId: string
   readonly visibilityId: string
   readonly createdBy: string
@@ -15,7 +15,7 @@ export interface CreateExerciseData {
   readonly equipmentIds?: readonly string[]
   readonly muscleTargets?: readonly {
     readonly muscleId: string
-    readonly targetType: string
+    readonly targetType: TargetType
     readonly intensity: number
   }[]
 }
@@ -24,7 +24,7 @@ export interface UpdateExerciseData {
   readonly name?: string
   readonly description?: string
   readonly instructions?: string
-  readonly notes?: string
+  readonly notes?: string | null
   readonly difficultyLevelId?: string
   readonly visibilityId?: string
 }
@@ -51,9 +51,9 @@ export interface ExerciseListOptions {
 
 export interface CreateEquipmentData {
   readonly name: string
-  readonly description?: string
-  readonly manufacturer?: string
-  readonly model?: string
+  readonly description?: string | null
+  readonly manufacturer?: string | null
+  readonly model?: string | null
   readonly visibilityId: string
   readonly createdBy: string
   readonly categoryIds?: readonly string[]
@@ -62,9 +62,9 @@ export interface CreateEquipmentData {
 
 export interface UpdateEquipmentData {
   readonly name?: string
-  readonly description?: string
-  readonly manufacturer?: string
-  readonly model?: string
+  readonly description?: string | null
+  readonly manufacturer?: string | null
+  readonly model?: string | null
   readonly visibilityId?: string
 }
 
@@ -351,7 +351,7 @@ export class ExerciseRepository extends BaseRepository {
             name: data.name,
             description: data.description,
             instructions: data.instructions,
-            notes: data.notes,
+            notes: data.notes ?? null,
             difficultyLevelId: data.difficultyLevelId,
             visibilityId: data.visibilityId,
             createdBy: data.createdBy,
@@ -634,9 +634,9 @@ export class ExerciseRepository extends BaseRepository {
         const newEquipment = await db.equipment.create({
           data: {
             name: data.name,
-            description: data.description,
-            manufacturer: data.manufacturer,
-            model: data.model,
+            description: data.description ?? null,
+            manufacturer: data.manufacturer ?? null,
+            model: data.model ?? null,
             visibilityId: data.visibilityId,
             createdBy: data.createdBy,
           },

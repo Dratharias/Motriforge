@@ -1,25 +1,19 @@
 import { jwtVerify, errors, decodeJwt, SignJWT } from 'jose'
 import { AuthenticationError } from '../types/errors'
 
-/**
- * JWT Token Payload structure
- */
 export interface JWTTokenPayload {
-  readonly sub: string // User ID
+  readonly sub: string
   readonly email: string
   readonly roles?: readonly string[]
   readonly permissions?: readonly string[]
-  readonly institutionId?: string
-  readonly iat?: number // Issued at
-  readonly exp?: number // Expires at
-  readonly iss?: string // Issuer
-  readonly aud?: string // Audience
+  readonly institutionId?: string | undefined
+  readonly iat?: number | undefined
+  readonly exp?: number | undefined
+  readonly iss?: string | undefined
+  readonly aud?: string | undefined
+  readonly type?: string | undefined
 }
 
-/**
- * JWT Service for token generation and verification
- * Uses jose library for modern JWT handling with proper security
- */
 export class JWTService {
   private readonly secret: Uint8Array
   private readonly issuer: string
@@ -39,9 +33,6 @@ export class JWTService {
     this.audience = audience
   }
 
-  /**
-   * Generate a JWT token for a user
-   */
   public async generateToken(
     userId: string,
     email: string,
@@ -82,9 +73,6 @@ export class JWTService {
     }
   }
 
-  /**
-   * Generate a refresh token (longer expiration)
-   */
   public async generateRefreshToken(
     userId: string,
     email: string,
@@ -111,9 +99,6 @@ export class JWTService {
     }
   }
 
-  /**
-   * Verify and decode a JWT token
-   */
   public async verify(token: string): Promise<JWTTokenPayload> {
     try {
       const { payload } = await jwtVerify(token, this.secret, {
@@ -121,7 +106,6 @@ export class JWTService {
         audience: this.audience,
       })
 
-      // Validate required fields
       if (!payload.sub || typeof payload.sub !== 'string') {
         throw new AuthenticationError('Invalid token: missing or invalid subject')
       }
@@ -140,13 +124,13 @@ export class JWTService {
         exp: payload.exp,
         iss: payload.iss,
         aud: payload.aud as string,
+        type: typeof payload.type === 'string' ? payload.type : undefined,
       }
     } catch (error) {
       if (error instanceof AuthenticationError) {
         throw error
       }
 
-      // Handle specific jose errors
       if (error instanceof errors.JWTExpired) {
         throw new AuthenticationError('Token has expired')
       }
@@ -163,9 +147,6 @@ export class JWTService {
     }
   }
 
-  /**
-   * Decode token without verification (for debugging)
-   */
   public decode(token: string): JWTTokenPayload | null {
     try {
       const payload = decodeJwt(token)
@@ -184,15 +165,13 @@ export class JWTService {
         exp: payload.exp,
         iss: payload.iss,
         aud: payload.aud as string,
+        type: typeof payload.type === 'string' ? payload.type : undefined,
       }
     } catch {
       return null
     }
   }
 
-  /**
-   * Check if token is expired (without verification)
-   */
   public isExpired(token: string): boolean {
     try {
       const decoded = this.decode(token)
@@ -207,9 +186,6 @@ export class JWTService {
     }
   }
 
-  /**
-   * Get token expiration date
-   */
   public getExpirationDate(token: string): Date | null {
     try {
       const decoded = this.decode(token)
@@ -223,9 +199,6 @@ export class JWTService {
     }
   }
 
-  /**
-   * Extract user ID from token without full verification
-   */
   public getUserId(token: string): string | null {
     try {
       const decoded = this.decode(token)

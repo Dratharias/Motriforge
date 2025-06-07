@@ -1,9 +1,3 @@
-
-/**
- * Structured Logger for MōtriForge
- * Provides consistent logging across all services with structured output
- */
-
 export interface LogContext {
   [key: string]: unknown
 }
@@ -21,10 +15,7 @@ export interface LogEntry {
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
-/**
- * Logger class providing structured logging with different levels
- */
-class Logger {
+export class Logger {
   private readonly serviceName: string
   private readonly minLevel: LogLevel
 
@@ -33,37 +24,22 @@ class Logger {
     this.minLevel = minLevel
   }
 
-  /**
-   * Debug level logging - for detailed diagnostic information
-   */
   public debug(message: string, context?: LogContext): void {
     this.log('debug', message, context)
   }
 
-  /**
-   * Info level logging - for general information
-   */
   public info(message: string, context?: LogContext): void {
     this.log('info', message, context)
   }
 
-  /**
-   * Warning level logging - for potentially harmful situations
-   */
   public warn(message: string, context?: LogContext): void {
     this.log('warn', message, context)
   }
 
-  /**
-   * Error level logging - for error events
-   */
   public error(message: string, context?: LogContext): void {
     this.log('error', message, context)
   }
 
-  /**
-   * Log an error object with stack trace
-   */
   public logError(message: string, error: Error, context?: LogContext): void {
     this.log('error', message, {
       ...context,
@@ -74,9 +50,6 @@ class Logger {
     })
   }
 
-  /**
-   * Core logging method
-   */
   private log(level: LogLevel, message: string, context?: LogContext): void {
     if (!this.shouldLog(level)) {
       return
@@ -89,7 +62,6 @@ class Logger {
       ...(context && Object.keys(context).length > 0 && { context }),
     }
 
-    // Add service name to context
     if (logEntry.context) {
       logEntry.context.service = this.serviceName
     } else {
@@ -99,9 +71,6 @@ class Logger {
     this.output(logEntry)
   }
 
-  /**
-   * Determine if log level should be output
-   */
   private shouldLog(level: LogLevel): boolean {
     const levels: Record<LogLevel, number> = {
       debug: 0,
@@ -113,9 +82,6 @@ class Logger {
     return levels[level] >= levels[this.minLevel]
   }
 
-  /**
-   * Output log entry to console
-   */
   private output(logEntry: LogEntry): void {
     const output = JSON.stringify(logEntry)
 
@@ -136,17 +102,11 @@ class Logger {
   }
 }
 
-/**
- * Default logger instance
- */
-export const logger = new Logger(
+export const logger: Logger = new Logger(
   process.env.SERVICE_NAME ?? 'motriforge',
   (process.env.LOG_LEVEL as LogLevel) ?? 'info'
 )
 
-/**
- * Create a logger instance for a specific service
- */
 export function createLogger(serviceName: string, minLevel?: LogLevel): Logger {
   return new Logger(serviceName, minLevel)
 }

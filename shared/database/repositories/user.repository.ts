@@ -1,15 +1,17 @@
 import { logger } from "@/shared/utils/logger"
 import { User, Prisma } from "@/prisma/generated"
 import { BaseRepository, PaginatedResult } from "./base.repository"
+import { AgeAnonymizer, AgeRange } from "@/shared/utils/age-anonymizer"
 
 export interface CreateUserData {
   readonly email: string
   readonly firstName: string
   readonly lastName: string
-  readonly dateOfBirth?: Date
+  readonly dateOfBirth?: Date | null;
   readonly notes?: string
   readonly visibilityId: string
   readonly createdBy: string
+  readonly password?: string
 }
 
 export interface UpdateUserData {
@@ -17,7 +19,9 @@ export interface UpdateUserData {
   readonly lastName?: string
   readonly dateOfBirth?: Date
   readonly notes?: string
+  readonly ageRange?: AgeRange | null
   readonly visibilityId?: string
+  readonly password?: string
 }
 
 export interface UserFilters {
@@ -26,6 +30,7 @@ export interface UserFilters {
   readonly lastName?: string
   readonly isActive?: boolean
   readonly createdBy?: string
+  readonly ageRange?: AgeRange
 }
 
 export interface UserListOptions {
@@ -110,6 +115,128 @@ export class UserRepository extends BaseRepository {
     }
   }
 
+    /**
+   * Bulk update age ranges for existing users (migration helper)
+   */
+    public async updateAgeRangesForExistingUsers(): Promise<number> {
+      try {
+        const usersWithoutAgeRange = await this.findMany(this.db.user, {
+          where: {
+            ageRange: null,
+            dateOfBirth: { not: null },
+            isActive: true
+          }
+        }) as User[]
+  
+        let updatedCount = 0
+  
+        for (const user of usersWithoutAgeRange) {
+          if (user.dateOfBirth) {
+            const ageRange = AgeAnonymizer.getAgeRange(user.dateOfBirth)
+            
+            await this.update(this.db.user, user.id, { ageRange })
+            updatedCount++
+          }
+        }
+  
+        logger.info('Bulk updated age ranges for existing users', { 
+          totalProcessed: usersWithoutAgeRange.length,
+          updatedCount 
+        })
+  
+        return updatedCount
+      } catch (error) {
+        logger.error('Failed to bulk update age ranges', { error })
+        throw new Error('Failed to bulk update age ranges')
+      }
+    }
+
+      /**
+   * Check if user is minor based on age range
+   */
+  public async isUserMinor(userId: string): Promise<boolean> {
+    try {
+      const user = await this.findUserById(userId)
+      if (!user?.ageRange) {
+        return false
+      }
+
+      return AgeAnonymizer.isMinor(user.ageRange)
+    } catch (error) {
+      logger.error('Failed to check if user is minor', { userId, error })
+      return false
+    }
+  }
+
+    /**
+   * Get age distribution analytics (anonymized)
+   */
+    public async getAgeDistribution(): Promise<Record<AgeRange, number>> {
+      try {
+        const distribution: Record<AgeRange, number> = {} as Record<AgeRange, number>
+  
+        // Initialize all age ranges with 0
+        Object.values(AgeRange).forEach(range => {
+          distribution[range] = 0
+        })
+  
+        // Count users in each age range
+        const results = await this.db.user.groupBy({
+          by: ['ageRange'],
+          where: { 
+            isActive: true,
+            ageRange: { not: null }
+          },
+          _count: true,
+        })
+  
+        results.forEach(result => {
+          if (result.ageRange && AgeAnonymizer.isValidAgeRange(result.ageRange)) {
+            distribution[result.ageRange as AgeRange] = result._count
+          }
+        })
+  
+        logger.debug('Age distribution retrieved', { distribution })
+        return distribution
+      } catch (error) {
+        logger.error('Failed to get age distribution', { error })
+        throw new Error('Failed to get age distribution')
+      }
+    }
+
+    /**
+   * Get users by age range for analytics (privacy-preserving)
+   */
+  public async getUsersByAgeRange(ageRange: AgeRange): Promise<readonly User[]> {
+    try {
+      const users = await this.findMany(this.db.user, {
+        where: { 
+          ageRange,
+          isActive: true 
+        },
+        include: {
+          visibility: {
+            select: {
+              id: true,
+              name: true,
+              level: true,
+            },
+          },
+        },
+      }) as User[]
+
+      logger.debug('Users retrieved by age range', {
+        ageRange: AgeAnonymizer.getDisplayName(ageRange),
+        count: users.length
+      })
+
+      return users
+    } catch (error) {
+      logger.error('Failed to get users by age range', { ageRange, error })
+      throw new Error('Failed to get users by age range')
+    }
+  }
+
   /**
    * Get users list with filters and pagination
    */
@@ -144,6 +271,7 @@ export class UserRepository extends BaseRepository {
             mode: 'insensitive',
           },
         }),
+        ...(filters.ageRange && { ageRange: filters.ageRange }),
         ...(filters.createdBy && { createdBy: filters.createdBy }),
         ...(!includeInactive && { isActive: true }),
         ...(filters.isActive !== undefined && { isActive: filters.isActive }),
@@ -193,12 +321,20 @@ export class UserRepository extends BaseRepository {
         throw new Error('User with this email already exists')
       }
 
+      // Calculate age range if date of birth provided
+      const ageRange = data.dateOfBirth ? AgeAnonymizer.getAgeRange(data.dateOfBirth) : null
+
       const user: User = await this.create(this.db.user, {
         ...data,
         email: data.email.toLowerCase().trim(),
+        ageRange, // Store anonymized age range
       })
 
-      logger.info('User created successfully', { userId: user.id, email: user.email })
+      logger.info('User created successfully', { 
+        userId: user.id, 
+        email: user.email,
+        ageRange: ageRange ? AgeAnonymizer.getDisplayName(ageRange) : 'not provided'
+      })
       return user
     } catch (error) {
       logger.error('Failed to create user', { data: { ...data, email: data.email }, error })
@@ -206,20 +342,29 @@ export class UserRepository extends BaseRepository {
     }
   }
 
+
   /**
    * Update user by ID
    */
   public async updateUser(id: string, data: UpdateUserData): Promise<User> {
     try {
-      // Check if user exists
       const existingUser = await this.exists(this.db.user, id)
       if (!existingUser) {
         throw new Error('User not found')
       }
 
-      const user: User = await this.update(this.db.user, id, data)
+      // Recalculate age range if date of birth is being updated
+      let updateData = { ...data }
+      if (data.dateOfBirth !== undefined) {
+        updateData.ageRange = data.dateOfBirth ? AgeAnonymizer.getAgeRange(data.dateOfBirth) : null
+      }
 
-      logger.info('User updated successfully', { userId: id })
+      const user: User = await this.update(this.db.user, id, updateData)
+
+      logger.info('User updated successfully', { 
+        userId: id,
+        ageRangeUpdated: data.dateOfBirth !== undefined
+      })
       return user
     } catch (error) {
       logger.error('Failed to update user', { id, data, error })

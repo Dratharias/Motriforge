@@ -143,7 +143,9 @@ export class DatabaseService {
         throw new Error('Cannot execute transaction with placeholder client')
       }
 
-      return await this.prisma.$transaction(callback)
+      return await this.prisma.$transaction(async (tx) => {
+        return await callback(tx as PrismaClient)
+      })
     } catch (error) {
       logger.error('Database transaction failed', { error })
       throw new Error('Transaction execution failed')
@@ -161,35 +163,50 @@ export class DatabaseService {
         return
       }
 
-      // Type-safe event listener setup
+      // Type-safe event listener setup with proper Prisma event handling
       if (typeof this.prisma.$on === 'function') {
-        this.prisma.$on('query', (event: QueryEvent) => {
-          logger.debug('Database query executed', {
-            query: event.query,
-            duration: event.duration,
-            params: event.params,
+        try {
+          // Query event listener
+          (this.prisma as any).$on('query', (event: QueryEvent) => {
+            logger.debug('Database query executed', {
+              query: event.query,
+              duration: event.duration,
+              params: event.params,
+            })
           })
-        })
+        } catch (queryEventError) {
+          logger.debug('Query event listener not available', { error: queryEventError })
+        }
 
-        this.prisma.$on('error', (event: LogEvent) => {
-          logger.error('Database error occurred', {
-            message: event.message,
-            target: event.target,
+        try {
+          // Error event listener
+          (this.prisma as any).$on('error', (event: LogEvent) => {
+            logger.error('Database error occurred', {
+              message: event.message,
+              target: event.target,
+            })
           })
-        })
+        } catch (errorEventError) {
+          logger.debug('Error event listener not available', { error: errorEventError })
+        }
 
-        this.prisma.$on('warn', (event: LogEvent) => {
-          logger.warn('Database warning', {
-            message: event.message,
-            target: event.target,
+        try {
+          // Warning event listener
+          (this.prisma as any).$on('warn', (event: LogEvent) => {
+            logger.warn('Database warning', {
+              message: event.message,
+              target: event.target,
+            })
           })
-        })
+        } catch (warnEventError) {
+          logger.debug('Warn event listener not available', { error: warnEventError })
+        }
 
-        logger.debug('Database event listeners setup successfully')
+        logger.debug('Database event listeners setup completed')
       }
     } catch (error) {
       logger.warn('Failed to setup database event listeners', { error })
-      // Don't throw error here as it's not critical
+      // Don't throw error here as it's not critical for application functionality
     }
   }
 }

@@ -31,6 +31,17 @@ export interface PaginatedResult<T> {
 }
 
 /**
+ * Utility function to convert undefined values to null for Prisma compatibility
+ */
+const convertUndefinedToNull = <T extends Record<string, any>>(obj: T): T => {
+  const result = { ...obj }
+  for (const key in result) {
+    result[key] ??= null as any;
+  }
+  return result
+}
+
+/**
  * Base Repository providing common database operations
  * Template method pattern for consistent data access
  */
@@ -179,11 +190,13 @@ export abstract class BaseRepository {
     try {
       this.ensureDatabaseReady()
       
+      const sanitizedData = convertUndefinedToNull({
+        ...data,
+        createdBy: data.createdBy ?? data.userId, // Default to userId if no createdBy
+      })
+      
       const result = await model.create({
-        data: {
-          ...data,
-          createdBy: data.createdBy ?? data.userId, // Default to userId if no createdBy
-        },
+        data: sanitizedData,
       })
       
       logger.info(`${this.entityName} created`, { id: result?.id })
@@ -205,12 +218,14 @@ export abstract class BaseRepository {
     try {
       this.ensureDatabaseReady()
       
+      const sanitizedData = convertUndefinedToNull({
+        ...data,
+        updatedAt: new Date(),
+      })
+      
       const result = await model.update({
         where: { id },
-        data: {
-          ...data,
-          updatedAt: new Date(),
-        },
+        data: sanitizedData,
       })
       
       logger.info(`${this.entityName} updated`, { id })
@@ -316,7 +331,7 @@ export abstract class BaseRepository {
     try {
       this.ensureDatabaseReady()
       
-      return await this.db.$transaction(callback)
+      return await DatabaseService.getInstance().transaction(callback)
     } catch (error) {
       logger.error(`Transaction failed for ${this.entityName}`, { error })
       throw new Error(`Transaction failed`)
@@ -361,16 +376,20 @@ export abstract class BaseRepository {
     try {
       this.ensureDatabaseReady()
       
+      const sanitizedCreate = convertUndefinedToNull({
+        ...create,
+        createdBy: create.createdBy ?? create.userId,
+      })
+      
+      const sanitizedUpdate = convertUndefinedToNull({
+        ...update,
+        updatedAt: new Date(),
+      })
+      
       const result = await model.upsert({
         where,
-        create: {
-          ...create,
-          createdBy: create.createdBy ?? create.userId,
-        },
-        update: {
-          ...update,
-          updatedAt: new Date(),
-        },
+        create: sanitizedCreate,
+        update: sanitizedUpdate,
       })
       
       logger.info(`${this.entityName} upserted`, { id: result?.id })

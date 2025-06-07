@@ -7,7 +7,9 @@ model User {
   email        String    @unique
   firstName    String    @map("first_name")
   lastName     String    @map("last_name")
-  dateOfBirth  DateTime? @map("date_of_birth")
+  password     String?   @map("password")
+  dateOfBirth  DateTime? @map("date_of_birth") // Keep for exact calculations when needed
+  ageRange     AgeRange? @map("age_range") // Anonymized age bracket
   notes        String?
   visibilityId String    @map("visibility_id")
   isActive     Boolean   @default(true) @map("is_active")
@@ -78,4 +80,15 @@ model User {
   UserExercisePerformance     UserExercisePerformance[]
 
   @@map("user")
+}
+
+enum AgeRange {
+  UNDER_13 // 0-12
+  TEEN_13_17 // 13-17  
+  YOUNG_18_24 // 18-24
+  ADULT_25_34 // 25-34
+  ADULT_35_44 // 35-44
+  ADULT_45_54 // 45-54
+  ADULT_55_64 // 55-64
+  SENIOR_65_PLUS // 65+
 }
