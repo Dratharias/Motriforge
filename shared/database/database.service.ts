@@ -1,5 +1,5 @@
 import { logger } from '../utils/logger'
-import type { PrismaClient } from '@/prisma/generated'
+import type { PrismaClient } from '../../prisma/generated'
 
 // Event types for Prisma client
 interface QueryEvent {
@@ -29,7 +29,7 @@ export class DatabaseService {
   private constructor() {
     try {
       // Dynamic import to avoid circular dependency issues
-      const { PrismaClient: PrismaClientClass } = require('./generated')
+      const { PrismaClient: PrismaClientClass } = require('../../prisma/generated')
       this.prisma = new PrismaClientClass({
         log: [
           { level: 'query', emit: 'event' },

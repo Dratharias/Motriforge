@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { AuthService } from '../../services/auth.service'
 import { AuthConfig } from '../../config/auth.config'
 import { AuthenticationError } from '../../../../../shared/types/errors'
@@ -13,10 +13,30 @@ describe('Rate Limiting Security Tests', () => {
     mockUserRepository = createMockUserRepository()
     
     mockConfig = {
+      port: 3002,
+      environment: 'development' as const,
+      version: '1.0.0',
+      jwt: {
+        secret: 'test-secret-key-must-be-at-least-32-characters',
+        accessTokenExpiry: '15m',
+        refreshTokenExpiry: '7d',
+        issuer: 'test-issuer',
+        audience: 'test-audience',
+      },
+      password: {
+        minLength: 8,
+        requireUppercase: true,
+        requireLowercase: true,
+        requireNumbers: true,
+        requireSpecialChars: true,
+        saltRounds: 12,
+      },
       rateLimiting: {
         loginAttempts: 3, // Lower limit for faster testing
         lockoutDuration: 1000, // 1 second for testing
       },
+      isProduction: () => false,
+      isDevelopment: () => true,
     } as AuthConfig
 
     authService = new AuthService(mockUserRepository as any, mockConfig)
@@ -28,12 +48,10 @@ describe('Rate Limiting Security Tests', () => {
 
     const credentials = { email: 'test@example.com', password: 'wrong' }
 
-    // Act & Assert - First 3 attempts should fail with AuthenticationError
+    // Act & Assert - First 3 attempts should fail with AuthenticationError but not rate limit
     for (let i = 0; i < 3; i++) {
-      await expect(authService.login(credentials))
-        .rejects.toThrow(AuthenticationError)
-      
       const error = await authService.login(credentials).catch(e => e)
+      expect(error).toBeInstanceOf(AuthenticationError)
       expect(error.message).not.toContain('Too many login attempts')
     }
   })
@@ -86,7 +104,10 @@ describe('Rate Limiting Security Tests', () => {
     // Then successful login
     mockUserRepository.findUserByEmail.mockResolvedValue(mockUser)
     mockUserRepository.updateUserLastLogin.mockResolvedValue(undefined)
-    vi.mocked(require('bcrypt').compare).mockResolvedValue(true)
+    
+    // Mock bcrypt compare properly
+    const bcrypt = await import('bcrypt')
+    ;(bcrypt.compare as any).mockResolvedValue(true)
 
     await authService.login({ email: 'test@example.com', password: 'correct' })
 

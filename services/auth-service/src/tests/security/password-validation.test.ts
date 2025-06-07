@@ -11,6 +11,16 @@ describe('Password Validation Security Tests', () => {
     mockUserRepository = createMockUserRepository()
     
     const mockConfig = {
+      port: 3002,
+      environment: 'development' as const,
+      version: '1.0.0',
+      jwt: {
+        secret: 'test-secret-key-must-be-at-least-32-characters',
+        accessTokenExpiry: '15m',
+        refreshTokenExpiry: '7d',
+        issuer: 'test-issuer',
+        audience: 'test-audience',
+      },
       password: {
         minLength: 8,
         requireUppercase: true,
@@ -19,6 +29,12 @@ describe('Password Validation Security Tests', () => {
         requireSpecialChars: true,
         saltRounds: 12,
       },
+      rateLimiting: {
+        loginAttempts: 5,
+        lockoutDuration: 900000,
+      },
+      isProduction: () => false,
+      isDevelopment: () => true,
     } as AuthConfig
 
     authService = new AuthService(mockUserRepository as any, mockConfig)
@@ -76,6 +92,16 @@ describe('Password Validation Security Tests', () => {
       lastName: 'Doe', 
       dateOfBirth: null,
     }
+
+    // Mock the createUser to return a valid user
+    const mockUser = {
+      id: 'new-user-123',
+      email: 'test@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      ageRange: null,
+    }
+    mockUserRepository.createUser.mockResolvedValue(mockUser)
 
     // Should not throw validation error
     await expect(authService.register(registerData)).resolves.toBeDefined()

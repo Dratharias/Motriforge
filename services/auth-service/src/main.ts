@@ -1,5 +1,5 @@
-import { DatabaseService } from "@/shared/database/database.service"
-import { UserRepository } from "@/shared/database/repositories/user.repository"
+import { DatabaseService } from "../../../shared/database/database.service"
+import { UserRepository } from "../../../shared/database/repositories/user.repository"
 import { createServer } from "http"
 import { parse } from "url"
 import { AuthConfig } from "./config/auth.config"
@@ -11,7 +11,7 @@ import { logger } from "./utils/logger"
 /**
  * Auth Service - JWT Authentication & User Management
  */
-class AuthServer {
+export class AuthServer {
   private readonly config: AuthConfig
   private readonly authService: AuthService
   private readonly authController: AuthController
@@ -163,7 +163,10 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error) => {
-  logger.error('Unhandled error in main', { error })
-  process.exit(1)
-})
+// Only run main if this file is executed directly (not in tests)
+if (require.main === module && process.env.NODE_ENV !== 'test') {
+  main().catch((error) => {
+    logger.error('Unhandled error in main', { error })
+    process.exit(1)
+  })
+}

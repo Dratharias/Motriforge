@@ -3,7 +3,7 @@ import { JWTService } from '@/shared/utils/jwt.service'
 import { UserRepository } from '@/shared/database/repositories/user.repository'
 import { AuthConfig } from '../config/auth.config'
 import { logger } from '../utils/logger'
-import { AgeAnonymizer } from '@/shared/utils/age-anonymizer'
+import { AgeAnonymizer, mapPrismaAgeRange } from '@/shared/utils/age-anonymizer'
 import { 
   AuthenticationError, 
   ValidationError, 
@@ -101,7 +101,9 @@ export class AuthService {
       logger.info('User logged in successfully', { 
         userId: user.id, 
         email: user.email,
-        ageRange: user.ageRange ? AgeAnonymizer.getDisplayName(user.ageRange) : 'not provided'
+        ageRange: user.ageRange
+          ? AgeAnonymizer.getDisplayName(mapPrismaAgeRange(user.ageRange)!)
+          : 'not provided'
       })
 
       return {
@@ -181,8 +183,12 @@ export class AuthService {
       logger.info('User registered successfully', { 
         userId: user.id, 
         email: user.email,
-        ageRange: user.ageRange ? AgeAnonymizer.getDisplayName(user.ageRange) : 'not provided',
-        isMinor: user.ageRange ? AgeAnonymizer.isMinor(user.ageRange) : false
+        ageRange: user.ageRange
+          ? AgeAnonymizer.getDisplayName(mapPrismaAgeRange(user.ageRange)!)
+          : 'not provided',
+        isMinor: user.ageRange
+          ? AgeAnonymizer.isMinor(mapPrismaAgeRange(user.ageRange)!)
+          : false
       })
 
       return {

@@ -91,7 +91,7 @@ describe('AuthController', () => {
         password: 'Password123!',
         firstName: 'Jane',
         lastName: 'Smith',
-        dateOfBirth: null,
+        dateOfBirth: undefined, // The controller passes undefined when not provided
       })
       expect(mockRes.statusCode).toBe(201)
     })

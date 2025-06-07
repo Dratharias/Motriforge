@@ -84,6 +84,7 @@ describe('AuthService', () => {
           email: mockUser.email,
           firstName: mockUser.firstName,
           lastName: mockUser.lastName,
+          ageRange: mockUser.ageRange, // Include ageRange in expected result
         },
         tokens: {
           accessToken: 'mock_access_token',

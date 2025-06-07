@@ -22,13 +22,28 @@ describe('AgeAnonymizer', () => {
       const birthDate = new Date('1990-12-25')
       const mockToday = new Date('2024-06-15') // Before birthday
       
-      const originalNow = Date.now
-      Date.now = () => mockToday.getTime()
+      const originalDate = global.Date
+      
+      // Mock Date constructor and Date.now
+      global.Date = class extends Date {
+        constructor(...args: any[]) {
+          if (args.length === 0) {
+            super(mockToday.getTime())
+          } else {
+            super(args[0])
+          }
+        }
+        
+        static now() {
+          return mockToday.getTime()
+        }
+      } as DateConstructor
       
       const age = AgeAnonymizer.calculateAge(birthDate)
       expect(age).toBe(33) // Haven't reached 34 yet
       
-      Date.now = originalNow
+      // Restore original Date
+      global.Date = originalDate
     })
   })
 
@@ -40,7 +55,7 @@ describe('AgeAnonymizer', () => {
       { age: 20, expected: AgeRange.YOUNG_18_24, description: 'young adult' },
       { age: 30, expected: AgeRange.ADULT_25_34, description: 'adult' },
       { age: 40, expected: AgeRange.ADULT_35_44, description: 'middle-aged' },
-      { age: 55, expected: AgeRange.ADULT_45_54, description: 'mature adult' },
+      { age: 50, expected: AgeRange.ADULT_45_54, description: 'mature adult' }, // Fixed: was 55
       { age: 60, expected: AgeRange.ADULT_55_64, description: 'pre-senior' },
       { age: 70, expected: AgeRange.SENIOR_65_PLUS, description: 'senior' },
       { age: 100, expected: AgeRange.SENIOR_65_PLUS, description: 'centenarian' },
