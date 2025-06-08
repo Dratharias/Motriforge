@@ -1,19 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "../..",
-    "composite": true,
-    "incremental": true
+    "rootDir": "../../",
+    "outDir": "../../dist/notification"
   },
   "include": [
-    "src/**/*",
-    "../../shared/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
+    "src"
   ]
 }

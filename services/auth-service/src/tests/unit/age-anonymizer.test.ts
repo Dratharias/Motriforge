@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { AgeAnonymizer, AgeRange } from '../../../../../shared/utils/age-anonymizer'
+import { AgeAnonymizer, AgeRange } from '@/shared/utils/age-anonymizer'
 
 describe('AgeAnonymizer', () => {
   describe('calculateAge', () => {

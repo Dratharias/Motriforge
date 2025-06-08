@@ -3,7 +3,7 @@ import { AuthController } from '../../controllers/auth.controller'
 import { 
   AuthenticationError,
   BusinessLogicError,
-} from '../../../../../shared/types/errors'
+} from '@/shared/types/errors'
 
 describe('AuthController', () => {
   let authController: AuthController

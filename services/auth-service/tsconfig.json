@@ -1,22 +1,10 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "noEmit": false,
-    "composite": true,
-    "incremental": true,
-    "rootDir": "../.."
+    "rootDir": "../../",
+    "outDir": "../../dist/auth"
   },
   "include": [
-    "src/**/*",
-    "../../shared/**/*",
-    "../../prisma/generated/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "../../prisma/scripts/**/*"
+    "src"
   ]
 }

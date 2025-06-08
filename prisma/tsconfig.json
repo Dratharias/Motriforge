@@ -1,49 +1,14 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "lib": [
-      "ESNext"
-    ],
-    "strict": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "declaration": true,
-    "declarationMap": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "outDir": "./dist",
-    "rootDir": "./",
-    "baseUrl": ".",
-    "paths": {
-      "@/shared/*": [
-        "../shared/*"
-      ],
-      "@/prisma/*": [
-        "./*"
-      ]
-    }
+    "rootDir": ".",
+    "outDir": "../dist/prisma"
   },
   "include": [
-    "scripts/**/*",
     "seed/**/*",
-    "generated/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ],
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  }
+    "scripts/**/*",
+    "schema-parts/**/*",
+    "generated/**/*",
+    "migrations/**/*"
+  ]
 }

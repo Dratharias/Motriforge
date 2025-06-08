@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { DatabaseService } from '../../../../../shared/database/database.service'
+import { DatabaseService } from '@/shared/database/database.service'
 
 describe('Database Connection Tests', () => {
   let dbService: DatabaseService

@@ -191,11 +191,15 @@
         "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed"
     },
     "dependencies": {
+        "@tailwindcss/vite": "^4.1.8",
+        "bcrypt": "^6.0.0",
         "jose": "^5.0.0",
-        "zod": "^3.22.0",
-        "tslib": "^2.6.2"
+        "prisma": "^6.9.0",
+        "tslib": "^2.6.2",
+        "zod": "^3.22.0"
     },
     "devDependencies": {
+        "@types/bcrypt": "^5.0.2",
         "@types/node": "^20.10.6",
         "@typescript-eslint/eslint-plugin": "^7.0.0",
         "@typescript-eslint/parser": "^7.0.0",
@@ -218,7 +222,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "rimraf": "^5.0.0",
-        "tailwindcss": "^3.3.0",
+        "tailwindcss": "^3.4.17",
         "tsc-alias": "^1.8.0",
         "tsx": "^4.0.0",
         "typedoc": "^0.25.0",

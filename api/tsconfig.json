@@ -1,34 +1,10 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "noEmit": false,
-    "composite": true,
-    "incremental": true,
-    "rootDir": ".."
-  },
-  "path": {
-    "@/middleware/*": [
-      "api/src/middleware/*"
-    ],
-    "@/router/*": [
-      "api/src/router/*"
-    ],
-    "@/routes/*": [
-      "api/src/routes/*"
-    ],
-    "@/services/*": [
-      "api/src/services/*"
-    ]
+    "rootDir": "..",
+    "outDir": "../dist/api"
   },
   "include": [
-    "src/**/*",
-    "../shared/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
+    "src"
   ]
 }

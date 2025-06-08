@@ -1,4 +1,3 @@
-// prisma/scripts/seed.ts
 import { PrismaClient, VisibilityLevel, CategoryType, TagType, MetricDataType } from "../generated/index.js"
 
 const prisma = new PrismaClient()

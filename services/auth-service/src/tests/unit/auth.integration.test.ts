@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { AuthServer } from '../../main'
 
 // Mock all dependencies
-vi.mock('../../../../../shared/database/database.service', () => ({
+vi.mock('@/shared/database/database.service', () => ({
   DatabaseService: {
     getInstance: vi.fn().mockReturnValue({
       connect: vi.fn().mockResolvedValue(undefined),
@@ -11,7 +11,7 @@ vi.mock('../../../../../shared/database/database.service', () => ({
   },
 }))
 
-vi.mock('../../../../../shared/database/repositories/user.repository', () => ({
+vi.mock('@/shared/database/repositories/user.repository', () => ({
   UserRepository: vi.fn().mockImplementation(() => ({
     findUserByEmail: vi.fn(),
     createUser: vi.fn(),

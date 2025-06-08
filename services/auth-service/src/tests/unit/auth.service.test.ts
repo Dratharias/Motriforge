@@ -1,18 +1,24 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import * as bcrypt from 'bcrypt'
 import { AuthService } from '../../services/auth.service'
 import { AuthConfig } from '../../config/auth.config'
 import { 
   AuthenticationError, 
   ValidationError, 
   BusinessLogicError 
-} from '../../../../../shared/types/errors'
+} from '@/shared/types/errors'
 import { createMockUserRepository, mockUser } from '../mocks/user-repository.mock'
 
-// Mock bcrypt
-const mockBcrypt = bcrypt as any
-mockBcrypt.compare = vi.fn()
-mockBcrypt.hash = vi.fn()
+// Mock bcrypt module
+vi.mock('bcrypt', () => ({
+  compare: vi.fn(),
+  hash: vi.fn(),
+}))
+
+import * as bcrypt from 'bcrypt'
+
+// Type the mocked bcrypt functions
+const mockBcryptCompare = vi.mocked(bcrypt.compare) as any
+const mockBcryptHash = vi.mocked(bcrypt.hash) as any
 
 describe('AuthService', () => {
   let authService: AuthService
@@ -71,7 +77,7 @@ describe('AuthService', () => {
     it('should login successfully with valid credentials', async () => {
       // Arrange
       mockUserRepository.findUserByEmail.mockResolvedValue(mockUser)
-      mockBcrypt.compare.mockResolvedValue(true)
+      mockBcryptCompare.mockResolvedValue(true)
       mockUserRepository.updateUserLastLogin.mockResolvedValue(undefined)
 
       // Act
@@ -84,18 +90,18 @@ describe('AuthService', () => {
           email: mockUser.email,
           firstName: mockUser.firstName,
           lastName: mockUser.lastName,
-          ageRange: mockUser.ageRange, // Include ageRange in expected result
+          ageRange: mockUser.ageRange,
         },
         tokens: {
           accessToken: 'mock_access_token',
           refreshToken: 'mock_refresh_token',
-          expiresIn: 900, // 15 minutes
+          expiresIn: 900,
           tokenType: 'Bearer',
         },
       })
 
       expect(mockUserRepository.findUserByEmail).toHaveBeenCalledWith('test@example.com')
-      expect(mockBcrypt.compare).toHaveBeenCalledWith('password123', '$2b$12$hashed_password')
+      expect(mockBcryptCompare).toHaveBeenCalledWith('password123', '$2b$12$hashed_password')
       expect(mockUserRepository.updateUserLastLogin).toHaveBeenCalledWith(mockUser.id)
     })
 
@@ -107,13 +113,13 @@ describe('AuthService', () => {
       await expect(authService.login(validCredentials))
         .rejects.toThrow(AuthenticationError)
       
-      expect(mockBcrypt.compare).not.toHaveBeenCalled()
+      expect(mockBcryptCompare).not.toHaveBeenCalled()
     })
 
     it('should throw AuthenticationError for invalid password', async () => {
       // Arrange
       mockUserRepository.findUserByEmail.mockResolvedValue(mockUser)
-      mockBcrypt.compare.mockResolvedValue(false)
+      mockBcryptCompare.mockResolvedValue(false)
 
       // Act & Assert
       await expect(authService.login(validCredentials))
@@ -148,7 +154,7 @@ describe('AuthService', () => {
     it('should register user successfully with valid data', async () => {
       // Arrange
       mockUserRepository.isEmailAvailable.mockResolvedValue(true)
-      mockBcrypt.hash.mockResolvedValue('$2b$12$new_hashed_password')
+      mockBcryptHash.mockResolvedValue('$2b$12$new_hashed_password')
       const newUser = { ...mockUser, id: 'new-user-123', email: 'newuser@example.com' }
       mockUserRepository.createUser.mockResolvedValue(newUser)
 
@@ -160,7 +166,7 @@ describe('AuthService', () => {
       expect(result.tokens.accessToken).toBe('mock_access_token')
       
       expect(mockUserRepository.isEmailAvailable).toHaveBeenCalledWith('newuser@example.com')
-      expect(mockBcrypt.hash).toHaveBeenCalledWith('Password123!', 12)
+      expect(mockBcryptHash).toHaveBeenCalledWith('Password123!', 12)
       expect(mockUserRepository.createUser).toHaveBeenCalledWith({
         email: 'newuser@example.com',
         firstName: 'Jane',
@@ -292,16 +298,16 @@ describe('AuthService', () => {
     it('should change password successfully', async () => {
       // Arrange
       mockUserRepository.findUserById.mockResolvedValue(mockUser)
-      mockBcrypt.compare.mockResolvedValue(true)
-      mockBcrypt.hash.mockResolvedValue('$2b$12$new_hashed_password')
+      mockBcryptCompare.mockResolvedValue(true)
+      mockBcryptHash.mockResolvedValue('$2b$12$new_hashed_password')
       mockUserRepository.updateUser.mockResolvedValue(undefined)
 
       // Act
       await authService.changePassword(mockUser.id, passwordChangeRequest)
 
       // Assert
-      expect(mockBcrypt.compare).toHaveBeenCalledWith('oldPassword123', '$2b$12$hashed_password')
-      expect(mockBcrypt.hash).toHaveBeenCalledWith('NewPassword456!', 12)
+      expect(mockBcryptCompare).toHaveBeenCalledWith('oldPassword123', '$2b$12$hashed_password')
+      expect(mockBcryptHash).toHaveBeenCalledWith('NewPassword456!', 12)
       expect(mockUserRepository.updateUser).toHaveBeenCalledWith(mockUser.id, {
         password: '$2b$12$new_hashed_password',
       })
@@ -310,7 +316,7 @@ describe('AuthService', () => {
     it('should throw AuthenticationError for incorrect current password', async () => {
       // Arrange
       mockUserRepository.findUserById.mockResolvedValue(mockUser)
-      mockBcrypt.compare.mockResolvedValue(false)
+      mockBcryptCompare.mockResolvedValue(false)
 
       // Act & Assert
       await expect(authService.changePassword(mockUser.id, passwordChangeRequest))
@@ -320,7 +326,7 @@ describe('AuthService', () => {
     it('should validate new password requirements', async () => {
       // Arrange
       mockUserRepository.findUserById.mockResolvedValue(mockUser)
-      mockBcrypt.compare.mockResolvedValue(true)
+      mockBcryptCompare.mockResolvedValue(true)
 
       const invalidRequest = {
         currentPassword: 'oldPassword123',

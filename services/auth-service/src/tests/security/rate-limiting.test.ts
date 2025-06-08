@@ -1,8 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { AuthService } from '../../services/auth.service'
 import { AuthConfig } from '../../config/auth.config'
-import { AuthenticationError } from '../../../../../shared/types/errors'
+import { AuthenticationError } from '@/shared/types/errors'
 import { createMockUserRepository } from '../mocks/user-repository.mock'
+
+// Mock bcrypt module
+vi.mock('bcrypt', () => ({
+  compare: vi.fn(),
+  hash: vi.fn(),
+}))
+
+import * as bcrypt from 'bcrypt'
+
+// Type the mocked bcrypt functions
+const mockBcryptCompare = vi.mocked(bcrypt.compare) as any
+const mockBcryptHash = vi.mocked(bcrypt.hash) as any
 
 describe('Rate Limiting Security Tests', () => {
   let authService: AuthService
@@ -10,6 +22,8 @@ describe('Rate Limiting Security Tests', () => {
   let mockConfig: AuthConfig
 
   beforeEach(() => {
+    vi.clearAllMocks()
+    
     mockUserRepository = createMockUserRepository()
     
     mockConfig = {
@@ -106,8 +120,7 @@ describe('Rate Limiting Security Tests', () => {
     mockUserRepository.updateUserLastLogin.mockResolvedValue(undefined)
     
     // Mock bcrypt compare properly
-    const bcrypt = await import('bcrypt')
-    ;(bcrypt.compare as any).mockResolvedValue(true)
+    mockBcryptCompare.mockResolvedValue(true)
 
     await authService.login({ email: 'test@example.com', password: 'correct' })
 

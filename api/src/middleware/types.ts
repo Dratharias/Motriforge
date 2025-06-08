@@ -15,7 +15,7 @@ export interface AuthenticatedUser {
   readonly email: string;
   readonly roles: readonly string[];
   readonly permissions: readonly string[];
-  readonly institutionId?: string;
+  readonly institutionId?: string | undefined;
 }
 
 export type MiddlewareNext = () => Promise<Response>;
