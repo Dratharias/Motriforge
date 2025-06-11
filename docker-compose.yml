@@ -1,48 +1,118 @@
 version: '3.8'
 
 services:
-  # MongoDB
-  mongodb:
-    image: mongo:7
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: motriforge-postgres
+    restart: unless-stopped
     environment:
-      MONGO_INITDB_DATABASE: motriforge
-
-  # Backend (Hono API)
-  backend:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
+      POSTGRES_DB: motriforge
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
-      - "3001:3001"
-    environment:
-      - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongodb:27017/motriforge
-      - JWT_SECRET=development_secret_key_change_in_production
-      - PORT=3001
-    depends_on:
-      - mongodb
+      - "5432:5432"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/database/init:/docker-entrypoint-initdb.d
+    networks:
+      - motriforge-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d motriforge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Frontend (SolidJS)
-  frontend:
+  # Redis (for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: motriforge-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - motriforge-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application (Development)
+  app:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: motriforge-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/motriforge
+      REDIS_URL: redis://redis:6379
+      VITE_APP_URL: http://localhost:3000
     ports:
       - "3000:3000"
-    environment:
-      - VITE_API_URL=http://localhost:3001/api
-    depends_on:
-      - backend
+      - "24678:24678" # Vite HMR
     volumes:
-      - ./frontend:/app
+      - .:/app
       - /app/node_modules
+      - /app/.solid
+    networks:
+      - motriforge-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev
+
+  # Nginx (Reverse Proxy for Production)
+  nginx:
+    image: nginx:alpine
+    container_name: motriforge-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - motriforge-network
+    depends_on:
+      - app
+    profiles:
+      - production
+
+  # Database migrations runner
+  migrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.migration
+    container_name: motriforge-migrator
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/motriforge
+    networks:
+      - motriforge-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./src/database/migrations:/migrations
+    profiles:
+      - migration
 
 volumes:
-  mongodb_data:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  motriforge-network:
+    driver: bridge

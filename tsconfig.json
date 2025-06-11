@@ -1,17 +1,78 @@
 {
-  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": [
+      "vite/client",
+      "vitest/globals"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "~/*": [
+        "backend/*"
+      ],
+      "@/*": [
+        "backend/*"
+      ],
+      "@/shared/*": [
+        "backend/shared/*"
+      ],
+      "@/services/*": [
+        "backend/services/*"
+      ],
+      "@/repositories/*": [
+        "backend/repositories/*"
+      ],
+      "@/database/*": [
+        "backend/database/*"
+      ],
+      "@/routes/*": [
+        "backend/routes/*"
+      ],
+      "@/types/*": [
+        "backend/shared/types/*"
+      ],
+      "@/utils/*": [
+        "backend/shared/utils/*"
+      ],
+      "@/constants/*": [
+        "backend/shared/constants/*"
+      ]
+    },
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true
+  },
   "include": [
-    "api/src/**/*",
-    "frontend/src/**/*",
-    "services/*/src/**/*",
-    "shared/**/*",
-    "prisma/**/*"
+    "backend/**/*",
+    "tests/**/*",
+    "*.config.*"
   ],
   "exclude": [
     "node_modules",
-    "**/dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "prisma/node_modules"
+    "dist",
+    "build"
   ]
 }
