@@ -83,7 +83,7 @@ export const eventLog = pgTable('event_log', {
   userId: uuid('user_id'),
   sessionId: uuid('session_id'),
   traceId: uuid('trace_id'),
-  parentEventId: uuid('parent_event_id').references(() => eventLog.id),
+  parentEventId: uuid('parent_event_id'),
   eventData: jsonb('event_data').notNull(),
   contextData: jsonb('context_data'),
   ipAddress: inet('ip_address'),
@@ -92,8 +92,9 @@ export const eventLog = pgTable('event_log', {
   errorDetails: text('error_details'),
   createdBy: uuid('created_by').notNull(),
   occurredAt: timestamp('occurred_at').notNull().defaultNow(),
-  isActive: boolean('is_active').notNull().default(true)
+  isActive: boolean('is_active').notNull().default(true),
 });
+
 
 /**
  * Audit trail for data changes
@@ -186,8 +187,3 @@ export const cacheLog = pgTable('cache_log', {
   occurredAt: timestamp('occurred_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
-
-// Export all tables
-export * from './users';
-export * from './institutions';
-export * from './permissions';
