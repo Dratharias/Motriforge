@@ -24,7 +24,8 @@
     "jsxImportSource": "solid-js",
     "types": [
       "vite/client",
-      "vitest/globals"
+      "vitest/globals",
+      "@solidjs/start/env"
     ],
     "baseUrl": ".",
     "paths": {
@@ -66,10 +67,11 @@
     "noImplicitOverride": true
   },
   "include": [
+    "src/**/*",
     "backend/**/*",
     "tests/**/*",
     "*.config.*"
-  ],
+, "src"  ],
   "exclude": [
     "node_modules",
     "dist",

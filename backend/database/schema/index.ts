@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, jsonb, smallint, inet, integer, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, timestamp, boolean, jsonb, smallint, inet, integer, pgEnum } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 
 // Enums for type safety
@@ -12,15 +12,15 @@ export const actionEnum = pgEnum('action', ['create', 'read', 'update', 'delete'
 
 /**
  * Unified severity system for all observability services
- * Separates type (category) from level (severity intensity)
+ * Renamed to avoid conflict with severity_type enum
  */
-export const severityType = pgTable('severity_type', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
+export const severityClassification = pgTable('severity_classification', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
   level: varchar('level', { length: 20 }).notNull(),
   type: varchar('type', { length: 20 }).notNull(),
   requiresNotification: boolean('requires_notification').notNull().default(false),
   priorityOrder: integer('priority_order').notNull().default(1),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
@@ -30,41 +30,41 @@ export const severityType = pgTable('severity_type', {
  * Consistent with permission system architecture
  */
 export const eventActorType = pgTable('event_actor_type', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
   name: varchar('name', { length: 50 }).notNull().unique(),
   displayName: varchar('display_name', { length: 255 }).notNull(),
   description: text('description'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
 
 export const eventActionType = pgTable('event_action_type', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
   name: varchar('name', { length: 50 }).notNull().unique(),
   displayName: varchar('display_name', { length: 255 }).notNull(),
   description: text('description'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
 
 export const eventScopeType = pgTable('event_scope_type', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
   name: varchar('name', { length: 50 }).notNull().unique(),
   displayName: varchar('display_name', { length: 255 }).notNull(),
   description: text('description'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
 
 export const eventTargetType = pgTable('event_target_type', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
   name: varchar('name', { length: 50 }).notNull().unique(),
   displayName: varchar('display_name', { length: 255 }).notNull(),
   description: text('description'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
@@ -74,47 +74,46 @@ export const eventTargetType = pgTable('event_target_type', {
  * Uses Actor.Action.Scope.Target pattern
  */
 export const eventLog = pgTable('event_log', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
-  eventActorId: uuid('event_actor_id').notNull().references(() => eventActorType.id),
-  eventActionId: uuid('event_action_id').notNull().references(() => eventActionType.id),
-  eventScopeId: uuid('event_scope_id').notNull().references(() => eventScopeType.id),
-  eventTargetId: uuid('event_target_id').notNull().references(() => eventTargetType.id),
-  severityId: uuid('severity_id').notNull().references(() => severityType.id),
-  userId: uuid('user_id'),
-  sessionId: uuid('session_id'),
-  traceId: uuid('trace_id'),
-  parentEventId: uuid('parent_event_id'),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  eventActorId: text('event_actor_id').notNull().references(() => eventActorType.id),
+  eventActionId: text('event_action_id').notNull().references(() => eventActionType.id),
+  eventScopeId: text('event_scope_id').notNull().references(() => eventScopeType.id),
+  eventTargetId: text('event_target_id').notNull().references(() => eventTargetType.id),
+  severityId: text('severity_id').notNull().references(() => severityClassification.id),
+  userId: text('user_id'),
+  sessionId: text('session_id'),
+  traceId: text('trace_id'),
+  parentEventId: text('parent_event_id'),
   eventData: jsonb('event_data').notNull(),
   contextData: jsonb('context_data'),
   ipAddress: inet('ip_address'),
   userAgent: text('user_agent'),
   status: eventStatusEnum('status').notNull().default('completed'),
   errorDetails: text('error_details'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   occurredAt: timestamp('occurred_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true),
 });
-
 
 /**
  * Audit trail for data changes
  * Tracks old/new values for compliance
  */
 export const auditLog = pgTable('audit_log', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
-  userId: uuid('user_id'),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id'),
   entityType: entityTypeEnum('entity_type').notNull(),
-  entityId: uuid('entity_id').notNull(),
+  entityId: text('entity_id').notNull(),
   action: actionEnum('action').notNull(),
   oldValues: jsonb('old_values'),
   newValues: jsonb('new_values'),
   changedFields: jsonb('changed_fields'),
   ipAddress: inet('ip_address'),
   userAgent: text('user_agent'),
-  sessionId: uuid('session_id'),
+  sessionId: text('session_id'),
   reason: text('reason'),
-  auditBatchId: uuid('audit_batch_id'),
-  createdBy: uuid('created_by').notNull(),
+  auditBatchId: text('audit_batch_id'),
+  createdBy: text('created_by').notNull(),
   occurredAt: timestamp('occurred_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
@@ -123,24 +122,24 @@ export const auditLog = pgTable('audit_log', {
  * Error tracking with categorization and severity
  */
 export const errorLog = pgTable('error_log', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
   errorCode: varchar('error_code', { length: 100 }).notNull(),
   errorMessage: varchar('error_message', { length: 500 }).notNull(),
   errorDescription: text('error_description'),
-  severityId: uuid('severity_id').notNull().references(() => severityType.id),
-  userId: uuid('user_id'),
+  severityId: text('severity_id').notNull().references(() => severityClassification.id),
+  userId: text('user_id'),
   sourceComponent: varchar('source_component', { length: 100 }).notNull(),
   sourceMethod: varchar('source_method', { length: 200 }),
   stackTrace: text('stack_trace'),
   contextData: jsonb('context_data'),
   ipAddress: inet('ip_address'),
   userAgent: text('user_agent'),
-  sessionId: uuid('session_id'),
+  sessionId: text('session_id'),
   status: varchar('status', { length: 50 }).notNull().default('new'),
   resolvedAt: timestamp('resolved_at'),
-  resolvedBy: uuid('resolved_by'),
+  resolvedBy: text('resolved_by'),
   resolutionNotes: text('resolution_notes'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   occurredAt: timestamp('occurred_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
@@ -150,20 +149,20 @@ export const errorLog = pgTable('error_log', {
  * Tracks data retention, archival, and deletion
  */
 export const dataLifecycleLog = pgTable('data_lifecycle_log', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
   entityType: entityTypeEnum('entity_type').notNull(),
-  entityId: uuid('entity_id').notNull(),
+  entityId: text('entity_id').notNull(),
   operation: varchar('operation', { length: 50 }).notNull(), // archive, delete, anonymize
   reason: text('reason').notNull(),
-  policyId: uuid('policy_id'),
-  executedBy: uuid('executed_by').notNull(),
+  policyId: text('policy_id'),
+  executedBy: text('executed_by').notNull(),
   executedAt: timestamp('executed_at').notNull().defaultNow(),
   dataSize: integer('data_size_bytes'),
   affectedRecords: integer('affected_records').notNull().default(1),
   operationDetails: text('operation_details'),
   success: boolean('success').notNull().default(true),
   errorMessage: text('error_message'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });
@@ -172,7 +171,7 @@ export const dataLifecycleLog = pgTable('data_lifecycle_log', {
  * Cache performance and invalidation tracking
  */
 export const cacheLog = pgTable('cache_log', {
-  id: uuid('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id').primaryKey().$defaultFn(() => createId()),
   cacheKey: varchar('cache_key', { length: 255 }).notNull(),
   operation: varchar('operation', { length: 50 }).notNull(), // hit, miss, set, invalidate
   strategy: varchar('strategy', { length: 50 }).notNull(), // hot, warm, cold, stream
@@ -180,10 +179,10 @@ export const cacheLog = pgTable('cache_log', {
   responseTime: integer('response_time_ms'),
   dataSize: integer('data_size_bytes'),
   ttl: integer('ttl_seconds'),
-  userId: uuid('user_id'),
-  sessionId: uuid('session_id'),
+  userId: text('user_id'),
+  sessionId: text('session_id'),
   contextData: jsonb('context_data'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: text('created_by').notNull(),
   occurredAt: timestamp('occurred_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true)
 });

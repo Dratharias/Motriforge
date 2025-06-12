@@ -1,8 +1,11 @@
 import { defineConfig } from '@solidjs/start/config';
-import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
-  // Toggle SSR
   ssr: true,
   experimental: {
     islands: false
@@ -30,20 +33,6 @@ export default defineConfig({
     },
     optimizeDeps: {
       exclude: ['postgres']
-    },
-    test: {
-      globals: true,
-      environment: 'jsdom',
-      setupFiles: ['./tests/setup.ts'],
-      coverage: {
-        reporter: ['text', 'json', 'html'],
-        exclude: [
-          'node_modules/',
-          'tests/',
-          '**/*.config.*',
-          'src/database/migrations/'
-        ]
-      }
     }
   }
 });

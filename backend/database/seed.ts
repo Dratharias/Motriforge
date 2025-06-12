@@ -5,7 +5,7 @@
 
 import { db } from './connection';
 import { 
-  severityType,
+  severityClassification,
   eventActorType,
   eventActionType,
   eventScopeType,
@@ -54,7 +54,7 @@ async function seedSeverityTypes() {
     { level: 'high', type: 'lifecycle', requiresNotification: true, priorityOrder: 19 }
   ];
 
-  await db.insert(severityType).values(
+  await db.insert(severityClassification).values(
     severityData.map(data => ({
       ...data,
       createdBy: SYSTEM_USER_ID
@@ -148,7 +148,7 @@ async function seedSampleData() {
     console.log('Seeding development sample data...');
     
     // Get some reference IDs for sample data
-    const severities = await db.select().from(severityType).limit(5);
+    const severities = await db.select().from(severityClassification).limit(5);
     const actors = await db.select().from(eventActorType).limit(3);
     const actions = await db.select().from(eventActionType).limit(3);
     const scopes = await db.select().from(eventScopeType).limit(3);
@@ -158,22 +158,22 @@ async function seedSampleData() {
       // Sample event logs
       await db.insert(eventLog).values([
         {
-          eventActorId: actors[0]?.id,
-          eventActionId: actions[0]?.id,
-          eventScopeId: scopes[0]?.id,
-          eventTargetId: targets[0]?.id,
-          severityId: severities[0]?.id,
+          eventActorId: actors[0]?.id ?? "Unknown",
+          eventActionId: actions[0]?.id ?? "Unknown",
+          eventScopeId: scopes[0]?.id ?? "Unknown",
+          eventTargetId: targets[0]?.id ?? "Unknown",
+          severityId: severities[0]?.id ?? "Unknown",
           eventData: { action: 'system_startup', version: '1.0.0' },
           contextData: { environment: 'development' },
           status: 'completed',
           createdBy: SYSTEM_USER_ID
         },
         {
-          eventActorId: actors[1]?.id,
-          eventActionId: actions[1]?.id,
-          eventScopeId: scopes[1]?.id,
-          eventTargetId: targets[1]?.id,
-          severityId: severities[1]?.id,
+          eventActorId: actors[1]?.id ?? "Unknown",
+          eventActionId: actions[1]?.id ?? "Unknown",
+          eventScopeId: scopes[1]?.id ?? "Unknown",
+          eventTargetId: targets[1]?.id ?? "Unknown",
+          severityId: severities[1]?.id ?? "Unknown",
           eventData: { action: 'database_migration', success: true },
           contextData: { tables_affected: 10 },
           status: 'completed',
