@@ -1,33 +1,25 @@
-# Dockerfile for running database migrations
-FROM node:20-alpine AS migration
+# Migration-specific Dockerfile
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apk add --no-cache \
-  postgresql-client \
-  && rm -rf /var/cache/apk/*
+# Install PostgreSQL client for migration tools
+RUN apk add --no-cache postgresql-client
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY package*.json ./
+COPY tsconfig.json ./
 
 # Install dependencies
 RUN npm ci --only=production
 
 # Copy migration files and scripts
 COPY backend/database ./backend/database
-COPY drizzle.config.ts tsconfig.json ./
-COPY scripts/migrate.sh ./scripts/
+COPY drizzle.config.ts ./
+COPY migrate.sh ./
 
-# Make script executable
-RUN chmod +x ./scripts/migrate.sh
+# Make migration script executable
+RUN chmod +x ./migrate.sh
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-  adduser -S solidjs -u 1001 && \
-  chown -R solidjs:nodejs /app
-
-USER solidjs
-
-# Default command to run migrations
-CMD ["./scripts/migrate.sh"]
+# Set default command
+CMD ["./migrate.sh"]

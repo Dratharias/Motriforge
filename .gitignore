@@ -1,13 +1,101 @@
-.qodo
-node_modules
-.env.dev.local
-.env.prod.local
-.env
-package-lock.json
-public/uploads
-*.zip
-*_old*
-/flatten
-scripts/to-flatten.txt
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-/generated
+# Build outputs
+dist/
+build/
+.output/
+.vinxi/
+.solid/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+logs/**/*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage and test reports
+coverage/
+.nyc_output/
+.coverage/
+*.lcov
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Docker
+.dockerignore
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Package manager
+.npm
+.yarn-integrity
+.pnp.*
+
+# TypeScript
+*.tsbuildinfo
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache
+
+# Drizzle
+drizzle/
+
+# Test results
+test-results/
+playwright-report/
+
+# Local development
+.local/
+
+# Cloudflare
+.wrangler/
+
+# Backup files
+*.backup
+*.bak
+
+# Migration backups
+backend/database/migrations/*.backup
