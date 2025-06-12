@@ -19,9 +19,12 @@ describe('EventService', () => {
   });
 
   beforeEach(async () => {
-    // Clean up test data
+    // Clean up test data - delete dependent records first, then referenced records
+    // First delete from event_log (has foreign keys to other tables)
+    await db.delete(eventLog).where(eq(eventLog.createdBy, 'test'));
+    
+    // Then delete from reference tables (no order dependency between these)
     await Promise.all([
-      db.delete(eventLog).where(eq(eventLog.createdBy, 'test')),
       db.delete(severityClassification).where(eq(severityClassification.createdBy, 'test')),
       db.delete(eventActorType).where(eq(eventActorType.createdBy, 'test')),
       db.delete(eventActionType).where(eq(eventActionType.createdBy, 'test')),
