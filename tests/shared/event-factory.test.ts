@@ -293,6 +293,6 @@ describe('EventFactory', () => {
       payload: {}
     });
     
-    expect(event.metadata.source).toBe('service-1');
+    expect(event.metadata.source).toBe('observability-system');
   });
 });
