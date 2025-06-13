@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import { setupServer } from 'msw/node';
 import { DefaultBodyType, http, HttpResponse } from 'msw';
 import '@testing-library/jest-dom';
@@ -85,6 +85,9 @@ const server = setupServer(
 let testDb: TestDb | null = null;
 
 beforeAll(async () => {
+  // Reset all mocks before starting tests
+  vi.clearAllMocks();
+  
   server.listen({ onUnhandledRequest: 'warn' });
 
   // Only try to setup database if DATABASE_URL is available and not mock
@@ -124,11 +127,18 @@ afterAll(async () => {
 });
 
 beforeEach(() => {
-  // Reset any mocks or state before each test
+  // Reset mocks before each test to ensure isolation
+  vi.clearAllMocks();
+  
+  // Reset module cache to prevent cross-test contamination
+  vi.resetModules();
 });
 
 afterEach(() => {
   server.resetHandlers();
+  
+  // Clean up any remaining mocks
+  vi.restoreAllMocks();
 });
 
 // Global test utilities implementation

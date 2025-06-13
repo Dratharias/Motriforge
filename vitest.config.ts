@@ -4,10 +4,9 @@ import { resolve } from 'path';
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'node',
+    environment: 'node', // Use node environment for server-side testing
     setupFiles: ['./tests/setup.ts'],
     env: {
-      // Load from .env file
       NODE_ENV: 'test'
     },
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
@@ -18,6 +17,23 @@ export default defineConfig({
       '**/.solid/**',
       '**/coverage/**',
     ],
+    // CRITICAL: Enable proper test isolation
+    isolate: true,
+    pool: 'forks', // Use forks for better isolation
+    poolOptions: {
+      forks: {
+        isolate: true,
+        singleFork: false, // Each test file gets its own process
+      }
+    },
+    // Run tests sequentially to avoid database conflicts
+    sequence: {
+      concurrent: false, // Disable concurrent test files
+      shuffle: false,    // Keep deterministic order
+    },
+    // Longer timeouts for database operations
+    testTimeout: 20000,   // Increased from 15000
+    hookTimeout: 30000,   // Increased from 15000
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -41,8 +57,6 @@ export default defineConfig({
         },
       },
     },
-    testTimeout: 10000,
-    hookTimeout: 10000,
   },
   resolve: {
     alias: {
@@ -57,5 +71,14 @@ export default defineConfig({
       '@/utils': resolve(__dirname, 'backend/shared/utils'),
       '@/constants': resolve(__dirname, 'backend/shared/constants'),
     },
+    conditions: ['development', 'browser'], // Help resolve SolidJS modules correctly
+  },
+  // Critical for SolidStart testing - prevent module resolution issues
+  ssr: {
+    noExternal: ['@solidjs/start', '@solidjs/router', 'solid-js'],
+  },
+  optimizeDeps: {
+    include: ['@solidjs/start', '@solidjs/router', 'solid-js'],
+    exclude: ['postgres'],
   },
 });

@@ -1,129 +1,104 @@
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
 import { db } from '../../backend/database/connection';
 import { EventService } from '../../backend/services/observability/event-service';
-import {
-  severityClassification,
-  eventActorType,
-  eventActionType,
-  eventScopeType,
-  eventTargetType,
-  eventLog
-} from '../../backend/database/schema';
-import { eq } from 'drizzle-orm';
+import { TestDatabaseHelper, createTestId } from '../utils/test-database-helper';
 
 describe('EventService', () => {
   let eventService: EventService;
+  let testHelper: TestDatabaseHelper;
+  let currentTestId: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     eventService = new EventService(db);
+    testHelper = new TestDatabaseHelper(db);
+    
+    // Minimal cleanup before starting tests
+    try {
+      await testHelper.cleanTestData('test-event-service');
+    } catch (error) {
+      console.warn('Initial cleanup warning:', error);
+    }
   });
 
   beforeEach(async () => {
-    // Clean up test data - delete dependent records first, then referenced records
-    // First delete from event_log (has foreign keys to other tables)
-    await db.delete(eventLog).where(eq(eventLog.createdBy, 'test'));
-
-    // Then delete from reference tables (no order dependency between these)
-    await Promise.all([
-      db.delete(severityClassification).where(eq(severityClassification.createdBy, 'test')),
-      db.delete(eventActorType).where(eq(eventActorType.createdBy, 'test')),
-      db.delete(eventActionType).where(eq(eventActionType.createdBy, 'test')),
-      db.delete(eventScopeType).where(eq(eventScopeType.createdBy, 'test')),
-      db.delete(eventTargetType).where(eq(eventTargetType.createdBy, 'test'))
-    ]);
-
-    // Set up test data
-    await db.insert(severityClassification).values({
-      level: 'medium',
-      type: 'info',
-      requiresNotification: false,
-      priorityOrder: 1,
-      createdBy: 'test',
-      isActive: true
-    });
-
-    await db.insert(eventActorType).values({
-      name: 'test-user',
-      displayName: 'Test User',
-      description: 'Test user actor',
-      createdBy: 'test',
-      isActive: true
-    });
-
-    await db.insert(eventActionType).values({
-      name: 'test-create',
-      displayName: 'Test Create',
-      description: 'Test create action',
-      createdBy: 'test',
-      isActive: true
-    });
-
-    await db.insert(eventScopeType).values({
-      name: 'test-domain',
-      displayName: 'Test Domain',
-      description: 'Test domain scope',
-      createdBy: 'test',
-      isActive: true
-    });
-
-    await db.insert(eventTargetType).values({
-      name: 'test-resource',
-      displayName: 'Test Resource',
-      description: 'Test resource target',
-      createdBy: 'test',
-      isActive: true
-    });
+    currentTestId = createTestId('event-service');
   });
 
+  afterEach(async () => {
+    // Clean up after each test with timeout protection
+    if (currentTestId) {
+      try {
+        await testHelper.cleanTestData(`test-${currentTestId}`);
+      } catch (error) {
+        console.warn('Test cleanup warning:', error);
+      }
+    }
+  }, 30000); // Increased timeout
+
+  afterAll(async () => {
+    // Final cleanup with timeout protection
+    try {
+      await testHelper.cleanTestData('test-event-service');
+    } catch (error) {
+      console.warn('Final cleanup warning:', error);
+    }
+  }, 30000); // Increased timeout
+
   it('should process valid event with Actor.Action.Scope.Target pattern', async () => {
+    const testData = await testHelper.setupBasicTestData(currentTestId);
+
     const eventRequest = {
-      actor: 'test-user',
-      action: 'test-create',
-      scope: 'test-domain',
-      target: 'test-resource',
+      actor: `${testData.testId}-user`,
+      action: `${testData.testId}-create`,
+      scope: `${testData.testId}-domain`,
+      target: `${testData.testId}-resource`,
       severityType: 'info',
       severityLevel: 'medium',
       userId: 'user-123',
       eventData: { message: 'Test event processing' },
       contextData: { source: 'unit-test' },
-      createdBy: 'test'
+      createdBy: testData.createdBy
     };
 
     const result = await eventService.processEvent(eventRequest);
 
     expect(result.status).toBe('success');
     expect(result.id).toBeDefined();
-    expect(result.pattern).toBe('test-user.test-create.test-domain.test-resource');
+    expect(result.pattern).toBe(`${testData.testId}-user.${testData.testId}-create.${testData.testId}-domain.${testData.testId}-resource`);
     expect(result.eventData).toEqual({ message: 'Test event processing' });
   });
 
   it('should validate Actor.Action.Scope.Target pattern', async () => {
+    const testData = await testHelper.setupBasicTestData(currentTestId);
+
     const validPattern = await eventService.validatePattern(
-      'test-user',
-      'test-create',
-      'test-domain',
-      'test-resource'
+      `${testData.testId}-user`,
+      `${testData.testId}-create`,
+      `${testData.testId}-domain`,
+      `${testData.testId}-resource`
     );
     expect(validPattern).toBe(true);
 
     const invalidPattern = await eventService.validatePattern(
       'invalid-actor',
-      'test-create',
-      'test-domain',
-      'test-resource'
+      `${testData.testId}-create`,
+      `${testData.testId}-domain`,
+      `${testData.testId}-resource`
     );
     expect(invalidPattern).toBe(false);
   });
 
   it('should handle invalid pattern gracefully', async () => {
+    const testData = await testHelper.setupBasicTestData(currentTestId);
+
     const eventRequest = {
       actor: 'invalid-actor',
-      action: 'test-create',
-      scope: 'test-domain',
-      target: 'test-resource',
+      action: `${testData.testId}-create`,
+      scope: `${testData.testId}-domain`,
+      target: `${testData.testId}-resource`,
       severityType: 'info',
       eventData: { message: 'Test with invalid actor' },
-      createdBy: 'test'
+      createdBy: testData.createdBy
     };
 
     const result = await eventService.processEvent(eventRequest);
@@ -133,25 +108,27 @@ describe('EventService', () => {
   });
 
   it('should get events by pattern', async () => {
+    const testData = await testHelper.setupBasicTestData(currentTestId);
+
     // First create an event
     const eventRequest = {
-      actor: 'test-user',
-      action: 'test-create',
-      scope: 'test-domain',
-      target: 'test-resource',
+      actor: `${testData.testId}-user`,
+      action: `${testData.testId}-create`,
+      scope: `${testData.testId}-domain`,
+      target: `${testData.testId}-resource`,
       severityType: 'info',
       eventData: { message: 'Pattern search test' },
-      createdBy: 'test'
+      createdBy: testData.createdBy
     };
 
     await eventService.processEvent(eventRequest);
 
     // Then search for it
     const events = await eventService.getEventsByPattern(
-      'test-user',
-      'test-create',
-      'test-domain',
-      'test-resource'
+      `${testData.testId}-user`,
+      `${testData.testId}-create`,
+      `${testData.testId}-domain`,
+      `${testData.testId}-resource`
     );
 
     expect(events.length).toBeGreaterThan(0);
@@ -159,31 +136,32 @@ describe('EventService', () => {
   });
 
   it('should handle distributed tracing', async () => {
-    const traceId = 'trace-123';
+    const testData = await testHelper.setupBasicTestData(currentTestId);
+    const traceId = `trace-${testData.testId}`;
 
     const parentEvent = {
-      actor: 'test-user',
-      action: 'test-create',
-      scope: 'test-domain',
-      target: 'test-resource',
+      actor: `${testData.testId}-user`,
+      action: `${testData.testId}-create`,
+      scope: `${testData.testId}-domain`,
+      target: `${testData.testId}-resource`,
       severityType: 'info',
       traceId,
       eventData: { message: 'Parent event' },
-      createdBy: 'test'
+      createdBy: testData.createdBy
     };
 
     const parentResult = await eventService.processEvent(parentEvent);
 
     const childEvent = {
-      actor: 'test-user',
-      action: 'test-create',
-      scope: 'test-domain',
-      target: 'test-resource',
+      actor: `${testData.testId}-user`,
+      action: `${testData.testId}-create`,
+      scope: `${testData.testId}-domain`,
+      target: `${testData.testId}-resource`,
       severityType: 'info',
       traceId,
       parentEventId: parentResult.id,
       eventData: { message: 'Child event' },
-      createdBy: 'test'
+      createdBy: testData.createdBy
     };
 
     await eventService.processEvent(childEvent);
@@ -194,5 +172,28 @@ describe('EventService', () => {
     const childEvents = await eventService.getChildEvents(parentResult.id);
     expect(childEvents.length).toBe(1);
     expect(childEvents[0].eventData).toEqual({ message: 'Child event' });
+  });
+
+  it('should use seeded data for common patterns', async () => {
+    // Test using the actual seeded data instead of creating test-specific data
+    const eventRequest = {
+      actor: 'user', // From seed data
+      action: 'create', // From seed data
+      scope: 'domain', // From seed data
+      target: 'resource', // From seed data
+      severityType: 'info',
+      severityLevel: 'low', // Use available severity from seed data
+      userId: 'user-456',
+      eventData: { message: 'Test with seeded data' },
+      contextData: { source: 'seed-test' },
+      createdBy: `test-${currentTestId}`
+    };
+
+    const result = await eventService.processEvent(eventRequest);
+
+    expect(result.status).toBe('success');
+    expect(result.id).toBeDefined();
+    expect(result.pattern).toBe('user.create.domain.resource');
+    expect(result.eventData).toEqual({ message: 'Test with seeded data' });
   });
 });

@@ -26,14 +26,8 @@ describe('LogSearchService', () => {
   });
 
   it('should search logs by text content', async () => {
-    // Skip if log_entry table doesn't exist
-    // Check if log_entry table exists, skip test if not
-    try {
-      await db.execute('SELECT 1 FROM log_entry LIMIT 1');
-    } catch (error) {
-      console.warn('Skipping test - log_entry table not found:', error);
-      return;
-    }
+    // If the log_entry table does not exist, the test will fail naturally.
+    await db.execute('SELECT 1 FROM log_entry LIMIT 1');
 
     const testData = await testHelper.setupBasicTestData(currentTestId);
 
@@ -92,8 +86,8 @@ describe('LogSearchService', () => {
   it('should filter logs by time range', async () => {
     try {
       await db.execute('SELECT 1 FROM log_entry LIMIT 1');
-    } catch {
-      console.warn('Skipping test - log_entry table not found');
+    } catch (error) {
+      console.warn('Skipping test - log_entry table not found:', error);
       return;
     }
 
@@ -214,16 +208,38 @@ describe('LogSearchService', () => {
     }
 
     const testData = await testHelper.setupBasicTestData(currentTestId);
-    await testHelper.insertTestLogEntry(testData, 'User login successful', 'info');
+    const shortId = testData.testId;
+    const actor = testData.actors.find(a => a.name === `${shortId}-user`);
+    const action = testData.actions.find(a => a.name === `${shortId}-create`);
+    const scope = testData.scopes.find(s => s.name === `${shortId}-domain`);
+    const target = testData.targets.find(t => t.name === `${shortId}-resource`);
+
+
+    expect(actor).toBeDefined();
+    expect(action).toBeDefined();
+    expect(scope).toBeDefined();
+    expect(target).toBeDefined();
+
+    await db.execute(sql`
+      INSERT INTO log_entry (
+        event_actor_id, event_action_id, event_scope_id, event_target_id,
+        severity_id, message, context, source_component, created_by
+      ) VALUES (
+        ${actor!.id}, ${action!.id}, ${scope!.id}, ${target!.id},
+        ${testData.severities.find(s => s.type === 'info')!.id},
+        'User login successful', '{}', 'test-component', ${testData.createdBy}
+      )
+    `);
+
+    const expectedPattern = `${shortId}-user.${shortId}-create.${shortId}-domain.${shortId}-resource`;
 
     const patternResults = await logSearchService.searchLogs({
-      pattern: `${currentTestId}-user.${currentTestId}-create.${currentTestId}-domain.${currentTestId}-resource`,
+      pattern: expectedPattern,
       limit: 10
     });
-
     expect(patternResults.results.length).toBeGreaterThan(0);
     patternResults.results.forEach(result => {
-      expect(result.pattern).toBe(`${currentTestId}-user.${currentTestId}-create.${currentTestId}-domain.${currentTestId}-resource`);
+      expect(result.pattern).toBe(expectedPattern);
     });
   });
 

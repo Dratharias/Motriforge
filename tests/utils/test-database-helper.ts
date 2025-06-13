@@ -2,11 +2,17 @@ import { Database } from '~/database/connection';
 import { sql } from 'drizzle-orm';
 
 export class TestDatabaseHelper {
-  constructor(private readonly db: Database) { }
+  private static instanceCount = 0;
+  private readonly instanceId: string;
+
+  constructor(private readonly db: Database) {
+    TestDatabaseHelper.instanceCount++;
+    this.instanceId = `helper-${TestDatabaseHelper.instanceCount}-${Date.now()}`;
+  }
 
   /**
- * Insert a test log entry with specific timestamp - bypasses any default timestamp behavior
- */
+   * Insert a test log entry with specific timestamp - bypasses any default timestamp behavior
+   */
   async insertTestLogEntryWithTimestamp(
     testData: TestDataIds,
     message: string,
@@ -112,134 +118,156 @@ export class TestDatabaseHelper {
     };
   }
 
-
   /**
-   * Clean test data with proper dependency order - FIXED with better error handling
+   * Clean test data with proper dependency order and transaction safety
    */
   async cleanTestData(createdBy: string = 'test'): Promise<void> {
     try {
-      // Step 1: Delete from log_entry first (has foreign keys to everything)
-      await this.db.execute(sql`DELETE FROM log_entry WHERE created_by LIKE ${createdBy + '%'}`);
+      // Use a transaction to ensure atomicity
+      await this.db.transaction(async (tx) => {
+        // Step 1: Delete from log_entry first (has foreign keys to everything)
+        await tx.execute(sql`DELETE FROM log_entry WHERE created_by LIKE ${createdBy + '%'}`);
 
-      // Step 2: Delete from other dependent tables
-      await this.db.execute(sql`DELETE FROM event_log WHERE created_by LIKE ${createdBy + '%'}`);
-      await this.db.execute(sql`DELETE FROM audit_log WHERE created_by LIKE ${createdBy + '%'}`);
-      await this.db.execute(sql`DELETE FROM error_log WHERE created_by LIKE ${createdBy + '%'}`);
+        // Step 2: Delete from other dependent tables
+        await tx.execute(sql`DELETE FROM event_log WHERE created_by LIKE ${createdBy + '%'}`);
+        await tx.execute(sql`DELETE FROM audit_log WHERE created_by LIKE ${createdBy + '%'}`);
+        await tx.execute(sql`DELETE FROM error_log WHERE created_by LIKE ${createdBy + '%'}`);
 
-      // Step 3: Delete from reference tables (in any order now)
-      await this.db.execute(sql`DELETE FROM event_actor_type WHERE created_by LIKE ${createdBy + '%'}`);
-      await this.db.execute(sql`DELETE FROM event_action_type WHERE created_by LIKE ${createdBy + '%'}`);
-      await this.db.execute(sql`DELETE FROM event_scope_type WHERE created_by LIKE ${createdBy + '%'}`);
-      await this.db.execute(sql`DELETE FROM event_target_type WHERE created_by LIKE ${createdBy + '%'}`);
+        // Step 3: Delete from reference tables (in any order now)
+        await tx.execute(sql`DELETE FROM event_actor_type WHERE created_by LIKE ${createdBy + '%'}`);
+        await tx.execute(sql`DELETE FROM event_action_type WHERE created_by LIKE ${createdBy + '%'}`);
+        await tx.execute(sql`DELETE FROM event_scope_type WHERE created_by LIKE ${createdBy + '%'}`);
+        await tx.execute(sql`DELETE FROM event_target_type WHERE created_by LIKE ${createdBy + '%'}`);
 
-      // Step 4: Delete severity_classification LAST
-      await this.db.execute(sql`DELETE FROM severity_classification WHERE created_by LIKE ${createdBy + '%'}`);
+        // Step 4: Delete severity_classification LAST
+        await tx.execute(sql`DELETE FROM severity_classification WHERE created_by LIKE ${createdBy + '%'}`);
+      });
     } catch (error) {
-      console.warn('Test cleanup warning:', error);
+      console.warn(`Test cleanup warning for ${createdBy}:`, error);
       // Continue - don't fail tests due to cleanup issues
     }
   }
 
   /**
-   * Set up basic test data that many tests need
+   * Set up basic test data that many tests need with unique identifiers
    */
   async setupBasicTestData(testId: string): Promise<TestDataIds> {
-    const createdBy = `test-${testId}`;
+    // Create a much shorter unique ID to fit database constraints
+    const shortId = this.createShortId(testId);
+    const createdBy = `test-${shortId}`;
 
-    // Insert basic severity types
-    await this.db.execute(sql`
-      INSERT INTO severity_classification (level, type, requires_notification, priority_order, created_by)
-      VALUES 
-        ('low', 'debug', false, 1, ${createdBy}),
-        ('medium', 'info', false, 4, ${createdBy}),
-        ('high', 'warn', true, 7, ${createdBy}),
-        ('highest', 'error', true, 12, ${createdBy}),
-        ('critical', 'error', true, 13, ${createdBy}),
-        ('high', 'audit', true, 15, ${createdBy})
-      ON CONFLICT (level, type) DO UPDATE SET created_by = EXCLUDED.created_by
-    `);
+    try {
+      // Use a transaction to ensure atomicity
+      return await this.db.transaction(async (tx) => {
+        // Insert basic severity types with unique handling
+        await tx.execute(sql`
+          INSERT INTO severity_classification (level, type, requires_notification, priority_order, created_by)
+          VALUES 
+            ('low', 'debug', false, 1, ${createdBy}),
+            ('medium', 'info', false, 4, ${createdBy}),
+            ('high', 'warn', true, 7, ${createdBy}),
+            ('highest', 'error', true, 12, ${createdBy}),
+            ('critical', 'error', true, 13, ${createdBy}),
+            ('high', 'audit', true, 15, ${createdBy})
+          ON CONFLICT (level, type) DO UPDATE SET created_by = ${createdBy}
+        `);
 
-    // Insert basic actor types
-    await this.db.execute(sql`
-      INSERT INTO event_actor_type (name, display_name, description, created_by)
-      VALUES 
-        (${`${testId}-user`}, 'Test User', 'Test user actor', ${createdBy}),
-        (${`${testId}-system`}, 'Test System', 'Test system actor', ${createdBy}),
-        (${`${testId}-service`}, 'Test Service', 'Test service actor', ${createdBy})
-      ON CONFLICT (name) DO UPDATE SET created_by = EXCLUDED.created_by
-    `);
+        // Insert basic actor types with shorter names
+        await tx.execute(sql`
+          INSERT INTO event_actor_type (name, display_name, description, created_by)
+          VALUES 
+            (${`${shortId}-user`}, 'Test User', 'Test user actor', ${createdBy}),
+            (${`${shortId}-sys`}, 'Test System', 'Test system actor', ${createdBy}),
+            (${`${shortId}-svc`}, 'Test Service', 'Test service actor', ${createdBy})
+          ON CONFLICT (name) DO UPDATE SET created_by = ${createdBy}
+        `);
 
-    // Insert basic action types
-    await this.db.execute(sql`
-      INSERT INTO event_action_type (name, display_name, description, created_by)
-      VALUES 
-        (${`${testId}-create`}, 'Test Create', 'Test create action', ${createdBy}),
-        (${`${testId}-login`}, 'Test Login', 'Test login action', ${createdBy}),
-        (${`${testId}-error`}, 'Test Error', 'Test error action', ${createdBy}),
-        (${`${testId}-update`}, 'Test Update', 'Test update action', ${createdBy})
-      ON CONFLICT (name) DO UPDATE SET created_by = EXCLUDED.created_by
-    `);
+        // Insert basic action types with shorter names
+        await tx.execute(sql`
+          INSERT INTO event_action_type (name, display_name, description, created_by)
+          VALUES 
+            (${`${shortId}-create`}, 'Test Create', 'Test create action', ${createdBy}),
+            (${`${shortId}-login`}, 'Test Login', 'Test login action', ${createdBy}),
+            (${`${shortId}-error`}, 'Test Error', 'Test error action', ${createdBy}),
+            (${`${shortId}-update`}, 'Test Update', 'Test update action', ${createdBy})
+          ON CONFLICT (name) DO UPDATE SET created_by = ${createdBy}
+        `);
 
-    // Insert basic scope types
-    await this.db.execute(sql`
-      INSERT INTO event_scope_type (name, display_name, description, created_by)
-      VALUES 
-        (${`${testId}-domain`}, 'Test Domain', 'Test domain scope', ${createdBy}),
-        (${`${testId}-api`}, 'Test API', 'Test API scope', ${createdBy}),
-        (${`${testId}-system`}, 'Test System', 'Test system scope', ${createdBy})
-      ON CONFLICT (name) DO UPDATE SET created_by = EXCLUDED.created_by
-    `);
+        // Insert basic scope types with shorter names
+        await tx.execute(sql`
+          INSERT INTO event_scope_type (name, display_name, description, created_by)
+          VALUES 
+            (${`${shortId}-domain`}, 'Test Domain', 'Test domain scope', ${createdBy}),
+            (${`${shortId}-api`}, 'Test API', 'Test API scope', ${createdBy}),
+            (${`${shortId}-sys`}, 'Test System', 'Test system scope', ${createdBy})
+          ON CONFLICT (name) DO UPDATE SET created_by = ${createdBy}
+        `);
 
-    // Insert basic target types
-    await this.db.execute(sql`
-      INSERT INTO event_target_type (name, display_name, description, created_by)
-      VALUES 
-        (${`${testId}-resource`}, 'Test Resource', 'Test resource target', ${createdBy}),
-        (${`${testId}-endpoint`}, 'Test Endpoint', 'Test endpoint target', ${createdBy}),
-        (${`${testId}-service`}, 'Test Service', 'Test service target', ${createdBy})
-      ON CONFLICT (name) DO UPDATE SET created_by = EXCLUDED.created_by
-    `);
+        // Insert basic target types with shorter names
+        await tx.execute(sql`
+          INSERT INTO event_target_type (name, display_name, description, created_by)
+          VALUES 
+            (${`${shortId}-resource`}, 'Test Resource', 'Test resource target', ${createdBy}),
+            (${`${shortId}-endpoint`}, 'Test Endpoint', 'Test endpoint target', ${createdBy}),
+            (${`${shortId}-svc`}, 'Test Service', 'Test service target', ${createdBy})
+          ON CONFLICT (name) DO UPDATE SET created_by = ${createdBy}
+        `);
 
-    // Get the IDs for use in tests - FIXED: Query with exact created_by match
-    const severities = await this.db.execute(sql`
-      SELECT id, level, type FROM severity_classification 
-      WHERE created_by = ${createdBy}
-      ORDER BY priority_order
-    `);
+        // Get the IDs for use in tests
+        const severities = await tx.execute(sql`
+          SELECT id, level, type FROM severity_classification 
+          WHERE created_by = ${createdBy}
+          ORDER BY priority_order
+        `);
 
-    const actors = await this.db.execute(sql`
-      SELECT id, name FROM event_actor_type 
-      WHERE created_by = ${createdBy}
-      ORDER BY name
-    `);
+        const actors = await tx.execute(sql`
+          SELECT id, name FROM event_actor_type 
+          WHERE created_by = ${createdBy}
+          ORDER BY name
+        `);
 
-    const actions = await this.db.execute(sql`
-      SELECT id, name FROM event_action_type 
-      WHERE created_by = ${createdBy}
-      ORDER BY name
-    `);
+        const actions = await tx.execute(sql`
+          SELECT id, name FROM event_action_type 
+          WHERE created_by = ${createdBy}
+          ORDER BY name
+        `);
 
-    const scopes = await this.db.execute(sql`
-      SELECT id, name FROM event_scope_type 
-      WHERE created_by = ${createdBy}
-      ORDER BY name
-    `);
+        const scopes = await tx.execute(sql`
+          SELECT id, name FROM event_scope_type 
+          WHERE created_by = ${createdBy}
+          ORDER BY name
+        `);
 
-    const targets = await this.db.execute(sql`
-      SELECT id, name FROM event_target_type 
-      WHERE created_by = ${createdBy}
-      ORDER BY name
-    `);
+        const targets = await tx.execute(sql`
+          SELECT id, name FROM event_target_type 
+          WHERE created_by = ${createdBy}
+          ORDER BY name
+        `);
 
-    return {
-      testId,
-      createdBy,
-      severities: severities as any[],
-      actors: actors as any[],
-      actions: actions as any[],
-      scopes: scopes as any[],
-      targets: targets as any[]
-    };
+        return {
+          testId: shortId,
+          createdBy,
+          severities: severities as any[],
+          actors: actors as any[],
+          actions: actions as any[],
+          scopes: scopes as any[],
+          targets: targets as any[]
+        };
+      });
+    } catch (error) {
+      console.error(`Failed to setup test data for ${shortId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a short ID that fits database constraints (max 20 chars for names)
+   */
+  private createShortId(testId: string): string {
+    const timestamp = Date.now().toString(36).slice(-4); // Last 4 chars of timestamp
+    const randomId = Math.random().toString(36).substring(2, 5); // 3 random chars
+    const cleanName = testId.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 6); // 6 chars max
+    return `${cleanName}${timestamp}${randomId}`; // ~13 chars total, leaving room for suffixes
   }
 
   /**
@@ -277,27 +305,46 @@ export class TestDatabaseHelper {
   }
 
   /**
-   * Clean ALL test data - use with caution - FIXED ORDER
+   * Clean ALL test data with proper locking to prevent race conditions
    */
   async cleanAllTestData(): Promise<void> {
-    // Silently ignore all cleanup errors since tests are working
-    const cleanupQueries = [
-      `DELETE FROM log_entry WHERE created_by LIKE 'test%'`,
-      `DELETE FROM event_log WHERE created_by LIKE 'test%'`,
-      `DELETE FROM audit_log WHERE created_by LIKE 'test%'`,
-      `DELETE FROM error_log WHERE created_by LIKE 'test%'`,
-      `DELETE FROM event_actor_type WHERE created_by LIKE 'test%'`,
-      `DELETE FROM event_action_type WHERE created_by LIKE 'test%'`,
-      `DELETE FROM event_scope_type WHERE created_by LIKE 'test%'`,
-      `DELETE FROM event_target_type WHERE created_by LIKE 'test%'`,
-      `DELETE FROM severity_classification WHERE created_by LIKE 'test%'`
-    ];
+    try {
+      // Use a shorter timeout for the advisory lock
+      const lockResult = await this.db.execute(sql`SELECT pg_try_advisory_lock(12345) as acquired`);
+      const lockAcquired = (lockResult as any[])[0]?.acquired;
+      
+      if (!lockAcquired) {
+        console.warn('Could not acquire advisory lock, skipping cleanup');
+        return;
+      }
+      
+      // Clean up in proper dependency order within a transaction
+      await this.db.transaction(async (tx) => {
+        const cleanupQueries = [
+          `DELETE FROM log_entry WHERE created_by LIKE 'test%'`,
+          `DELETE FROM event_log WHERE created_by LIKE 'test%'`,
+          `DELETE FROM audit_log WHERE created_by LIKE 'test%'`,
+          `DELETE FROM error_log WHERE created_by LIKE 'test%'`,
+          `DELETE FROM event_actor_type WHERE created_by LIKE 'test%'`,
+          `DELETE FROM event_action_type WHERE created_by LIKE 'test%'`,
+          `DELETE FROM event_scope_type WHERE created_by LIKE 'test%'`,
+          `DELETE FROM event_target_type WHERE created_by LIKE 'test%'`,
+          `DELETE FROM severity_classification WHERE created_by LIKE 'test%'`
+        ];
 
-    for (const query of cleanupQueries) {
+        for (const query of cleanupQueries) {
+          await tx.execute(sql.raw(query));
+        }
+      });
+    } catch (error) {
+      console.warn('Global test cleanup warning:', error);
+    } finally {
+      // Always try to release the advisory lock, but don't fail if it's already released
       try {
-        await this.db.execute(sql.raw(query));
-      } catch {
-        // Silently ignore - test isolation is working anyway
+        await this.db.execute(sql`SELECT pg_advisory_unlock(12345)`);
+      } catch (unlockError) {
+        // Log unlock errors for debugging, but do not fail the cleanup process
+        console.warn('Failed to release advisory lock:', unlockError);
       }
     }
   }
@@ -310,9 +357,9 @@ export class TestDatabaseHelper {
     const testData = await this.setupBasicTestData(testId);
 
     return {
-      testId,
+      testId: testData.testId,
       testData,
-      cleanup: () => this.cleanTestData(`test-${testId}`)
+      cleanup: () => this.cleanTestData(testData.createdBy)
     };
   }
 }
@@ -333,10 +380,11 @@ export interface TestEnvironment {
   cleanup: () => Promise<void>;
 }
 
-// Helper function to create unique test IDs
+// Helper function to create unique test IDs with better isolation
 export function createTestId(testName: string): string {
   const timestamp = Date.now().toString(36);
-  const randomId = Math.random().toString(36).substring(2, 7);
-  const cleanName = testName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10);
-  return `${cleanName}-${timestamp}-${randomId}`;
+  const randomId = Math.random().toString(36).substring(2, 5); // Shorter random
+  const processId = process.pid.toString(36).substring(0, 3); // Shorter process ID
+  const cleanName = testName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 6); // Shorter name
+  return `${cleanName}-${processId}-${timestamp.substring(-6)}-${randomId}`; // Max ~20 chars
 }
