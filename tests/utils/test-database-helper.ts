@@ -5,11 +5,11 @@ export class TestDatabaseHelper {
   constructor(private readonly db: Database) {}
 
   /**
-   * Clean test data with proper dependency order
+   * Clean test data with proper dependency order - FIXED
    */
   async cleanTestData(createdBy: string = 'test'): Promise<void> {
     try {
-      // Step 1: Delete from tables with foreign key dependencies first
+      // Step 1: Delete from tables with foreign key dependencies first (in correct order)
       await this.db.execute(sql`DELETE FROM log_entry WHERE created_by LIKE ${createdBy + '%'}`);
       await this.db.execute(sql`DELETE FROM event_log WHERE created_by LIKE ${createdBy + '%'}`);
       await this.db.execute(sql`DELETE FROM audit_log WHERE created_by LIKE ${createdBy + '%'}`);

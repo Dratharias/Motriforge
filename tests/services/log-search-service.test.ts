@@ -230,8 +230,11 @@ describe('LogSearchService', () => {
   });
 
   it('should handle empty search results gracefully', async () => {
+    // FIXED: Search with a unique pattern that definitely won't match existing data
+    const uniqueSearchTerm = `unique-search-${currentTestId}-${Date.now()}`;
+    
     const results = await logSearchService.searchLogs({
-      searchText: 'nonexistent_search_term_12345',
+      searchText: uniqueSearchTerm,
       limit: 10
     });
 

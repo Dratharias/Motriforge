@@ -155,7 +155,13 @@ export class LogSearchService {
   async getFilterOptions(): Promise<{ severityTypes: string[]; severityLevels: string[]; sourceComponents: string[]; patterns: string[] }> {
     const [severityTypes, severityLevels, sourceComponents, patterns] = await Promise.all([
       this.db.execute(sql`SELECT DISTINCT sc.type FROM severity_classification sc WHERE sc.is_active = true ORDER BY sc.type`),
-      this.db.execute(sql`SELECT DISTINCT sc.level FROM severity_classification sc WHERE sc.is_active = true AND sc.level IS NOT NULL ORDER BY sc.priority_order`),
+      // FIXED: Include priority_order in SELECT when using it in ORDER BY
+      this.db.execute(sql`
+        SELECT DISTINCT sc.level, sc.priority_order 
+        FROM severity_classification sc 
+        WHERE sc.is_active = true AND sc.level IS NOT NULL 
+        ORDER BY sc.priority_order
+      `),
       this.db.execute(sql`SELECT DISTINCT le.source_component FROM log_entry le WHERE le.is_active = true ORDER BY le.source_component`),
       this.db.execute(sql`
         SELECT DISTINCT CONCAT(eat.name, '.', eact.name, '.', est.name, '.', ett.name) as pattern
@@ -255,10 +261,24 @@ export class LogSearchService {
       traceId, correlationId, sourceComponent, pattern
     } = query;
 
-    if (severityTypes?.length) conditions.push(sql`sc.type = ANY(${severityTypes})`);
-    if (severityLevels?.length) conditions.push(sql`sc.level = ANY(${severityLevels})`);
-    if (timeFrom) conditions.push(sql`le.logged_at >= ${timeFrom}`);
-    if (timeTo) conditions.push(sql`le.logged_at <= ${timeTo}`);
+    // FIXED: Use IN operator instead of ANY() for better compatibility
+    if (severityTypes?.length) {
+      const typeList = severityTypes.map(t => `'${t.replace(/'/g, "''")}'`).join(',');
+      conditions.push(sql.raw(`sc.type IN (${typeList})`));
+    }
+    if (severityLevels?.length) {
+      const levelList = severityLevels.map(l => `'${l.replace(/'/g, "''")}'`).join(',');
+      conditions.push(sql.raw(`sc.level IN (${levelList})`));
+    }
+    
+    // FIXED: Handle Date objects properly by converting to ISO strings
+    if (timeFrom) {
+      conditions.push(sql`le.logged_at >= ${timeFrom.toISOString()}`);
+    }
+    if (timeTo) {
+      conditions.push(sql`le.logged_at <= ${timeTo.toISOString()}`);
+    }
+    
     if (userId) conditions.push(sql`le.user_id = ${userId}`);
     if (sessionId) conditions.push(sql`le.session_id = ${sessionId}`);
     if (traceId) conditions.push(sql`le.trace_id = ${traceId}`);
