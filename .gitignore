@@ -71,6 +71,7 @@ temp/
 .npm
 .yarn-integrity
 .pnp.*
+.package-lock.json
 
 # TypeScript
 *.tsbuildinfo
