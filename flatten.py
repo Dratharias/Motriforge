@@ -1,42 +1,96 @@
 import argparse
 import os
+from pathlib import Path
+import re
 
-def extract_top_comment_and_content(lines):
-    top_comment = ""
-    if lines and lines[0].startswith("// "):
-        if lines[0].strip().startswith("// folder/"):
-            top_comment = lines[0]
-            content = lines[1:]
+IGNORED_DIRS = {'node_modules', 'flatten', '.vscode', '.solid', '.git', 'dist', 'build', 'coverage', '__pycache__', '.next', '.nuxt', '.cache', '.idea', '.DS_Store'}
+IGNORED_FILES = {'.env', 'package-lock.json', 'flatten.py', 'app.css'}
+
+def is_ignored(path: Path):
+    return (
+        path.is_dir() and path.name in IGNORED_DIRS
+    ) or (
+        path.is_file() and path.name in IGNORED_FILES
+    )
+
+def unique_filename(dest_dir: Path, filename: str) -> str:
+    base, ext = os.path.splitext(filename)
+    counter = 1
+    new_name = filename
+    while (dest_dir / new_name).exists():
+        new_name = f"{base}_{counter}{ext}"
+        counter += 1
+    return new_name
+
+def filter_files(files, in_migrations):
+    """Filter files based on migration status and ignored files."""
+    filtered = []
+    for file in files:
+        if in_migrations:
+            if re.match(r'^0\d{3}_', file):
+                filtered.append(file)
         else:
-            content = lines
-    else:
-        content = lines
-    return top_comment, content
+            if file not in IGNORED_FILES:
+                filtered.append(file)
+    return filtered
 
-def extract_top_comment_and_flatten(src_dir, dest_dir):
-    if not os.path.exists(dest_dir):
-        os.makedirs(dest_dir)
+def build_comment_path(full_path: Path, src_dir: Path):
+    """Build the comment path for the file header."""
+    parts = full_path.parts
+    try:
+        idx = parts.index('Motriforge')
+        return Path(*parts[idx:]).as_posix()
+    except ValueError:
+        return str(full_path.relative_to(src_dir).as_posix())
 
-    for root, _, files in os.walk(src_dir):
-        for f in files:
-            src_path = os.path.join(root, f)
-            with open(src_path, 'r', encoding='utf-8', errors='ignore') as file:
-                lines = file.readlines()
+def read_file_content(full_path: Path):
+    """Read file content, return lines or None on error."""
+    try:
+        with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
+            return f.readlines()
+    except Exception as e:
+        print(f"Erreur lecture fichier {full_path}: {e}")
+        return None
 
-            top_comment, content = extract_top_comment_and_content(lines)
+def write_flattened_file(dest_path: Path, comment_path: str, content):
+    """Write the flattened file with comment header."""
+    try:
+        with open(dest_path, 'w', encoding='utf-8') as out:
+            out.write(f"// {comment_path}\n")
+            out.writelines(content)
+    except Exception as e:
+        print(f"Erreur écriture fichier {dest_path}: {e}")
 
-            dest_path = os.path.join(dest_dir, f)
-            with open(dest_path, 'w', encoding='utf-8') as out_file:
-                if top_comment:
-                    out_file.write(top_comment)
-                out_file.writelines(content)
+def flatten_directory(src_dir: Path, dest_dir: Path):
+    if not dest_dir.exists():
+        dest_dir.mkdir(parents=True)
+
+    for root, dirs, files in os.walk(src_dir):
+        dirs[:] = [d for d in dirs if d not in IGNORED_DIRS]
+        root_path = Path(root)
+        in_migrations = 'migrations' in root_path.parts
+
+        filtered_files = filter_files(files, in_migrations)
+        for file in filtered_files:
+            full_path = root_path / file
+            comment_path = build_comment_path(full_path, src_dir)
+            content = read_file_content(full_path)
+            if content is None:
+                continue
+            unique_name = unique_filename(dest_dir, file)
+            dest_path = dest_dir / unique_name
+            write_flattened_file(dest_path, comment_path, content)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Flatten directory files and extract top comment.")
-    parser.add_argument('--dir', required=True, help="Source directory to flatten")
+    parser = argparse.ArgumentParser(description="Flatten directory and add relative path comment.")
+    parser.add_argument('--dir', required=True, help="Source directory (ex: Motriforge)")
     args = parser.parse_args()
 
-    extract_top_comment_and_flatten(args.dir, './flatten')
+    src_dir = Path(args.dir).resolve()
+    dest_dir = Path('./flatten').resolve()
+
+    flatten_directory(src_dir, dest_dir)
 
 if __name__ == "__main__":
     main()

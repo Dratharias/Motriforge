@@ -9,7 +9,7 @@ import {
 import { LogSearchService, LogSearchQuery } from './log-search-service';
 import { EventBus, ObservabilityEvent, EventHandler } from '~/shared/event-bus/event-bus';
 import { EventFactory } from '~/shared/factories/event-factory';
-import { sql } from 'drizzle-orm';
+import { logEntry } from '~/database/schema/log-search';
 import { createId } from '@paralleldrive/cuid2';
 
 export interface LoggingConfig {
@@ -318,7 +318,7 @@ export class LoggingService implements EventHandler {
   }
 
   /**
-   * Store log entry in database
+   * Store log entry in database - FIXED to not include search_vector
    */
   private async storeLogEntry(request: LogRequest): Promise<LogEntry> {
     // Resolve Actor.Action.Scope.Target components
@@ -333,32 +333,38 @@ export class LoggingService implements EventHandler {
     const correlationId = request.correlationId ?? createId();
     const pattern = `${request.actor}.${request.action}.${request.scope}.${request.target}`;
 
-    // Insert into log_entry table
-    const result = await this.db.execute(sql`
-      INSERT INTO log_entry (
-        event_actor_id, event_action_id, event_scope_id, event_target_id,
-        severity_id, message, context, correlation_id, trace_id, parent_event_id,
-        user_id, session_id, source_component, source_file, line_number,
-        stack_trace, ip_address, user_agent, created_by
-      ) VALUES (
-        ${actor.id}, ${action.id}, ${scope.id}, ${target.id},
-        ${severity.id}, ${request.message}, ${JSON.stringify(request.context ?? {})},
-        ${correlationId}, ${request.traceId}, ${request.parentEventId},
-        ${request.userId}, ${request.sessionId}, ${request.sourceComponent},
-        ${request.sourceFile}, ${request.lineNumber}, ${request.stackTrace},
-        ${request.ipAddress}, ${request.userAgent}, 'logging-service'
-      ) RETURNING id, logged_at
-    `) as any;
+    // Use Drizzle's insert method - REMOVED search_vector field
+    const result = await this.db.insert(logEntry).values({
+      eventActorId: actor.id,
+      eventActionId: action.id,
+      eventScopeId: scope.id,
+      eventTargetId: target.id,
+      severityId: severity.id,
+      message: request.message,
+      context: request.context ?? {},
+      correlationId,
+      traceId: request.traceId ?? null,
+      parentEventId: request.parentEventId ?? null,
+      userId: request.userId ?? null,
+      sessionId: request.sessionId ?? null,
+      sourceComponent: request.sourceComponent,
+      sourceFile: request.sourceFile ?? null,
+      lineNumber: request.lineNumber ?? null,
+      stackTrace: request.stackTrace ?? null,
+      ipAddress: request.ipAddress ?? null,
+      userAgent: request.userAgent ?? null,
+      createdBy: 'logging-service'
+    }).returning({ id: logEntry.id, loggedAt: logEntry.loggedAt });
 
     return {
-      id: result[0].id,
+      id: result[0]!.id,
       pattern,
       message: request.message,
       severityType: request.severityType,
       severityLevel: request.severityLevel ?? this.getDefaultLevelForType(request.severityType),
       sourceComponent: request.sourceComponent,
       context: request.context ?? {},
-      loggedAt: new Date(result[0].logged_at),
+      loggedAt: result[0]!.loggedAt,
       correlationId
     };
   }

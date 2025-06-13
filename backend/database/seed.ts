@@ -26,7 +26,7 @@ async function seedSeverityTypes() {
     { level: 'low', type: 'debug', requiresNotification: false, priorityOrder: 1 },
     { level: 'medium', type: 'debug', requiresNotification: false, priorityOrder: 2 },
     
-    // Info severities
+    // Info severities  
     { level: 'low', type: 'info', requiresNotification: false, priorityOrder: 3 },
     { level: 'medium', type: 'info', requiresNotification: false, priorityOrder: 4 },
     { level: 'high', type: 'info', requiresNotification: true, priorityOrder: 5 },
@@ -60,6 +60,8 @@ async function seedSeverityTypes() {
       createdBy: SYSTEM_USER_ID
     }))
   ).onConflictDoNothing();
+
+  console.log(`Seeded ${severityData.length} severity classifications (19 total)`);
 }
 
 async function seedEventTypes() {
@@ -81,7 +83,7 @@ async function seedEventTypes() {
     }))
   ).onConflictDoNothing();
 
-  // Action types
+  // Action types - FIXED: Added missing action types
   const actionTypes = [
     { name: 'create', displayName: 'Create', description: 'Creating new resources' },
     { name: 'read', displayName: 'Read', description: 'Reading or accessing resources' },
@@ -92,7 +94,13 @@ async function seedEventTypes() {
     { name: 'access', displayName: 'Access', description: 'Accessing protected resources' },
     { name: 'modify', displayName: 'Modify', description: 'Modifying configurations or settings' },
     { name: 'error', displayName: 'Error', description: 'Error conditions or failures' },
-    { name: 'complete', displayName: 'Complete', description: 'Successful completion of operations' }
+    { name: 'complete', displayName: 'Complete', description: 'Successful completion of operations' },
+    // ADDED MISSING ACTIONS
+    { name: 'start', displayName: 'Start', description: 'Starting processes or operations' },
+    { name: 'stop', displayName: 'Stop', description: 'Stopping processes or operations' },
+    { name: 'retry', displayName: 'Retry', description: 'Retrying failed operations' },
+    { name: 'validate', displayName: 'Validate', description: 'Validating data or operations' },
+    { name: 'process', displayName: 'Process', description: 'Processing data or requests' }
   ];
 
   await db.insert(eventActionType).values(
@@ -111,7 +119,10 @@ async function seedEventTypes() {
     { name: 'session', displayName: 'Session', description: 'Session-level scope' },
     { name: 'api', displayName: 'API', description: 'API operation scope' },
     { name: 'database', displayName: 'Database', description: 'Database operation scope' },
-    { name: 'cache', displayName: 'Cache', description: 'Cache operation scope' }
+    { name: 'cache', displayName: 'Cache', description: 'Cache operation scope' },
+    // ADDED MORE SCOPE TYPES
+    { name: 'security', displayName: 'Security', description: 'Security-related scope' },
+    { name: 'workflow', displayName: 'Workflow', description: 'Workflow processing scope' }
   ];
 
   await db.insert(eventScopeType).values(
@@ -132,7 +143,10 @@ async function seedEventTypes() {
     { name: 'api', displayName: 'API', description: 'API endpoints' },
     { name: 'file', displayName: 'File', description: 'File resources' },
     { name: 'configuration', displayName: 'Configuration', description: 'System configurations' },
-    { name: 'service', displayName: 'Service', description: 'Service instances' }
+    { name: 'service', displayName: 'Service', description: 'Service instances' },
+    // ADDED MORE TARGET TYPES
+    { name: 'endpoint', displayName: 'Endpoint', description: 'API endpoints' },
+    { name: 'process', displayName: 'Process', description: 'System processes' }
   ];
 
   await db.insert(eventTargetType).values(
@@ -141,6 +155,8 @@ async function seedEventTypes() {
       createdBy: SYSTEM_USER_ID
     }))
   ).onConflictDoNothing();
+
+  console.log(`Seeded ${actorTypes.length} actors, ${actionTypes.length} actions, ${scopeTypes.length} scopes, ${targetTypes.length} targets`);
 }
 
 async function seedSampleData() {

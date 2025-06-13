@@ -1,224 +1,178 @@
 import { Database } from '~/database/connection';
-import { EventBus } from '~/shared/event-bus/event-bus';
-import { LoggingService } from './logging/logging-service';
-import { LogSearchService } from './logging/log-search-service';
-
-export interface ObservabilityServices {
-  eventBus: EventBus;
-  loggingService: LoggingService;
-  logSearchService: LogSearchService;
-}
+import { EventBus, EventBusConfig } from '~/shared/event-bus/event-bus';
+import { LoggingService, LoggingConfig } from './logging/logging-service';
+import { LogSearchService, LogSearchQuery } from './logging/log-search-service';
+import { EventService } from './event-service';
 
 export interface ObservabilityConfig {
-  logging: {
-    maxMessageLength: number;
-    maxContextSize: number;
-    enableFileLogging: boolean;
-    logFilePath: string;
-    batchSize: number;
-    flushIntervalMs: number;
-    enableSearch: boolean;
-    retentionDays: number;
-  };
-  eventBus: {
-    maxListeners: number;
-    batchSize: number;
-    flushIntervalMs: number;
-    retryAttempts: number;
-  };
+  logging: LoggingConfig;
+  eventBus: EventBusConfig;
 }
 
+export interface ObservabilityServices {
+  loggingService: LoggingService;
+  logSearchService: LogSearchService;
+  eventService: EventService;
+}
+
+export interface ObservabilityStats {
+  initialized: boolean;
+  eventBus: {
+    handlersCount: number;
+    eventTypes: string[];
+    queuedEvents: number;
+  };
+  config: ObservabilityConfig;
+}
+
+/**
+ * Main observability system that manages all observability services
+ */
 export class ObservabilitySystem {
-  private static instance: ObservabilitySystem;
+  private static instance: ObservabilitySystem | null = null;
+  
+  private readonly db: Database;
+  private readonly eventBus: EventBus;
   private readonly services: ObservabilityServices;
+  private readonly config: ObservabilityConfig;
   private initialized = false;
 
-  constructor(
-    private readonly db: Database,
-    private readonly config: ObservabilityConfig
-  ) {
-    this.services = this.initializeServices();
+  private constructor(db: Database, config: ObservabilityConfig) {
+    this.db = db;
+    this.config = config;
+    this.eventBus = new EventBus(config.eventBus);
+    
+    // Initialize services
+    this.services = {
+      loggingService: new LoggingService(db, this.eventBus, config.logging),
+      logSearchService: new LogSearchService(db),
+      eventService: new EventService(db)
+    };
   }
 
-  static getInstance(db: Database, config?: Partial<ObservabilityConfig>): ObservabilitySystem {
+  /**
+   * Get singleton instance
+   */
+  static getInstance(db?: Database, config?: ObservabilityConfig): ObservabilitySystem {
     if (!ObservabilitySystem.instance) {
-      const defaultConfig: ObservabilityConfig = {
-        logging: {
-          maxMessageLength: 2000,
-          maxContextSize: 10000,
-          enableFileLogging: process.env.NODE_ENV === 'development',
-          logFilePath: 'logs/application.log',
-          batchSize: 100,
-          flushIntervalMs: 5000,
-          enableSearch: true,
-          retentionDays: 90
-        },
-        eventBus: {
-          maxListeners: 50,
-          batchSize: 100,
-          flushIntervalMs: 5000,
-          retryAttempts: 3
-        }
-      };
-
-      const mergedConfig = {
-        logging: { ...defaultConfig.logging, ...config?.logging },
-        eventBus: { ...defaultConfig.eventBus, ...config?.eventBus }
-      };
-
-      ObservabilitySystem.instance = new ObservabilitySystem(db, mergedConfig);
+      if (!db || !config) {
+        throw new Error('Database and config required for first getInstance call');
+      }
+      ObservabilitySystem.instance = new ObservabilitySystem(db, config);
     }
     return ObservabilitySystem.instance;
   }
 
-  private initializeServices(): ObservabilityServices {
-    console.log('Initializing Observability System...');
-
-    // Initialize EventBus
-    const eventBus = new EventBus(this.config.eventBus);
-
-    // Initialize services
-    const logSearchService = new LogSearchService(this.db);
-    const loggingService = new LoggingService(this.db, eventBus, this.config.logging);
-
-    console.log('Observability System initialized successfully');
-
-    return {
-      eventBus,
-      loggingService,
-      logSearchService
-    };
-  }
-
+  /**
+   * Initialize the observability system
+   */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
-
-    console.log('Starting Observability System...');
+    if (this.initialized) {
+      return;
+    }
 
     try {
-      // Ensure database is ready
-      await this.db.execute('SELECT 1');
-
-      // Log system startup
+      // Create a startup log entry to test the system
       await this.services.loggingService.info(
-        'system', 'start', 'observability', 'service',
-        'Observability system started successfully',
-        {
-          config: {
-            logging: this.config.logging,
-            eventBus: this.config.eventBus
-          },
+        'system', 
+        'start', 
+        'system', 
+        'service',
+        'ObservabilitySystem initialized successfully',
+        { 
+          version: '1.0.0',
+          environment: process.env.NODE_ENV ?? 'development',
           timestamp: new Date().toISOString()
         },
         'observability-system'
       );
 
       this.initialized = true;
-      console.log('✅ Observability System ready');
-
+      console.log('✅ ObservabilitySystem initialized successfully');
     } catch (error) {
-      console.error('❌ Failed to initialize Observability System:', error);
+      console.error('❌ ObservabilitySystem initialization failed:', error);
       throw error;
     }
   }
 
-  async shutdown(): Promise<void> {
-    if (!this.initialized) return;
-
-    console.log('Shutting down Observability System...');
-
-    try {
-      // Log system shutdown
-      await this.services.loggingService.info(
-        'system', 'shutdown', 'observability', 'service',
-        'Observability system shutting down',
-        { timestamp: new Date().toISOString() },
-        'observability-system'
-      );
-
-      // Shutdown services
-      await this.services.loggingService.shutdown();
-      await this.services.eventBus.shutdown();
-
-      this.initialized = false;
-      console.log('✅ Observability System shutdown complete');
-
-    } catch (error) {
-      console.error('❌ Error during Observability System shutdown:', error);
-      throw error;
-    }
-  }
-
+  /**
+   * Get all services
+   */
   getServices(): ObservabilityServices {
-    if (!this.initialized) {
-      throw new Error('Observability System not initialized. Call initialize() first.');
-    }
     return this.services;
   }
 
-  // Convenience methods for common operations
-  async log(
-    params: {
-      actor: string;
-      action: string;
-      scope: string;
-      target: string;
-      severityType: 'debug' | 'info' | 'warn' | 'error';
-      message: string;
-      context?: Record<string, any>;
-      sourceComponent?: string;
-    }
-  ) {
-    const {
-      actor,
-      action,
-      scope,
-      target,
-      severityType,
-      message,
-      context,
-      sourceComponent = 'application'
-    } = params;
-
-    const logRequest: any = {
-      actor,
-      action,
-      scope,
-      target,
-      severityType,
-      message,
-      sourceComponent
-    };
-    if (context !== undefined) {
-      logRequest.context = context;
-    }
-    return this.services.loggingService.log(logRequest);
-  }
-
-  async searchLogs(query: any) {
-    return this.services.loggingService.searchLogs(query);
-  }
-
-  async analyzePatterns(hoursBack: number = 24) {
-    return this.services.loggingService.analyzePatterns(hoursBack);
-  }
-
-  getStats() {
+  /**
+   * Get system statistics
+   */
+  getStats(): ObservabilityStats {
     return {
-      eventBus: this.services.eventBus.getStats(),
       initialized: this.initialized,
+      eventBus: this.eventBus.getStats(),
       config: this.config
     };
   }
+
+  /**
+   * Search logs (convenience method)
+   */
+  async searchLogs(query: LogSearchQuery) {
+    return this.services.logSearchService.searchLogs(query);
+  }
+
+  /**
+   * Analyze log patterns (convenience method)
+   */
+  async analyzePatterns(hoursBack: number = 24) {
+    return this.services.logSearchService.analyzePatterns(hoursBack);
+  }
+
+  /**
+   * Shutdown the observability system
+   */
+  async shutdown(): Promise<void> {
+    try {
+      // Shutdown services in reverse order
+      await this.services.loggingService.shutdown();
+      await this.eventBus.shutdown();
+      
+      this.initialized = false;
+      ObservabilitySystem.instance = null;
+      
+      console.log('✅ ObservabilitySystem shutdown complete');
+    } catch (error) {
+      console.error('❌ ObservabilitySystem shutdown failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reset singleton (for testing)
+   */
+  static reset(): void {
+    ObservabilitySystem.instance = null;
+  }
 }
 
-// Export types for external use
-export type { LogSearchQuery } from './logging/log-search-service';
-export type { LogRequest, LogEntry } from './logging/logging-service';
-export type { ObservabilityEvent } from '~/shared/event-bus/event-bus';
+// Default configuration
+export const defaultObservabilityConfig: ObservabilityConfig = {
+  logging: {
+    maxMessageLength: 2000,
+    maxContextSize: 10000,
+    enableFileLogging: process.env.NODE_ENV === 'development',
+    logFilePath: 'logs/application.log',
+    batchSize: 100,
+    flushIntervalMs: 5000,
+    enableSearch: true,
+    retentionDays: 90
+  },
+  eventBus: {
+    maxListeners: 50,
+    batchSize: 10,
+    flushIntervalMs: 100,
+    retryAttempts: 2
+  }
+};
 
-// Export services for direct access if needed
-export { LoggingService } from './logging/logging-service';
-export { LogSearchService } from './logging/log-search-service';
-export { EventBus } from '~/shared/event-bus/event-bus';
-export { EventFactory } from '~/shared/factories/event-factory';
+// Export for convenience
+export { LoggingService, LogSearchService, EventService };
