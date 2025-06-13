@@ -30,7 +30,7 @@ export interface ObservabilityStats {
  */
 export class ObservabilitySystem {
   private static instance: ObservabilitySystem | null = null;
-  
+
   private readonly db: Database;
   private readonly eventBus: EventBus;
   private readonly services: ObservabilityServices;
@@ -41,7 +41,7 @@ export class ObservabilitySystem {
     this.db = db;
     this.config = config;
     this.eventBus = new EventBus(config.eventBus);
-    
+
     // Initialize services
     this.services = {
       loggingService: new LoggingService(db, this.eventBus, config.logging),
@@ -74,12 +74,12 @@ export class ObservabilitySystem {
     try {
       // Create a startup log entry to test the system
       await this.services.loggingService.info(
-        'system', 
-        'start', 
-        'system', 
+        'system',
+        'start',
+        'system',
         'service',
         'ObservabilitySystem initialized successfully',
-        { 
+        {
           version: '1.0.0',
           environment: process.env.NODE_ENV ?? 'development',
           timestamp: new Date().toISOString()
@@ -135,10 +135,10 @@ export class ObservabilitySystem {
       // Shutdown services in reverse order
       await this.services.loggingService.shutdown();
       await this.eventBus.shutdown();
-      
+
       this.initialized = false;
       ObservabilitySystem.instance = null;
-      
+
       console.log('✅ ObservabilitySystem shutdown complete');
     } catch (error) {
       console.error('❌ ObservabilitySystem shutdown failed:', error);

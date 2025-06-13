@@ -27,7 +27,7 @@ describe('Test Setup', () => {
       eventData: { test: 'data' },
       occurredAt: new Date(),
     };
-    
+
     expect(mockUser.id).toBe('test-user-id');
     expect(mockUser.email).toBe('test@example.com');
     expect(mockEvent.eventData).toEqual({ test: 'data' });

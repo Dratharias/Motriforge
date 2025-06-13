@@ -20,21 +20,21 @@ export const actorActionPatternSchema = z.object({
 /**
  * Severity system types
  */
-export type SeverityLevel = 
-  | 'negligeable' 
-  | 'lowest' 
-  | 'low' 
-  | 'medium' 
-  | 'high' 
-  | 'highest' 
+export type SeverityLevel =
+  | 'negligeable'
+  | 'lowest'
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'highest'
   | 'critical';
 
-export type SeverityType = 
-  | 'debug' 
-  | 'info' 
-  | 'warn' 
-  | 'error' 
-  | 'audit' 
+export type SeverityType =
+  | 'debug'
+  | 'info'
+  | 'warn'
+  | 'error'
+  | 'audit'
   | 'lifecycle';
 
 export interface SeverityClassification {

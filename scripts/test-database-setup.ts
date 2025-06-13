@@ -8,7 +8,7 @@ config();
 
 async function setupTestDatabase(): Promise<void> {
   console.log('🔧 Setting up test database...');
-  
+
   try {
     // Check if DATABASE_URL is available
     if (!process.env.DATABASE_URL) {
@@ -16,15 +16,15 @@ async function setupTestDatabase(): Promise<void> {
       console.log('💡 Make sure you have a .env file with DATABASE_URL configured');
       process.exit(1);
     }
-    
+
     // Verify database connection
     await db.execute(sql`SELECT 1`);
     console.log('✅ Database connection verified');
-    
+
     // Seed the database with base data
     console.log('🌱 Seeding database with base data...');
     await seedDatabase();
-    
+
     console.log('✅ Test database setup complete');
   } catch (error) {
     console.error('❌ Test database setup failed:', error);
@@ -34,7 +34,7 @@ async function setupTestDatabase(): Promise<void> {
 
 async function cleanupTestDatabase(): Promise<void> {
   console.log('🧹 Cleaning up test database...');
-  
+
   try {
     // Clean up test data only, not the schema or base seed data
     const cleanupQueries = [
@@ -56,7 +56,7 @@ async function cleanupTestDatabase(): Promise<void> {
         console.warn(`⚠️  Cleanup warning: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
-    
+
     console.log('✅ Test database cleanup complete');
   } catch (error) {
     console.error('❌ Cleanup failed:', error);

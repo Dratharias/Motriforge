@@ -53,9 +53,9 @@ export interface LifecycleEventRequest extends EventCreationRequest {
 
 export class EventFactory {
   private static instance: EventFactory;
-  
-  constructor(private readonly defaultSource: string = 'observability-system') {}
-  
+
+  constructor(private readonly defaultSource: string = 'observability-system') { }
+
   static getInstance(defaultSource?: string): EventFactory {
     if (!EventFactory.instance) {
       EventFactory.instance = new EventFactory(defaultSource);
@@ -69,7 +69,7 @@ export class EventFactory {
   createEvent(request: EventCreationRequest): ObservabilityEvent {
     const pattern = `${request.actor}.${request.action}.${request.scope}.${request.target}`;
     const correlationId = request.correlationId ?? createId();
-    
+
     return {
       id: createId(),
       type: 'observability.event',
@@ -87,11 +87,11 @@ export class EventFactory {
         source: request.source ?? this.defaultSource,
         ...(request.severityType
           ? {
-              severity: {
-                type: request.severityType,
-                level: request.severityLevel ?? this.getDefaultLevelForType(request.severityType)
-              }
+            severity: {
+              type: request.severityType,
+              level: request.severityLevel ?? this.getDefaultLevelForType(request.severityType)
             }
+          }
           : {})
       }
     };
@@ -102,7 +102,7 @@ export class EventFactory {
    */
   createLogEvent(request: LogEventRequest): ObservabilityEvent {
     const baseEvent = this.createEvent(request);
-    
+
     return {
       ...baseEvent,
       type: 'observability.log',
@@ -122,7 +122,7 @@ export class EventFactory {
    */
   createAuditEvent(request: AuditEventRequest): ObservabilityEvent {
     const baseEvent = this.createEvent(request);
-    
+
     return {
       ...baseEvent,
       type: 'observability.audit',
@@ -148,7 +148,7 @@ export class EventFactory {
       severityType: request.severityType ?? 'error',
       severityLevel: request.severityLevel ?? 'high'
     });
-    
+
     return {
       ...baseEvent,
       type: 'observability.error',
@@ -172,7 +172,7 @@ export class EventFactory {
       severityType: request.severityType ?? 'lifecycle',
       severityLevel: request.severityLevel ?? 'medium'
     });
-    
+
     return {
       ...baseEvent,
       type: 'observability.lifecycle',
@@ -192,8 +192,8 @@ export class EventFactory {
    */
   createEventBatch(requests: EventCreationRequest[]): ObservabilityEvent[] {
     const correlationId = createId();
-    
-    return requests.map(request => 
+
+    return requests.map(request =>
       this.createEvent({
         ...request,
         correlationId: request.correlationId ?? correlationId
@@ -205,11 +205,11 @@ export class EventFactory {
    * Create event from existing pattern for chaining
    */
   createChildEvent(
-    parentEvent: ObservabilityEvent, 
+    parentEvent: ObservabilityEvent,
     request: Partial<EventCreationRequest>
   ): ObservabilityEvent {
-    const [actor, action, scope, target] = parentEvent.pattern.split('.');
-    
+    const [actor, action, scope, target] = parentEvent.pattern ? parentEvent.pattern.split('.') : [undefined, undefined, undefined, undefined];
+
     return this.createEvent({
       actor: actor ?? 'unknown',
       action: action ?? 'unknown',
@@ -230,12 +230,12 @@ export class EventFactory {
    * Validate event pattern
    */
   validatePattern(actor: string, action: string, scope: string, target: string): boolean {
-    const isValidComponent = (component: string) => 
-      typeof component === 'string' && 
-      component.length > 0 && 
+    const isValidComponent = (component: string) =>
+      typeof component === 'string' &&
+      component.length > 0 &&
       component.length <= 50 &&
       /^[a-z][a-z0-9_]*$/.test(component);
-    
+
     return [actor, action, scope, target].every(isValidComponent);
   }
 
@@ -245,13 +245,13 @@ export class EventFactory {
   private getDefaultLevelForType(type: string): string {
     const defaults: Record<string, string> = {
       'debug': 'low',
-      'info': 'medium', 
+      'info': 'medium',
       'warn': 'medium',
       'error': 'high',
       'audit': 'medium',
       'lifecycle': 'low'
     };
-    
+
     return defaults[type] ?? 'medium';
   }
 
@@ -266,7 +266,7 @@ export class EventFactory {
   ): ObservabilityEvent {
     // Auto-detect pattern components from source
     const { actor, scope, target } = this.detectPatternFromSource(source);
-    
+
     return this.createEvent({
       actor,
       action,

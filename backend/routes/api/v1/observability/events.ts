@@ -62,7 +62,7 @@ export async function POST(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Event processing error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: 'Internal server error',
@@ -162,7 +162,7 @@ export async function GET(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Event query error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: 'Internal server error',

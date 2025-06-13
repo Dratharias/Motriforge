@@ -49,7 +49,7 @@ export async function POST(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Pattern validation error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: 'Internal server error',

@@ -58,7 +58,7 @@ export class EventLogRepository extends BaseRepository<EventLogEntry, typeof eve
     } = options;
 
     const orderFn = orderDirection === 'asc' ? asc : desc;
-    
+
     const result = await this.db
       .select()
       .from(eventLog)

@@ -1,4 +1,3 @@
-// global.d.ts
 import { MockUser, MockEvent } from './setup';
 
 declare global {
@@ -8,4 +7,4 @@ declare global {
   };
 }
 
-export {}; // Ensure this file is treated as a module
+export { }; // Ensure this file is treated as a module

@@ -162,7 +162,7 @@ describe('EventFactory', () => {
     const events = eventFactory.createEventBatch(requests);
 
     expect(events.length).toBe(3);
-    
+
     // All events should have the same correlation ID
     const correlationIds = events.map(e => e.metadata.correlationId);
     expect(new Set(correlationIds).size).toBe(1);
@@ -280,10 +280,10 @@ describe('EventFactory', () => {
   it('should handle singleton pattern correctly', () => {
     const factory1 = EventFactory.getInstance('service-1');
     const factory2 = EventFactory.getInstance('service-2');
-    
+
     // Should return the same instance
     expect(factory1).toBe(factory2);
-    
+
     // Should use the first provided source
     const event = factory1.createEvent({
       actor: 'test',
@@ -292,7 +292,7 @@ describe('EventFactory', () => {
       target: 'test',
       payload: {}
     });
-    
+
     expect(event.metadata.source).toBe('observability-system');
   });
 });

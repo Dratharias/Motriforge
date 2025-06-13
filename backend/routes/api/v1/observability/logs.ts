@@ -111,7 +111,7 @@ export async function POST(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Log creation error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: error instanceof Error ? error.message : 'Internal server error',
@@ -186,7 +186,7 @@ export async function GET(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Log search error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: error instanceof Error ? error.message : 'Internal server error',
@@ -203,9 +203,9 @@ export async function GET_patterns(event: APIEvent): Promise<Response> {
   try {
     const url = new URL(event.request.url);
     const correlationId = createId();
-    
+
     const hoursBack = parseInt(url.searchParams.get('hoursBack') ?? '24');
-    
+
     if (hoursBack < 1 || hoursBack > 168) { // Max 1 week
       return json({
         success: false,
@@ -229,7 +229,7 @@ export async function GET_patterns(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Pattern analysis error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: error instanceof Error ? error.message : 'Internal server error',
@@ -246,7 +246,7 @@ export async function GET_trace(event: APIEvent): Promise<Response> {
   try {
     const url = new URL(event.request.url);
     const correlationId = createId();
-    
+
     // Extract trace ID from path
     const pathParts = url.pathname.split('/');
     const traceId = pathParts[pathParts.length - 1];
@@ -274,7 +274,7 @@ export async function GET_trace(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Trace logs error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: error instanceof Error ? error.message : 'Internal server error',
@@ -290,7 +290,7 @@ export async function GET_trace(event: APIEvent): Promise<Response> {
 export async function GET_filters(event: APIEvent): Promise<Response> {
   try {
     const correlationId = createId();
-    
+
     const filterOptions = await loggingService.getFilterOptions();
 
     return json({
@@ -302,7 +302,7 @@ export async function GET_filters(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Filter options error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: error instanceof Error ? error.message : 'Internal server error',
@@ -359,7 +359,7 @@ export async function POST_quick(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Quick log error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: error instanceof Error ? error.message : 'Internal server error',

@@ -46,7 +46,7 @@ describe('Logging API Endpoints', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(true);
     expect(responseData.data).toBeDefined();
@@ -75,7 +75,7 @@ describe('Logging API Endpoints', () => {
     });
 
     expect(response.status).toBe(400);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(false);
     expect(responseData.error).toBe('Invalid log request data');
@@ -110,9 +110,9 @@ describe('Logging API Endpoints', () => {
     });
 
     const response = await fetch(`${baseUrl}/api/v1/observability/logs?${searchParams}`);
-    
+
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(true);
     expect(responseData.data).toBeDefined();
@@ -143,12 +143,12 @@ describe('Logging API Endpoints', () => {
     });
 
     const response = await fetch(`${baseUrl}/api/v1/observability/logs?${searchParams}`);
-    
+
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(true);
-    
+
     if (responseData.data.results.length > 0) {
       responseData.data.results.forEach((result: any) => {
         expect(result.severityType).toBe('error');
@@ -174,7 +174,7 @@ describe('Logging API Endpoints', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(true);
     expect(responseData.data).toBeDefined();
@@ -184,9 +184,9 @@ describe('Logging API Endpoints', () => {
 
   it('should get filter options via GET /api/v1/observability/logs/filters', async () => {
     const response = await fetch(`${baseUrl}/api/v1/observability/logs/filters`);
-    
+
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(true);
     expect(responseData.data).toBeDefined();
@@ -218,9 +218,9 @@ describe('Logging API Endpoints', () => {
     });
 
     const response = await fetch(`${baseUrl}/api/v1/observability/logs/analytics/patterns?${searchParams}`);
-    
+
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(true);
     expect(responseData.data).toBeDefined();
@@ -236,9 +236,9 @@ describe('Logging API Endpoints', () => {
     });
 
     const response = await fetch(`${baseUrl}/api/v1/observability/logs/analytics/patterns?${searchParams}`);
-    
+
     expect(response.status).toBe(400);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(false);
     expect(responseData.error).toContain('hoursBack must be between 1 and 168');
@@ -246,7 +246,7 @@ describe('Logging API Endpoints', () => {
 
   it('should get logs by trace ID', async () => {
     const traceId = 'api-test-trace-123';
-    
+
     // Create logs with same trace ID
     await fetch(`${baseUrl}/api/v1/observability/logs`, {
       method: 'POST',
@@ -279,9 +279,9 @@ describe('Logging API Endpoints', () => {
     });
 
     const response = await fetch(`${baseUrl}/api/v1/observability/logs/trace/${traceId}`);
-    
+
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(true);
     expect(responseData.data).toBeDefined();
@@ -293,9 +293,9 @@ describe('Logging API Endpoints', () => {
 
   it('should handle invalid trace ID requests', async () => {
     const response = await fetch(`${baseUrl}/api/v1/observability/logs/trace/`);
-    
+
     expect(response.status).toBe(400);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(false);
     expect(responseData.error).toBe('Trace ID required');
@@ -308,9 +308,9 @@ describe('Logging API Endpoints', () => {
     });
 
     const response = await fetch(`${baseUrl}/api/v1/observability/logs?${searchParams}`);
-    
+
     expect(response.status).toBe(400);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(false);
     expect(responseData.error).toBe('Invalid search parameters');
@@ -328,7 +328,7 @@ describe('Logging API Endpoints', () => {
     });
 
     expect(response.status).toBe(500);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(false);
     expect(responseData.error).toBeDefined();
@@ -337,7 +337,7 @@ describe('Logging API Endpoints', () => {
 
   it('should include correlation IDs in all responses', async () => {
     const response = await fetch(`${baseUrl}/api/v1/observability/logs/filters`);
-    
+
     const responseData = await response.json();
     expect(responseData.correlationId).toBeDefined();
     expect(typeof responseData.correlationId).toBe('string');
@@ -347,7 +347,7 @@ describe('Logging API Endpoints', () => {
   it('should handle time range filtering', async () => {
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-    
+
     const searchParams = new URLSearchParams({
       timeFrom: oneHourAgo.toISOString(),
       timeTo: now.toISOString(),
@@ -355,9 +355,9 @@ describe('Logging API Endpoints', () => {
     });
 
     const response = await fetch(`${baseUrl}/api/v1/observability/logs?${searchParams}`);
-    
+
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     expect(responseData.success).toBe(true);
     expect(responseData.data.results).toBeDefined();

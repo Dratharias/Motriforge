@@ -1,11 +1,11 @@
 import { Database } from '~/database/connection';
-import { 
-  SeverityRepository, 
-  EventActorRepository, 
-  EventActionRepository, 
-  EventScopeRepository, 
+import {
+  SeverityRepository,
+  EventActorRepository,
+  EventActionRepository,
+  EventScopeRepository,
   EventTargetRepository,
-  EventLogRepository 
+  EventLogRepository
 } from '../../repositories/observability';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -62,7 +62,7 @@ export class EventService {
   /**
    * Process and store an event following Actor.Action.Scope.Target pattern
    */
-  async processEvent(request: EventRequest): Promise<ProcessedEvent> {    
+  async processEvent(request: EventRequest): Promise<ProcessedEvent> {
     try {
       // Validate and resolve Actor.Action.Scope.Target components
       const [actor, action, scope, target, severity] = await Promise.all([
@@ -108,7 +108,7 @@ export class EventService {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+
       return {
         id: createId(),
         pattern: `${request.actor}.${request.action}.${request.scope}.${request.target}`,
@@ -155,10 +155,10 @@ export class EventService {
    * Get events by pattern with pagination
    */
   async getEventsByPattern(
-    actor: string, 
-    action: string, 
-    scope: string, 
-    target: string, 
+    actor: string,
+    action: string,
+    scope: string,
+    target: string,
     options: { limit?: number; offset?: number } = {}
   ): Promise<any[]> {
     try {
@@ -216,7 +216,7 @@ export class EventService {
   private async resolveSeverity(type: string, level?: string) {
     // If level is not provided, use default for the type
     const effectiveLevel = level ?? this.getDefaultLevelForType(type);
-    
+
     const severity = await this.severityRepo.findByTypeAndLevel(type, effectiveLevel);
     if (!severity) {
       throw new Error(`Unknown severity: ${type}.${effectiveLevel}`);

@@ -14,7 +14,7 @@ export async function GET(event: APIEvent): Promise<Response> {
   try {
     const url = new URL(event.request.url);
     const correlationId = createId();
-    
+
     // Extract event ID from path
     const pathParts = url.pathname.split('/');
     const eventId = pathParts[pathParts.length - 2]; // -1 is 'children', -2 is the ID
@@ -42,7 +42,7 @@ export async function GET(event: APIEvent): Promise<Response> {
   } catch (error) {
     const correlationId = createId();
     console.error(`Child events query error [${correlationId}]:`, error);
-    
+
     return json({
       success: false,
       error: 'Internal server error',

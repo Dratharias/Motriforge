@@ -51,17 +51,17 @@ export interface LogSummary {
 }
 
 export class LogSearchService {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: Database) { }
 
   async searchLogs(query: LogSearchQuery): Promise<{ results: LogSearchResult[]; total: number; hasMore: boolean }> {
-    const { limit = 100, offset = 0 } = query;
-    
+    const { limit = 100, offset = 0, searchText } = query;
+
     // Build search conditions
     const conditions = this.buildConditions(query);
-    
+
     const [results, count] = await Promise.all([
       this.executeSearchQuery(query, conditions, limit, offset),
-      this.executeCountQuery(conditions)
+      this.executeCountQuery(conditions, searchText)
     ]);
 
     const total = count?.[0]?.total ?? 0;
@@ -84,7 +84,7 @@ export class LogSearchService {
         uniqueUsers: parseInt(row.unique_users)
       }));
     } catch (error) {
-      console.warn('Pattern analysis function not available, falling back to basic query');
+      console.warn('Pattern analysis function not available, falling back to basic query', error);
       return this.analyzePatternsFallback(hoursBack);
     }
   }
@@ -106,8 +106,8 @@ export class LogSearchService {
         uniqueSessions: parseInt(row.unique_sessions)
       }));
     } catch (error) {
-      console.warn('Log summary view not available');
-      return [];
+      console.error('Log summary view not available', error);
+      throw error;
     }
   }
 
@@ -116,24 +116,26 @@ export class LogSearchService {
   }
 
   async getChildLogs(parentEventId: string): Promise<LogSearchResult[]> {
-    const results = await this.db.execute(sql`
-      SELECT 
-        le.id, le.message,
-        sc.type as severity_type,
-        sc.level as severity_level,
-        le.source_component, le.source_file,
-        le.logged_at, le.context,
-        le.trace_id, le.correlation_id, le.user_id,
-        CONCAT(eat.name, '.', eact.name, '.', est.name, '.', ett.name) as pattern,
-        0 as rank
-      FROM log_entry le
-      ${this.buildJoins()}
-      WHERE le.parent_event_id = ${parentEventId} AND le.is_active = true
-      ORDER BY le.logged_at ASC
-    `) as any[];
+    const result = await this.db.execute(sql`
+    SELECT 
+      le.id, le.message,
+      sc.type as severity_type,
+      sc.level as severity_level,
+      le.source_component, le.source_file,
+      le.logged_at, le.context,
+      le.trace_id, le.correlation_id, le.user_id,
+      CONCAT(eat.name, '.', eact.name, '.', est.name, '.', ett.name) as pattern,
+      0 as rank,
+      EXTRACT(EPOCH FROM le.logged_at) * 1000 AS logged_at_ms
+    FROM log_entry le
+    ${this.buildJoins()}
+    WHERE le.parent_event_id = ${parentEventId} AND le.is_active = true
+    ORDER BY le.logged_at ASC
+  `);
 
-    return results.map(this.mapToLogSearchResult);
+    return (result as any[]).map(this.mapToLogSearchResult);
   }
+
 
   async getSuggestions(partialQuery: string, limit = 10): Promise<string[]> {
     try {
@@ -147,7 +149,7 @@ export class LogSearchService {
 
       return results.map(row => row.word);
     } catch (error) {
-      console.warn('Search suggestions not available');
+      console.warn('Search suggestions not available', error);
       return [];
     }
   }
@@ -185,15 +187,17 @@ export class LogSearchService {
       await this.db.execute(sql`SELECT refresh_log_summary()`);
     } catch (error) {
       console.warn('refresh_log_summary function not available');
+      throw error;
     }
   }
 
   private async executeSearchQuery(query: LogSearchQuery, conditions: any[], limit: number, offset: number): Promise<any[]> {
     const { searchText } = query;
-    
-    if (searchText && searchText.trim()) {
-      // Full-text search query
-      return this.db.execute(sql`
+
+    if (searchText?.trim()) {
+      // Try full-text search first
+      try {
+        const result = await this.db.execute(sql`
         SELECT 
           le.id, le.message,
           sc.type AS severity_type,
@@ -202,7 +206,8 @@ export class LogSearchService {
           le.logged_at, le.context,
           le.trace_id, le.correlation_id, le.user_id,
           CONCAT(eat.name, '.', eact.name, '.', est.name, '.', ett.name) AS pattern,
-          ts_rank(le.search_vector, websearch_to_tsquery('english', ${searchText})) AS rank
+          ts_rank(le.search_vector, websearch_to_tsquery('english', ${searchText})) AS rank,
+          EXTRACT(EPOCH FROM le.logged_at) * 1000 AS logged_at_ms
         FROM log_entry le
         ${this.buildJoins()}
         WHERE ${this.combineConditions([
@@ -211,10 +216,12 @@ export class LogSearchService {
         ])}
         ORDER BY rank DESC, le.logged_at DESC
         LIMIT ${limit} OFFSET ${offset}
-      `) as Promise<any[]>;
-    } else {
-      // Regular query without search
-      return this.db.execute(sql`
+      `);
+        return result as any[];
+      } catch (error) {
+        // If full-text search fails, fall back to LIKE search
+        console.warn('Full-text search failed, using LIKE search:', error);
+        const result = await this.db.execute(sql`
         SELECT 
           le.id, le.message,
           sc.type AS severity_type,
@@ -223,23 +230,79 @@ export class LogSearchService {
           le.logged_at, le.context,
           le.trace_id, le.correlation_id, le.user_id,
           CONCAT(eat.name, '.', eact.name, '.', est.name, '.', ett.name) AS pattern,
-          0 AS rank
+          0 AS rank,
+          EXTRACT(EPOCH FROM le.logged_at) * 1000 AS logged_at_ms
         FROM log_entry le
         ${this.buildJoins()}
-        ${conditions.length > 0 ? sql`WHERE ${this.combineConditions(conditions)}` : sql``}
+        WHERE ${this.combineConditions([
+          sql`le.message ILIKE ${'%' + searchText + '%'}`,
+          ...conditions
+        ])}
         ORDER BY le.logged_at DESC
         LIMIT ${limit} OFFSET ${offset}
-      `) as Promise<any[]>;
+      `);
+        return result as any[];
+      }
+    } else {
+      // Regular query without search
+      const result = await this.db.execute(sql`
+      SELECT 
+        le.id, le.message,
+        sc.type AS severity_type,
+        sc.level AS severity_level,
+        le.source_component, le.source_file,
+        le.logged_at, le.context,
+        le.trace_id, le.correlation_id, le.user_id,
+        CONCAT(eat.name, '.', eact.name, '.', est.name, '.', ett.name) AS pattern,
+        0 AS rank,
+        EXTRACT(EPOCH FROM le.logged_at) * 1000 AS logged_at_ms
+      FROM log_entry le
+      ${this.buildJoins()}
+      ${conditions.length > 0 ? sql`WHERE ${this.combineConditions(conditions)}` : sql``}
+      ORDER BY le.logged_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `);
+      return result as any[];
     }
   }
 
-  private async executeCountQuery(conditions: any[]): Promise<any[]> {
-    return this.db.execute(sql`
+  private async executeCountQuery(conditions: any[], searchText?: string): Promise<any[]> {
+    if (searchText?.trim()) {
+      // Try full-text search count first
+      try {
+        const result = await this.db.execute(sql`
+        SELECT COUNT(*)::int AS total
+        FROM log_entry le
+        ${this.buildJoins()}
+        WHERE ${this.combineConditions([
+          sql`le.search_vector @@ websearch_to_tsquery('english', ${searchText})`,
+          ...conditions
+        ])}
+      `);
+        return result as any[];
+      } catch (error) {
+        console.warn('Full-text search count failed, using LIKE search count:', error);
+        const result = await this.db.execute(sql`
+        SELECT COUNT(*)::int AS total
+        FROM log_entry le
+        ${this.buildJoins()}
+        WHERE ${this.combineConditions([
+          sql`le.message ILIKE ${'%' + searchText + '%'}`,
+          ...conditions
+        ])}
+      `);
+        return result as any[];
+      }
+    } else {
+      // Regular count query
+      const result = await this.db.execute(sql`
       SELECT COUNT(*)::int AS total
       FROM log_entry le
       ${this.buildJoins()}
       ${conditions.length > 0 ? sql`WHERE ${this.combineConditions(conditions)}` : sql``}
-    `) as Promise<any[]>;
+    `);
+      return result as any[];
+    }
   }
 
   private buildJoins(): any {
@@ -254,46 +317,79 @@ export class LogSearchService {
 
   private buildConditions(query: LogSearchQuery): any[] {
     const conditions: any[] = [sql`le.is_active = true`];
-    
-    const {
-      severityTypes, severityLevels,
-      timeFrom, timeTo, userId, sessionId,
-      traceId, correlationId, sourceComponent, pattern
-    } = query;
 
-    // FIXED: Use IN operator instead of ANY() for better compatibility
+    conditions.push(
+      ...this.buildSeverityConditions(query.severityTypes, query.severityLevels),
+      ...this.buildTimeConditions(query.timeFrom, query.timeTo),
+      ...this.buildUserSessionConditions(query.userId, query.sessionId),
+      ...this.buildTraceCorrelationConditions(query.traceId, query.correlationId),
+      ...this.buildSourceComponentCondition(query.sourceComponent),
+      ...this.buildPatternConditions(query.pattern)
+    );
+
+    return conditions.filter(Boolean);
+  }
+
+  private buildSeverityConditions(severityTypes?: string[], severityLevels?: string[]): any[] {
+    const conditions: any[] = [];
     if (severityTypes?.length) {
-      const typeList = severityTypes.map(t => `'${t.replace(/'/g, "''")}'`).join(',');
-      conditions.push(sql.raw(`sc.type IN (${typeList})`));
+      if (severityTypes.length === 1) {
+        conditions.push(sql`sc.type = ${severityTypes[0]}`);
+      } else {
+        const placeholders = severityTypes.map(type => sql`${type}`);
+        const sqlTypes = sql.join(placeholders, sql`, `);
+        conditions.push(sql`sc.type IN (${sqlTypes})`);
+      }
     }
     if (severityLevels?.length) {
-      const levelList = severityLevels.map(l => `'${l.replace(/'/g, "''")}'`).join(',');
-      conditions.push(sql.raw(`sc.level IN (${levelList})`));
+      if (severityLevels.length === 1) {
+        conditions.push(sql`sc.level = ${severityLevels[0]}`);
+      } else {
+        const placeholders = severityLevels.map(level => sql`${level}`);
+        const sqlLevels = sql.join(placeholders, sql`, `);
+        conditions.push(sql`sc.level IN (${sqlLevels})`);
+      }
     }
-    
-    // FIXED: Handle Date objects properly by converting to ISO strings
+    return conditions;
+  }
+
+  private buildTimeConditions(timeFrom?: Date, timeTo?: Date): any[] {
+    const conditions: any[] = [];
     if (timeFrom) {
       conditions.push(sql`le.logged_at >= ${timeFrom.toISOString()}`);
     }
     if (timeTo) {
       conditions.push(sql`le.logged_at <= ${timeTo.toISOString()}`);
     }
-    
+    return conditions;
+  }
+
+  private buildUserSessionConditions(userId?: string, sessionId?: string): any[] {
+    const conditions: any[] = [];
     if (userId) conditions.push(sql`le.user_id = ${userId}`);
     if (sessionId) conditions.push(sql`le.session_id = ${sessionId}`);
+    return conditions;
+  }
+
+  private buildTraceCorrelationConditions(traceId?: string, correlationId?: string): any[] {
+    const conditions: any[] = [];
     if (traceId) conditions.push(sql`le.trace_id = ${traceId}`);
     if (correlationId) conditions.push(sql`le.correlation_id = ${correlationId}`);
-    if (sourceComponent) conditions.push(sql`le.source_component = ${sourceComponent}`);
+    return conditions;
+  }
 
-    // Pattern conditions
-    if (pattern) {
-      const [actor, action, scope, target] = pattern.split('.');
-      if (actor && actor !== '*') conditions.push(sql`eat.name = ${actor}`);
-      if (action && action !== '*') conditions.push(sql`eact.name = ${action}`);
-      if (scope && scope !== '*') conditions.push(sql`est.name = ${scope}`);
-      if (target && target !== '*') conditions.push(sql`ett.name = ${target}`);
-    }
+  private buildSourceComponentCondition(sourceComponent?: string): any[] {
+    return sourceComponent ? [sql`le.source_component = ${sourceComponent}`] : [];
+  }
 
+  private buildPatternConditions(pattern?: string): any[] {
+    if (!pattern) return [];
+    const [actor, action, scope, target] = pattern.split('.');
+    const conditions: any[] = [];
+    if (actor && actor !== '*') conditions.push(sql`eat.name = ${actor}`);
+    if (action && action !== '*') conditions.push(sql`eact.name = ${action}`);
+    if (scope && scope !== '*') conditions.push(sql`est.name = ${scope}`);
+    if (target && target !== '*') conditions.push(sql`ett.name = ${target}`);
     return conditions;
   }
 
@@ -304,22 +400,35 @@ export class LogSearchService {
   }
 
   private mapToLogSearchResult(row: any): LogSearchResult {
+    let context: Record<string, any> | undefined;
+    if (row.context) {
+      if (typeof row.context === 'string') {
+        context = JSON.parse(row.context);
+      } else {
+        context = row.context;
+      }
+    } else {
+      context = undefined;
+    }
+
     return {
       id: row.id,
       message: row.message,
       severityType: row.severity_type,
-      severityLevel: row.severity_level || 'medium',
+      severityLevel: row.severity_level ?? 'medium',
       sourceComponent: row.source_component,
       sourceFile: row.source_file,
-      loggedAt: new Date(row.logged_at),
+      // FIXED: Use epoch milliseconds to avoid timezone conversion issues
+      loggedAt: new Date(parseFloat(row.logged_at_ms)),
       rank: parseFloat(row.rank ?? '0'),
-      context: row.context ? (typeof row.context === 'string' ? JSON.parse(row.context) : row.context) : undefined,
+      context: context ?? {},
       traceId: row.trace_id,
       correlationId: row.correlation_id,
       userId: row.user_id,
       pattern: row.pattern
     };
   }
+
 
   private async analyzePatternsFallback(hoursBack: number): Promise<LogPatternAnalysis[]> {
     const results = await this.db.execute(sql`

@@ -21,8 +21,8 @@ export async function GET(_event: APIEvent): Promise<Response> {
     const healthCheck: HealthCheckResponse = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version || '1.0.0',
-      environment: process.env.NODE_ENV || 'development',
+      version: process.env.npm_package_version ?? '1.0.0',
+      environment: process.env.NODE_ENV ?? 'development',
       services: {
         database: 'healthy',
         cache: 'healthy',
@@ -40,8 +40,8 @@ export async function GET(_event: APIEvent): Promise<Response> {
     }
 
     const statusCode = healthCheck.status === 'healthy' ? 200 : 503;
-    
-    return json(healthCheck, { 
+
+    return json(healthCheck, {
       status: statusCode,
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -50,14 +50,14 @@ export async function GET(_event: APIEvent): Promise<Response> {
     });
   } catch (error) {
     console.error('Health check endpoint error:', error);
-    
+
     return json(
       {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
         error: 'Internal server error during health check',
       },
-      { 
+      {
         status: 500,
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',

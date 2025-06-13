@@ -24,7 +24,7 @@ export abstract class BaseRepository<
     protected db: Database,
     protected table: TTable,
     protected defaultOrderBy: keyof TTable['_']['columns'] = 'createdAt'
-  ) {}
+  ) { }
 
   async findById(id: string, options: RepositoryOptions = {}): Promise<T | null> {
     const { includeInactive = false } = options;
@@ -47,37 +47,37 @@ export abstract class BaseRepository<
     return result[0] as T || null;
   }
 
-async findMany(options: RepositoryOptions = {}): Promise<T[]> {
-  const {
-    includeInactive = false,
-    limit = 50,
-    offset = 0,
-    orderBy = this.defaultOrderBy,
-    orderDirection = 'desc'
-  } = options;
+  async findMany(options: RepositoryOptions = {}): Promise<T[]> {
+    const {
+      includeInactive = false,
+      limit = 50,
+      offset = 0,
+      orderBy = this.defaultOrderBy,
+      orderDirection = 'desc'
+    } = options;
 
-  const conditions = [];
-  if (!includeInactive) {
-    conditions.push(eq(this.table._.columns.isActive, true));
+    const conditions = [];
+    if (!includeInactive) {
+      conditions.push(eq(this.table._.columns.isActive, true));
+    }
+
+    const column = this.table._.columns[orderBy];
+    if (!column) {
+      throw new Error(`Invalid orderBy column: ${String(orderBy)}`);
+    }
+
+    const orderFn = orderDirection === 'asc' ? asc : desc;
+
+    const result = await this.db
+      .select()
+      .from(this.table as any)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(orderFn(column))
+      .limit(limit)
+      .offset(offset);
+
+    return result as T[];
   }
-
-  const column = this.table._.columns[orderBy];
-  if (!column) {
-    throw new Error(`Invalid orderBy column: ${String(orderBy)}`);
-  }
-
-  const orderFn = orderDirection === 'asc' ? asc : desc;
-
-  const result = await this.db
-    .select()
-    .from(this.table as any)
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(orderFn(column))
-    .limit(limit)
-    .offset(offset);
-
-  return result as T[];
-}
 
 
   async count(options: RepositoryOptions = {}): Promise<number> {

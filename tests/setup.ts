@@ -11,8 +11,8 @@ config({ path: resolve(process.cwd(), '.env.test') });
 
 // Set test environment variables with defaults
 process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL = process.env.DATABASE_URL || 
-  process.env.TEST_DATABASE_URL || 
+process.env.DATABASE_URL = process.env.DATABASE_URL ??
+  process.env.TEST_DATABASE_URL ??
   'postgresql://postgres:postgres@localhost:5433/motriforge_test';
 
 // Define minimal interface for the test database client based on usage
@@ -59,7 +59,7 @@ const server = setupServer(
     '/api/health',
     () => {
       return HttpResponse.json(
-        { 
+        {
           status: 'healthy',
           timestamp: new Date().toISOString(),
           services: {
@@ -69,7 +69,7 @@ const server = setupServer(
           version: '0.1.0',
           environment: 'test'
         },
-        { 
+        {
           status: 200,
           headers: {
             'content-type': 'application/json',
@@ -86,7 +86,7 @@ let testDb: TestDb | null = null;
 
 beforeAll(async () => {
   server.listen({ onUnhandledRequest: 'warn' });
-  
+
   // Only try to setup database if DATABASE_URL is available and not mock
   if (process.env.DATABASE_URL && !process.env.VITEST_MOCK_DB) {
     try {

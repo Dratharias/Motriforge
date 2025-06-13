@@ -12,7 +12,7 @@ describe('Health API', () => {
     try {
       const response = await fetch(`${API_URL}/api/health`);
       const data = await response.json();
-      
+
       expect(response.status).toBe(200);
       expect(data.status).toBe('healthy');
       expect(data.services.database).toBe('healthy');
@@ -29,7 +29,7 @@ describe('Health API', () => {
   it('should have proper headers', async () => {
     try {
       const response = await fetch(`${API_URL}/api/health`);
-      
+
       expect(response.headers.get('content-type')).toBe('application/json');
       expect(response.headers.get('cache-control')).toBe('no-cache, no-store, must-revalidate');
     } catch (error) {

@@ -4,7 +4,7 @@
  */
 
 import { db } from './connection';
-import { 
+import {
   severityClassification,
   eventActorType,
   eventActionType,
@@ -20,34 +20,34 @@ const SYSTEM_USER_ID = 'system';
 
 async function seedSeverityTypes() {
   console.log('Seeding severity types...');
-  
+
   const severityData = [
     // Debug severities
     { level: 'low', type: 'debug', requiresNotification: false, priorityOrder: 1 },
     { level: 'medium', type: 'debug', requiresNotification: false, priorityOrder: 2 },
-    
+
     // Info severities  
     { level: 'low', type: 'info', requiresNotification: false, priorityOrder: 3 },
     { level: 'medium', type: 'info', requiresNotification: false, priorityOrder: 4 },
     { level: 'high', type: 'info', requiresNotification: true, priorityOrder: 5 },
-    
+
     // Warning severities
     { level: 'medium', type: 'warn', requiresNotification: false, priorityOrder: 6 },
     { level: 'high', type: 'warn', requiresNotification: true, priorityOrder: 7 },
     { level: 'highest', type: 'warn', requiresNotification: true, priorityOrder: 8 },
-    
+
     // Error severities
     { level: 'low', type: 'error', requiresNotification: false, priorityOrder: 9 },
     { level: 'medium', type: 'error', requiresNotification: true, priorityOrder: 10 },
     { level: 'high', type: 'error', requiresNotification: true, priorityOrder: 11 },
     { level: 'highest', type: 'error', requiresNotification: true, priorityOrder: 12 },
     { level: 'critical', type: 'error', requiresNotification: true, priorityOrder: 13 },
-    
+
     // Audit severities
     { level: 'medium', type: 'audit', requiresNotification: false, priorityOrder: 14 },
     { level: 'high', type: 'audit', requiresNotification: true, priorityOrder: 15 },
     { level: 'critical', type: 'audit', requiresNotification: true, priorityOrder: 16 },
-    
+
     // Lifecycle severities
     { level: 'low', type: 'lifecycle', requiresNotification: false, priorityOrder: 17 },
     { level: 'medium', type: 'lifecycle', requiresNotification: false, priorityOrder: 18 },
@@ -66,7 +66,7 @@ async function seedSeverityTypes() {
 
 async function seedEventTypes() {
   console.log('Seeding event types...');
-  
+
   // Actor types
   const actorTypes = [
     { name: 'user', displayName: 'User', description: 'End user performing actions' },
@@ -162,7 +162,7 @@ async function seedEventTypes() {
 async function seedSampleData() {
   if (process.env.NODE_ENV === 'development') {
     console.log('Seeding development sample data...');
-    
+
     // Get some reference IDs for sample data
     const severities = await db.select().from(severityClassification).limit(5);
     const actors = await db.select().from(eventActorType).limit(3);
@@ -229,11 +229,11 @@ async function seedSampleData() {
 async function main() {
   try {
     console.log('🌱 Starting database seeding...');
-    
+
     await seedSeverityTypes();
     await seedEventTypes();
     await seedSampleData();
-    
+
     console.log('✅ Database seeding completed successfully!');
   } catch (error) {
     console.error('❌ Database seeding failed:', error);

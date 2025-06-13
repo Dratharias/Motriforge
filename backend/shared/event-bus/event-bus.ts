@@ -105,7 +105,7 @@ export class EventBus {
   async publish(eventType: string, payload: any): Promise<void>;
   async publish(eventOrType: ObservabilityEvent | string, payload?: any): Promise<void> {
     let event: ObservabilityEvent;
-    
+
     if (typeof eventOrType === 'string') {
       event = {
         id: createId(),
@@ -179,7 +179,7 @@ export class EventBus {
     for (const subscription of subscriptions) {
       const typeMatches = subscription.eventType === event.type;
       const patternMatches = this.matchesPattern(event.pattern ?? '', subscription.pattern);
-      
+
       if (typeMatches && patternMatches) {
         try {
           await this.executeWithRetry(() => subscription.callback(event));
@@ -193,21 +193,21 @@ export class EventBus {
   private async executeWithRetry(operation: () => Promise<void>): Promise<void> {
     let lastError: Error | null = null;
     const maxAttempts = this.config.retryAttempts + 1;
-    
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         await operation();
         return; // Success
       } catch (error) {
         lastError = error as Error;
-        
+
         // Don't wait after the last attempt
         if (attempt < maxAttempts) {
           await this.sleep(100 * attempt); // Simple linear backoff
         }
       }
     }
-    
+
     throw lastError;
   }
 
@@ -218,41 +218,41 @@ export class EventBus {
   private matchesPattern(eventPattern: string, subscriptionPattern: string): boolean {
     // Handle the special case of matching everything
     if (subscriptionPattern === '**') return true;
-    
+
     const eventParts = eventPattern.split('.');
     const patternParts = subscriptionPattern.split('.');
-    
+
     // Handle patterns ending with '**' - they can match more segments than they have
     if (patternParts[patternParts.length - 1] === '**') {
       const basePatternParts = patternParts.slice(0, -1); // Remove the '**' part
-      
+
       // Must have at least as many parts as the base pattern
       if (eventParts.length < basePatternParts.length) {
         return false;
       }
-      
+
       // Check that the base pattern matches
       for (let i = 0; i < basePatternParts.length; i++) {
         if (basePatternParts[i] !== '*' && basePatternParts[i] !== eventParts[i]) {
           return false;
         }
       }
-      
+
       return true;
     }
-    
+
     // For patterns without '**', require exact length match
     if (patternParts.length !== eventParts.length) {
       return false;
     }
-    
+
     // Check each part
     for (let i = 0; i < patternParts.length; i++) {
       if (patternParts[i] !== '*' && patternParts[i] !== eventParts[i]) {
         return false;
       }
     }
-    
+
     return true;
   }
 

@@ -9,37 +9,37 @@ import { severityClassification, eventActorType, eventActionType, eventScopeType
  */
 export const logEntry = pgTable('log_entry', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
-  
+
   // Actor.Action.Scope.Target pattern
   eventActorId: text('event_actor_id').notNull().references(() => eventActorType.id),
   eventActionId: text('event_action_id').notNull().references(() => eventActionType.id),
   eventScopeId: text('event_scope_id').notNull().references(() => eventScopeType.id),
   eventTargetId: text('event_target_id').notNull().references(() => eventTargetType.id),
-  
+
   // Severity and classification
   severityId: text('severity_id').notNull().references(() => severityClassification.id),
-  
+
   // Core log data
   message: text('message').notNull(),
   context: jsonb('context').default({}),
-  
+
   // Tracing and correlation
   correlationId: text('correlation_id'),
   traceId: text('trace_id'),
   parentEventId: text('parent_event_id'),
   userId: text('user_id'),
   sessionId: text('session_id'),
-  
+
   // Source information
   sourceComponent: text('source_component').notNull(),
   sourceFile: text('source_file'),
   lineNumber: integer('line_number'),
   stackTrace: text('stack_trace'),
-  
+
   // Request context
   ipAddress: inet('ip_address'),
   userAgent: text('user_agent'),
-  
+
   // Metadata
   createdBy: text('created_by').notNull(),
   loggedAt: timestamp('logged_at').notNull().defaultNow(),

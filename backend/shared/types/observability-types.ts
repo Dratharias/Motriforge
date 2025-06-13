@@ -26,21 +26,21 @@ export interface EventPatternRequest {
 // SEVERITY SYSTEM TYPES
 // =====================================
 
-export type SeverityLevel = 
-  | 'negligeable' 
-  | 'lowest' 
-  | 'low' 
-  | 'medium' 
-  | 'high' 
-  | 'highest' 
+export type SeverityLevel =
+  | 'negligeable'
+  | 'lowest'
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'highest'
   | 'critical';
 
-export type SeverityType = 
-  | 'debug' 
-  | 'info' 
-  | 'warn' 
-  | 'error' 
-  | 'audit' 
+export type SeverityType =
+  | 'debug'
+  | 'info'
+  | 'warn'
+  | 'error'
+  | 'audit'
   | 'lifecycle';
 
 export interface SeverityClassification {
@@ -136,12 +136,12 @@ export const logRequestSchema = z.object({
 // AUDIT SERVICE TYPES
 // =====================================
 
-export type AuditType = 
-  | 'security' 
-  | 'compliance' 
-  | 'data_access' 
-  | 'permission' 
-  | 'financial' 
+export type AuditType =
+  | 'security'
+  | 'compliance'
+  | 'data_access'
+  | 'permission'
+  | 'financial'
   | 'user_action';
 
 export interface AuditRequest {
@@ -194,13 +194,13 @@ export const auditRequestSchema = z.object({
 // ERROR SERVICE TYPES
 // =====================================
 
-export type ErrorType = 
-  | 'validation' 
-  | 'system' 
-  | 'network' 
-  | 'database' 
-  | 'business' 
-  | 'authentication' 
+export type ErrorType =
+  | 'validation'
+  | 'system'
+  | 'network'
+  | 'database'
+  | 'business'
+  | 'authentication'
   | 'authorization';
 
 export interface ErrorRequest {
@@ -250,28 +250,28 @@ export const errorRequestSchema = z.object({
 // LIFECYCLE SERVICE TYPES
 // =====================================
 
-export type LifecycleType = 
-  | 'retention' 
-  | 'deletion' 
-  | 'archival' 
-  | 'compliance' 
-  | 'migration' 
+export type LifecycleType =
+  | 'retention'
+  | 'deletion'
+  | 'archival'
+  | 'compliance'
+  | 'migration'
   | 'backup';
 
-export type ResourceType = 
-  | 'user_data' 
-  | 'workout_data' 
-  | 'media_files' 
-  | 'financial_data' 
-  | 'system_logs' 
+export type ResourceType =
+  | 'user_data'
+  | 'workout_data'
+  | 'media_files'
+  | 'financial_data'
+  | 'system_logs'
   | 'audit_trails';
 
-export type RetentionPolicy = 
-  | '30_days' 
-  | '90_days' 
-  | '1_year' 
-  | '3_years' 
-  | '7_years' 
+export type RetentionPolicy =
+  | '30_days'
+  | '90_days'
+  | '1_year'
+  | '3_years'
+  | '7_years'
   | 'indefinite';
 
 export interface LifecycleRequest {

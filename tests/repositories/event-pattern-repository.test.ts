@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { db } from '../../backend/database/connection';
-import { 
-  EventActorRepository, 
-  EventActionRepository, 
-  EventScopeRepository, 
-  EventTargetRepository 
+import {
+  EventActorRepository,
+  EventActionRepository,
+  EventScopeRepository,
+  EventTargetRepository
 } from '../../backend/repositories/observability/event-pattern-repository';
 import { eventActorType, eventActionType, eventScopeType, eventTargetType } from '../../backend/database/schema';
 import { eq } from 'drizzle-orm';

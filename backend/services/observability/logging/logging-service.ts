@@ -1,10 +1,10 @@
 import { Database } from '~/database/connection';
-import { 
-  SeverityRepository, 
-  EventActorRepository, 
-  EventActionRepository, 
-  EventScopeRepository, 
-  EventTargetRepository 
+import {
+  SeverityRepository,
+  EventActorRepository,
+  EventActionRepository,
+  EventScopeRepository,
+  EventTargetRepository
 } from '~/repositories/observability';
 import { LogSearchService, LogSearchQuery } from './log-search-service';
 import { EventBus, ObservabilityEvent, EventHandler } from '~/shared/event-bus/event-bus';
@@ -59,7 +59,7 @@ export interface LogEntry {
 
 export class LoggingService implements EventHandler {
   name = 'LoggingService';
-  
+
   private readonly severityRepo: SeverityRepository;
   private readonly actorRepo: EventActorRepository;
   private readonly actionRepo: EventActionRepository;
@@ -67,10 +67,10 @@ export class LoggingService implements EventHandler {
   private readonly targetRepo: EventTargetRepository;
   private readonly searchService: LogSearchService;
   private readonly eventFactory: EventFactory;
-  
+
   private logBuffer: LogRequest[] = [];
   private flushTimer: NodeJS.Timeout | null = null;
-  
+
   constructor(
     private readonly db: Database,
     private readonly eventBus: EventBus,
@@ -83,7 +83,7 @@ export class LoggingService implements EventHandler {
     this.targetRepo = new EventTargetRepository(db);
     this.searchService = new LogSearchService(db);
     this.eventFactory = EventFactory.getInstance('logging-service');
-    
+
     this.setupEventHandlers();
     this.setupBatchProcessor();
   }
@@ -100,10 +100,10 @@ export class LoggingService implements EventHandler {
 
       // Validate context size
       if (request.context && JSON.stringify(request.context).length > this.config.maxContextSize) {
-        request.context = { 
-          ...request.context, 
+        request.context = {
+          ...request.context,
           _truncated: true,
-          _originalSize: JSON.stringify(request.context).length 
+          _originalSize: JSON.stringify(request.context).length
         };
       }
 
@@ -202,18 +202,18 @@ export class LoggingService implements EventHandler {
   }
 
   async error(
-    actor: string, 
-    action: string, 
-    scope: string, 
+    actor: string,
+    action: string,
+    scope: string,
     target: string,
-    message: string, 
+    message: string,
     options?: { context?: Record<string, any>; sourceComponent?: string; stackTrace?: string }
   ): Promise<LogEntry> {
     const { context, sourceComponent = 'system', stackTrace } = options ?? {};
     return this.log({
-      actor, 
-      action, 
-      scope, 
+      actor,
+      action,
+      scope,
       target,
       severityType: 'error',
       severityLevel: 'highest',
@@ -235,7 +235,7 @@ export class LoggingService implements EventHandler {
     context?: Record<string, any>
   ): Promise<LogEntry> {
     const { actor, scope, target } = this.detectPatternFromSource(source);
-    
+
     return this.log({
       actor,
       action,
@@ -255,7 +255,7 @@ export class LoggingService implements EventHandler {
     if (!this.config.enableSearch) {
       throw new Error('Log search is disabled');
     }
-    
+
     return this.searchService.searchLogs(query);
   }
 
@@ -403,7 +403,7 @@ export class LoggingService implements EventHandler {
 
     try {
       const fs = await import('fs/promises');
-      const logLines = logs.map(log => 
+      const logLines = logs.map(log =>
         JSON.stringify({
           timestamp: new Date().toISOString(),
           pattern: `${log.actor}.${log.action}.${log.scope}.${log.target}`,
@@ -489,10 +489,10 @@ export class LoggingService implements EventHandler {
     if (this.flushTimer) {
       clearInterval(this.flushTimer);
     }
-    
+
     // Flush remaining logs
     await this.flushLogBuffer();
-    
+
     console.log('LoggingService shutdown complete');
   }
 }

@@ -95,7 +95,7 @@ describe('EventBus', () => {
 
   it('should batch events efficiently', async () => {
     const handledEvents: ObservabilityEvent[] = [];
-    
+
     const batchHandler: EventHandler = {
       name: 'batch-handler',
       handle: async (event) => {
@@ -133,7 +133,7 @@ describe('EventBus', () => {
 
   it('should retry failed handlers', async () => {
     let attempts = 0;
-    
+
     const failingHandler: EventHandler = {
       name: 'failing-handler',
       handle: async () => {
@@ -169,7 +169,7 @@ describe('EventBus', () => {
 
   it('should emit handler failure events', async () => {
     let failureEvent: any = null;
-    
+
     eventBus.on('handler_failure', (event) => {
       failureEvent = event;
     });
@@ -214,7 +214,7 @@ describe('EventBus', () => {
     };
 
     const handler2: EventHandler = {
-      name: 'handler-2', 
+      name: 'handler-2',
       handle: vi.fn(),
       canHandle: () => true
     };
